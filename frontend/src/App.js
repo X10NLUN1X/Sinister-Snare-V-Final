@@ -406,34 +406,41 @@ const HistoricalTrends = ({ trends }) => (
         <div key={idx} className="bg-black/30 rounded p-4">
           <div className="flex justify-between items-start mb-2">
             <div>
-              <h4 className="text-white font-medium">{trend.commodity_name}</h4>
-              <p className="text-gray-400 text-sm">{trend.route_code}</p>
+              <h4 className="text-white font-medium">{trend.commodity_name || 'Unknown'}</h4>
+              <p className="text-gray-400 text-sm">{trend.route_code || 'Unknown'}</p>
             </div>
             <div className="text-right">
               <span className={`text-sm font-medium ${
-                trend.profit_trend === 'increasing' ? 'text-green-400' : 'text-red-400'
+                trend.profit_trend === 'increasing' ? 'text-green-400' : 
+                trend.profit_trend === 'decreasing' ? 'text-red-400' : 'text-gray-400'
               }`}>
-                {trend.profit_trend === 'increasing' ? '↗' : '↘'} {trend.profit_trend}
+                {trend.profit_trend === 'increasing' ? '↗' : trend.profit_trend === 'decreasing' ? '↘' : '→'} {trend.profit_trend || 'stable'}
               </span>
             </div>
           </div>
           <div className="grid grid-cols-3 gap-4 text-sm">
             <div>
               <p className="text-gray-400">Avg Profit</p>
-              <p className="text-white font-medium">{(trend.avg_profit / 1000000).toFixed(2)}M</p>
+              <p className="text-white font-medium">{((trend.avg_profit || 0) / 1000000).toFixed(2)}M</p>
             </div>
             <div>
               <p className="text-gray-400">Max Score</p>
-              <p className="text-red-400 font-medium">{trend.max_piracy_rating.toFixed(1)}</p>
+              <p className="text-red-400 font-medium">{(trend.max_piracy_rating || 0).toFixed(1)}</p>
             </div>
             <div>
               <p className="text-gray-400">Data Points</p>
-              <p className="text-blue-400 font-medium">{trend.data_points.length}</p>
+              <p className="text-blue-400 font-medium">{trend.data_points?.length || 0}</p>
             </div>
           </div>
         </div>
       ))}
     </div>
+    {trends.length === 0 && (
+      <div className="text-center py-8">
+        <p className="text-gray-400">No historical trend data available</p>
+        <p className="text-gray-500 text-sm mt-1">Data will appear as routes are analyzed over time</p>
+      </div>
+    )}
   </div>
 );
 
