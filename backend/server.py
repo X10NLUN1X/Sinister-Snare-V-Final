@@ -579,7 +579,7 @@ class UEXClient:
 
 # Initialize clients
 star_profit_client = StarProfitClient()
-uex_client = UEXClient(UEX_API_KEY)
+uex_client = UEXClient(os.environ.get('UEX_API_KEY', ''))
 
 # Enhanced Models
 class RouteAnalysis(BaseModel):
