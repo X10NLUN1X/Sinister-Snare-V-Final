@@ -52,32 +52,42 @@ class SinisterDatabase {
   }
 
   async addRoutes(routes) {
-    if (!this.db) await this.init();
-    
-    const transaction = this.db.transaction(['routes'], 'readwrite');
-    const store = transaction.objectStore('routes');
-    const timestamp = new Date().toISOString();
-    
-    const addedRoutes = [];
-    
-    for (const route of routes) {
-      // Check if route already exists (by route_code and similar timestamp)
-      const existing = await this.getRouteByCode(route.route_code);
-      const routeData = {
-        ...route,
-        timestamp,
-        origin_system: route.origin_name?.split(' - ')[0] || 'Unknown',
-        destination_system: route.destination_name?.split(' - ')[0] || 'Unknown',
-        data_source: 'api_fetch'
-      };
+    try {
+      if (!this.db) await this.init();
       
-      if (!existing || this.shouldUpdateRoute(existing, routeData)) {
-        await store.add(routeData);
-        addedRoutes.push(routeData);
+      const transaction = this.db.transaction(['routes'], 'readwrite');
+      const store = transaction.objectStore('routes');
+      const timestamp = new Date().toISOString();
+      
+      const addedRoutes = [];
+      
+      for (const route of routes) {
+        try {
+          // Check if route already exists (by route_code and similar timestamp)
+          const existing = await this.getRouteByCode(route.route_code);
+          const routeData = {
+            ...route,
+            timestamp,
+            origin_system: route.origin_name?.split(' - ')[0] || 'Unknown',
+            destination_system: route.destination_name?.split(' - ')[0] || 'Unknown',
+            data_source: 'api_fetch'
+          };
+          
+          if (!existing || this.shouldUpdateRoute(existing, routeData)) {
+            await store.add(routeData);
+            addedRoutes.push(routeData);
+          }
+        } catch (routeError) {
+          console.warn('Error adding individual route:', routeError);
+          continue;
+        }
       }
+      
+      return addedRoutes;
+    } catch (error) {
+      console.error('Error adding routes to database:', error);
+      return [];
     }
-    
-    return addedRoutes;
   }
 
   async addCommodities(commodities) {
