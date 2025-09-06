@@ -1,34 +1,246 @@
-.App-logo {
-    height: 40vmin;
-    pointer-events: none;
-}
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-@media (prefers-reduced-motion: no-preference) {
-    .App-logo {
-        animation: App-logo-spin infinite 20s linear;
-    }
+.App {
+  text-align: left;
+  min-height: 100vh;
+  background-color: #000000;
 }
 
 .App-header {
-    background-color: #0f0f10;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    font-size: calc(10px + 2vmin);
-    color: white;
+  background: linear-gradient(135deg, #7f1d1d 0%, #000000 100%);
+  padding: 40px;
+  color: white;
+  text-align: center;
+  min-height: 300px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+}
+
+.App-header img {
+  height: 80px;
+  width: 80px;
+  border-radius: 50%;
+  margin-bottom: 20px;
+  border: 3px solid #dc2626;
 }
 
 .App-link {
-    color: #61dafb;
+  color: #dc2626;
+  text-decoration: none;
 }
 
-@keyframes App-logo-spin {
-    from {
-        transform: rotate(0deg);
-    }
-    to {
-        transform: rotate(360deg);
-    }
+.App-link:hover {
+  color: #ef4444;
+}
+
+/* Custom scrollbar for dark theme */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #1f2937;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #dc2626;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #ef4444;
+}
+
+/* Animation for loading states */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Custom card hover effects */
+.route-card {
+  transition: all 0.3s ease;
+}
+
+.route-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(220, 38, 38, 0.2);
+}
+
+/* Status indicators */
+.status-indicator {
+  position: relative;
+}
+
+.status-indicator::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #10b981;
+  animation: pulse 2s infinite;
+}
+
+.status-indicator.error::before {
+  background-color: #ef4444;
+}
+
+.status-indicator.warning::before {
+  background-color: #f59e0b;
+}
+
+/* Gradient text effects */
+.gradient-text {
+  background: linear-gradient(135deg, #dc2626, #ef4444);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Responsive design adjustments */
+@media (max-width: 768px) {
+  .App-header {
+    padding: 20px;
+    min-height: 200px;
+    font-size: calc(8px + 2vmin);
+  }
+  
+  .container {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+}
+
+/* Dark theme form elements */
+input, select, textarea {
+  background-color: #374151;
+  border: 1px solid #6b7280;
+  color: white;
+}
+
+input:focus, select:focus, textarea:focus {
+  border-color: #dc2626;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+}
+
+/* Button styles */
+.btn-primary {
+  background: linear-gradient(135deg, #dc2626, #b91c1c);
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  color: white;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.btn-primary:hover {
+  background: linear-gradient(135deg, #b91c1c, #991b1b);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+}
+
+.btn-secondary {
+  background: transparent;
+  border: 2px solid #dc2626;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  color: #dc2626;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.btn-secondary:hover {
+  background: #dc2626;
+  color: white;
+}
+
+/* Table styles for data display */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #1f2937;
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+.data-table th {
+  background: #374151;
+  padding: 1rem;
+  text-align: left;
+  font-weight: 600;
+  color: #f9fafb;
+  border-bottom: 1px solid #6b7280;
+}
+
+.data-table td {
+  padding: 1rem;
+  border-bottom: 1px solid #374151;
+  color: #d1d5db;
+}
+
+.data-table tr:hover {
+  background: #374151;
+}
+
+/* Chart and visualization styles */
+.chart-container {
+  background: #1f2937;
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+  border: 1px solid #374151;
+}
+
+.chart-title {
+  color: #f9fafb;
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+/* Utility classes for Star Citizen theme */
+.text-danger { color: #ef4444; }
+.text-warning { color: #f59e0b; }
+.text-success { color: #10b981; }
+.text-info { color: #3b82f6; }
+.text-purple { color: #8b5cf6; }
+
+.bg-danger { background-color: rgba(239, 68, 68, 0.1); }
+.bg-warning { background-color: rgba(245, 158, 11, 0.1); }
+.bg-success { background-color: rgba(16, 185, 129, 0.1); }
+.bg-info { background-color: rgba(59, 130, 246, 0.1); }
+.bg-purple { background-color: rgba(139, 92, 246, 0.1); }
+
+/* Loading spinner */
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #374151;
+  border-top: 4px solid #dc2626;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
