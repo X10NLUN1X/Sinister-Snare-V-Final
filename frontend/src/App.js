@@ -1297,6 +1297,25 @@ function App() {
           </div>
         )}
       </div>
+      
+      {/* Modals */}
+      <RefreshModal 
+        isOpen={refreshModal.open}
+        onClose={() => setRefreshModal(prev => ({ ...prev, open: false }))}
+        logs={refreshModal.logs}
+        isRefreshing={refreshModal.isRefreshing}
+      />
+      
+      <SnareModal 
+        isOpen={snareModal.open}
+        onClose={() => setSnareModal({ open: false, data: null })}
+        snareData={snareModal.data}
+      />
+      
+      <CommoditySnareModal 
+        isOpen={commoditySnareModal}
+        onClose={() => setCommoditySnareModal(false)}
+      />
     </div>
   );
 }
