@@ -806,6 +806,11 @@ function App() {
   const [selectedRoute, setSelectedRoute] = useState(null);
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [exportLoading, setExportLoading] = useState(false);
+  
+  // New state for enhanced features
+  const [refreshModal, setRefreshModal] = useState({ open: false, logs: [], isRefreshing: false });
+  const [snareModal, setSnareModal] = useState({ open: false, data: null });
+  const [commoditySnareModal, setCommoditySnareModal] = useState(false);
 
   const fetchApiStatus = useCallback(async () => {
     try {
