@@ -743,7 +743,13 @@ async def main():
     
     all_results = TestResults()
     
-    # Test UEX API directly first
+    # Test Star Profit API integration first (primary API)
+    star_profit_results = await test_star_profit_api()
+    all_results.results.extend(star_profit_results.results)
+    all_results.passed += star_profit_results.passed
+    all_results.failed += star_profit_results.failed
+    
+    # Test UEX API as fallback
     uex_results = await test_uex_api_direct()
     all_results.results.extend(uex_results.results)
     all_results.passed += uex_results.passed
