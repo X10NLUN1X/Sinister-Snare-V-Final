@@ -1735,7 +1735,7 @@ async def get_api_status():
                 }
             },
             "database": db_status,
-            "api_key_configured": bool(UEX_API_KEY),
+            "api_key_configured": bool(os.environ.get('UEX_API_KEY', '')),
             "statistics": {
                 "total_routes_analyzed": route_count,
                 "active_alerts": alert_count,
