@@ -871,7 +871,8 @@ async def analyze_routes(
                 # Return empty data if Star Profit API fails
                 routes_data = {"status": "error", "data": []}
         else:
-            routes_data = await uex_client.get_commodities_routes()
+            # Use Star Profit API as the only source
+            routes_data = await star_profit_client.get_trading_routes()
         
         if routes_data.get('status') != 'ok':
             raise HTTPException(status_code=400, detail="Failed to fetch routes from trading APIs")
