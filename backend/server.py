@@ -124,6 +124,43 @@ class StarProfitClient:
         # Default to Stanton for unknown terminals (most common)
         return "Stanton"
 
+    def generate_system_coordinates(self, system_name: str) -> Dict[str, float]:
+        """Generate realistic coordinates for different star systems"""
+        system_coords = {
+            "Stanton": {
+                "x_range": (-50000, 50000),
+                "y_range": (-50000, 50000), 
+                "z_range": (-10000, 10000)
+            },
+            "Pyro": {
+                "x_range": (70000, 120000),
+                "y_range": (-60000, -20000),
+                "z_range": (15000, 35000)
+            },
+            "Nyx": {
+                "x_range": (-200000, -150000),
+                "y_range": (-110000, -80000),
+                "z_range": (30000, 50000)
+            },
+            "Terra": {
+                "x_range": (-140000, -100000),
+                "y_range": (50000, 80000),
+                "z_range": (-20000, -5000)
+            },
+            "Magnus": {
+                "x_range": (80000, 120000),
+                "y_range": (40000, 70000),
+                "z_range": (-15000, 5000)
+            }
+        }
+        
+        coords = system_coords.get(system_name, system_coords["Stanton"])
+        return {
+            "x": random.uniform(coords["x_range"][0], coords["x_range"][1]),
+            "y": random.uniform(coords["y_range"][0], coords["y_range"][1]),
+            "z": random.uniform(coords["z_range"][0], coords["z_range"][1])
+        }
+
     async def get_trading_routes(self) -> Dict[str, Any]:
         """Process real commodity data into trading routes for piracy analysis"""
         try:
