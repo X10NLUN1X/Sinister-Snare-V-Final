@@ -1699,6 +1699,7 @@ function App() {
             { id: 'alerts', label: '🚨 Alerts', desc: 'Notifications' },
             { id: 'trends', label: '📈 Trends', desc: 'Historical' },
             { id: 'database', label: '💾 Database', desc: 'Lokale Daten' },
+            { id: 'export', label: '📁 Export', desc: 'Data Export' }
           ].map(tab => (
             <button 
               key={tab.id}
