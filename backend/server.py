@@ -113,6 +113,9 @@ class StarProfitClient:
             # Planets and Major Stations
             'ruin station', 'pyro station alpha', 'pyro gateway',
             
+            # Rough & Ready Controlled Outposts
+            'endgame',  # CORRECTED: Endgame is in Pyro, Rough & Ready controlled
+            
             # Rest Stops (Citizens for Prosperity)
             'starlight service station', 'rod\'s fuel \'n supplies', 'rod\'s fuel n supplies',
             'dudley & daughters', 'dudley and daughters',
@@ -122,7 +125,7 @@ class StarProfitClient:
             'gonor steel', 'golden riviera',
             
             # Outlaw Locations in Pyro  
-            'rat\'s nest', 'rats nest', 'rat nest',  # CORRECTED: Pyro V
+            'rat\'s nest', 'rats nest', 'rat nest',  # Pyro V
             'checkpoint', 'spider', 'monox', 'bloom', 'wala',
             'shady glen', 'glory',
             
