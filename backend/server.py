@@ -1685,7 +1685,7 @@ async def get_api_status():
         # Check database
         db_status = "connected"
         try:
-            if db:
+            if db is not None:
                 await db.command("ping")
             else:
                 db_status = "not_configured"
