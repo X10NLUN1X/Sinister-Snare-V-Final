@@ -63,20 +63,20 @@ class SinisterDatabase {
       
       for (const route of routes) {
         try {
-          // Check if route already exists (by route_code and similar timestamp)
-          const existing = await this.getRouteByCode(route.route_code);
+          // Add ALL routes as historical data (don't check for duplicates)
           const routeData = {
             ...route,
             timestamp,
             origin_system: route.origin_name?.split(' - ')[0] || 'Unknown',
             destination_system: route.destination_name?.split(' - ')[0] || 'Unknown',
-            data_source: 'api_fetch'
+            data_source: 'api_fetch',
+            // Add unique identifier for each fetch
+            fetch_id: `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
           };
           
-          if (!existing || this.shouldUpdateRoute(existing, routeData)) {
-            await store.add(routeData);
-            addedRoutes.push(routeData);
-          }
+          // Always add as new historical record
+          await store.add(routeData);
+          addedRoutes.push(routeData);
         } catch (routeError) {
           console.warn('Error adding individual route:', routeError);
           continue;
