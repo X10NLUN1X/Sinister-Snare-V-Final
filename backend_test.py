@@ -134,15 +134,19 @@ async def test_backend_endpoints():
             if response.status_code == 200:
                 data = response.json()
                 status = data.get('status')
-                uex_status = data.get('uex_api')
-                db_status = data.get('database')
-                api_key_configured = data.get('api_key_configured')
                 
-                if status == 'operational':
+                # Check for both old and new status format
+                if status == 'operational' or status == 'ok':
+                    # Check for API integration details
+                    star_profit_status = data.get('star_profit_api', 'unknown')
+                    uex_status = data.get('uex_api', 'unknown')
+                    db_status = data.get('database', 'unknown')
+                    api_key_configured = data.get('api_key_configured', False)
+                    
                     results.add_result(
                         "API Status Endpoint",
                         "PASS",
-                        f"API operational - UEX: {uex_status}, DB: {db_status}, API Key: {api_key_configured}",
+                        f"API {status} - Star Profit: {star_profit_status}, UEX: {uex_status}, DB: {db_status}, API Key: {api_key_configured}",
                         data
                     )
                 else:
