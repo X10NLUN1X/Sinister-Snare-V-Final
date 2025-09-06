@@ -452,7 +452,7 @@ async def test_backend_endpoints():
         
         # Test 9: Snare Commodity Endpoint (New Feature)
         try:
-            response = await client.get(f"{BACKEND_URL}/api/snare/commodity?commodity=Laranite")
+            response = await client.get(f"{BACKEND_URL}/api/snare/commodity?commodity_name=Laranite")
             if response.status_code == 200:
                 data = response.json()
                 if data.get('status') == 'success':
