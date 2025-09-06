@@ -733,14 +733,16 @@ async def analyze_routes(
                 
                 analyzed_routes.append(analysis)
                 
-                # Store in database for historical analysis (with fallback)
+                # Store in database for historical analysis (append, don't overwrite)
                 if db is not None:
                     try:
-                        await db.route_analyses.replace_one(
-                            {"route_code": analysis.route_code},
-                            analysis.dict(),
-                            upsert=True
-                        )
+                        # Add timestamp to make each analysis unique
+                        analysis_dict = analysis.dict()
+                        analysis_dict['stored_at'] = datetime.now(timezone.utc)
+                        analysis_dict['analysis_id'] = str(uuid.uuid4())
+                        
+                        # Insert new analysis (append to database)
+                        await db.route_analyses.insert_one(analysis_dict)
                     except Exception as db_error:
                         logging.warning(f"Database storage failed: {db_error}")
                 
