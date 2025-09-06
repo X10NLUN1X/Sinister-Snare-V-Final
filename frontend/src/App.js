@@ -1601,7 +1601,20 @@ function App() {
   }, [fetchApiStatus, fetchRoutes, fetchTargets, fetchHourlyData, fetchAlerts, fetchTrends, fetchTrackingStatus, fetchDbStats]);
 
   useEffect(() => {
-    loadAllData();
+    const initializeApp = async () => {
+      // Initialize database
+      try {
+        await sinisterDB.init();
+        console.log('Sinister Database initialized successfully');
+      } catch (error) {
+        console.error('Error initializing database:', error);
+      }
+      
+      // Load all data
+      loadAllData();
+    };
+
+    initializeApp();
   }, [loadAllData]);
 
   // Auto-refresh effect
