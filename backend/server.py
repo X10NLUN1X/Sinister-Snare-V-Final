@@ -37,7 +37,7 @@ LOG_LEVEL="INFO"
 mongo_url = os.environ.get('MONGO_URL', 'mongodb://localhost:27017')
 db_name = os.environ.get('DB_NAME', 'sinister_snare_db')
 client = AsyncIOMotorClient(mongo_url)
-db = client[os.environ['DB_NAME']]
+db = client[db_name]
 
 # Real Data API Configuration
 STAR_PROFIT_API_BASE = "https://star-profit.mathioussee.com/api"
