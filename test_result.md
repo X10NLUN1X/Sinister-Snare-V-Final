@@ -287,15 +287,18 @@ backend:
 
   - task: "Database Connectivity"
     implemented: true
-    working: false
+    working: true
     file: "backend/server.py"
     stuck_count: 1
     priority: "medium"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: false
         - agent: "testing"
         - comment: "ISSUE: MongoDB database shows 'error' status in system health check. This affects export functionality and some data persistence features. However, core API functionality works with fallback mechanisms."
+        - working: true
+        - agent: "testing"
+        - comment: "FIXED: Database connectivity fully restored. MongoDB shows 'connected' status in /api/status endpoint. All database-dependent features now working: export functionality, alerts system, historical trends, and route analysis storage. Database boolean errors resolved."
 
 frontend:
   - task: "Frontend Startup Issue"
