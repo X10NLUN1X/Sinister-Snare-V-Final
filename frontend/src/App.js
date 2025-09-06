@@ -1103,7 +1103,186 @@ const CommoditySnareModal = ({ isOpen, onClose, onSnare }) => {
   );
 };
 
-const ExportPanel = ({ onExport, exportLoading }) => (
+const DatabasePanel = ({ dbStats, onRefreshStats, onClearAll, onClearOld }) => {
+  const [clearWeeks, setClearWeeks] = useState(4);
+  const [showConfirmClear, setShowConfirmClear] = useState(false);
+  const [clearType, setClearType] = useState(null);
+
+  const handleClearAll = () => {
+    setClearType('all');
+    setShowConfirmClear(true);
+  };
+
+  const handleClearOld = () => {
+    setClearType('old');
+    setShowConfirmClear(true);
+  };
+
+  const confirmClear = async () => {
+    if (clearType === 'all') {
+      await onClearAll();
+    } else if (clearType === 'old') {
+      await onClearOld(clearWeeks);
+    }
+    setShowConfirmClear(false);
+    setClearType(null);
+    onRefreshStats();
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
+        <h3 className="text-white text-xl font-bold mb-4">💾 Lokale Datenbank Statistiken</h3>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <div className="bg-blue-900/20 rounded-lg p-4 border border-blue-700">
+            <div className="text-center">
+              <p className="text-blue-400 text-3xl font-bold">{dbStats?.routes || 0}</p>
+              <p className="text-gray-400 text-sm">Gespeicherte Routen</p>
+            </div>
+          </div>
+          
+          <div className="bg-green-900/20 rounded-lg p-4 border border-green-700">
+            <div className="text-center">
+              <p className="text-green-400 text-3xl font-bold">{dbStats?.commodities || 0}</p>
+              <p className="text-gray-400 text-sm">Commodity Datensätze</p>
+            </div>
+          </div>
+          
+          <div className="bg-purple-900/20 rounded-lg p-4 border border-purple-700">
+            <div className="text-center">
+              <p className="text-purple-400 text-3xl font-bold">{dbStats?.interceptions || 0}</p>
+              <p className="text-gray-400 text-sm">Interception Historie</p>
+            </div>
+          </div>
+          
+          <div className="bg-yellow-900/20 rounded-lg p-4 border border-yellow-700">
+            <div className="text-center">
+              <p className="text-yellow-400 text-3xl font-bold">{dbStats?.sizeFormatted || '0 B'}</p>
+              <p className="text-gray-400 text-sm">Datenbankgröße</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-black/30 rounded-lg p-4 mb-6">
+          <h4 className="text-white font-semibold mb-3">📊 Datenbank Details</h4>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+            <div>
+              <p className="text-gray-400">Gesamtdatensätze:</p>
+              <p className="text-white font-semibold">{dbStats?.totalRecords || 0}</p>
+            </div>
+            <div>
+              <p className="text-gray-400">Letztes Update:</p>
+              <p className="text-white font-semibold">
+                {dbStats?.lastUpdate ? new Date(dbStats.lastUpdate).toLocaleString('de-DE') : 'Nie'}
+              </p>
+            </div>
+            <div>
+              <p className="text-gray-400">Speicherverbrauch:</p>
+              <p className="text-white font-semibold">{dbStats?.sizeBytes || 0} Bytes</p>
+            </div>
+            <div>
+              <p className="text-gray-400">Datenbank Version:</p>
+              <p className="text-white font-semibold">v1.0</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="bg-red-900/20 rounded-lg p-4 border border-red-700">
+            <h4 className="text-red-400 font-semibold mb-3">🗑️ Daten Löschen</h4>
+            <div className="space-y-3">
+              <button
+                onClick={handleClearAll}
+                className="w-full bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded font-medium transition-colors"
+              >
+                🚨 Alle Daten Löschen
+              </button>
+              
+              <div className="flex items-center space-x-2">
+                <select
+                  value={clearWeeks}
+                  onChange={(e) => setClearWeeks(parseInt(e.target.value))}
+                  className="bg-gray-700 text-white rounded px-3 py-1 text-sm"
+                >
+                  <option value={1}>1 Woche</option>
+                  <option value={2}>2 Wochen</option>
+                  <option value={3}>3 Wochen</option>
+                  <option value={4}>4 Wochen</option>
+                </select>
+                <button
+                  onClick={handleClearOld}
+                  className="bg-orange-600 hover:bg-orange-700 text-white px-3 py-1 rounded text-sm transition-colors"
+                >
+                  Alte Daten Löschen
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-blue-900/20 rounded-lg p-4 border border-blue-700">
+            <h4 className="text-blue-400 font-semibold mb-3">🔄 Daten Management</h4>
+            <div className="space-y-3">
+              <button
+                onClick={onRefreshStats}
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded font-medium transition-colors"
+              >
+                📊 Statistiken Aktualisieren
+              </button>
+              
+              <button
+                onClick={() => window.location.reload()}
+                className="w-full bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded font-medium transition-colors"
+              >
+                🔄 Anwendung Neustarten
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
+        <h3 className="text-white text-lg font-semibold mb-4">ℹ️ Datensammlung Information</h3>
+        <div className="space-y-3 text-sm text-gray-300">
+          <p>• <strong>Automatische Ergänzung:</strong> Bei jedem API-Abruf werden neue Daten hinzugefügt, nicht überschrieben</p>
+          <p>• <strong>Historische Analyse:</strong> Mehr Daten ermöglichen genauere Interception-Vorhersagen</p>
+          <p>• <strong>Lokale Speicherung:</strong> Alle Daten werden lokal in Ihrem Browser gespeichert</p>
+          <p>• <strong>Performance:</strong> IndexedDB ermöglicht schnelle Suche und Analyse großer Datenmengen</p>
+          <p>• <strong>Privatsphäre:</strong> Daten verlassen niemals Ihren Computer</p>
+        </div>
+      </div>
+
+      {/* Confirmation Modal */}
+      {showConfirmClear && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4 border border-red-700">
+            <h4 className="text-red-400 text-lg font-bold mb-4">⚠️ Bestätigung Erforderlich</h4>
+            <p className="text-white mb-4">
+              {clearType === 'all' 
+                ? 'Sind Sie sicher, dass Sie ALLE gespeicherten Daten löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.'
+                : `Sind Sie sicher, dass Sie alle Daten älter als ${clearWeeks} Woche(n) löschen möchten?`
+              }
+            </p>
+            <div className="flex space-x-3">
+              <button
+                onClick={confirmClear}
+                className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded font-medium"
+              >
+                ✅ Ja, Löschen
+              </button>
+              <button
+                onClick={() => setShowConfirmClear(false)}
+                className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded font-medium"
+              >
+                ❌ Abbrechen
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
   <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
     <h3 className="text-white text-lg font-semibold mb-4">📁 Export Data</h3>
     <div className="space-y-4">
