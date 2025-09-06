@@ -1367,8 +1367,14 @@ function App() {
       
       // Store routes in local database for historical analysis
       if (newRoutes.length > 0) {
-        await sinisterDB.addRoutes(newRoutes);
-        console.log(`Stored ${newRoutes.length} routes in local database`);
+        try {
+          await sinisterDB.addRoutes(newRoutes);
+          console.log(`✅ Stored ${newRoutes.length} routes in local database`);
+          // Update database stats after adding routes
+          await fetchDbStats();
+        } catch (dbError) {
+          console.warn('Database storage failed, continuing without local storage:', dbError);
+        }
       }
     } catch (error) {
       console.error('Error fetching routes:', error);
