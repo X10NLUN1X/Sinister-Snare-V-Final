@@ -59,34 +59,85 @@ class StarProfitClient:
                 return {"commodities": [], "error": str(e)}
     
     def map_terminal_to_system(self, terminal_name: str) -> str:
-        """Map terminal names to their correct star systems"""
+        """Map terminal names to their correct star systems based on real Star Citizen data"""
         terminal_name_lower = terminal_name.lower()
         
         # Stanton System Terminals
         stanton_terminals = [
-            'port olisar', 'crusader l1', 'crusader l4', 'crusader l5',
-            'arc-l1', 'arc-l2', 'arc-l3', 'arc-l4', 'arc-l5', 'arccorp 141',
-            'area18', 'cbd lorville', 'teasa spaceport', 'lorville',
+            # Major Cities and Ports
+            'port olisar', 'area18', 'area 18', 'lorville', 'new babbage', 'orison',
+            'cbd lorville', 'teasa spaceport',
+            
+            # Orbital Stations
+            'port tressler', 'everus harbor', 'baijini point', 'seraphim station',
+            
+            # Lagrange Point Stations (Hurston)
             'hur-l1', 'hur-l2', 'hur-l3', 'hur-l4', 'hur-l5',
+            'green glade station', 'purple stain station', 'blue shine station',
+            
+            # Lagrange Point Stations (ArcCorp)
+            'arc-l1', 'arc-l2', 'arc-l3', 'arc-l4', 'arc-l5', 'arccorp 141',
+            'white mountain station', 'wide forest station',
+            
+            # Lagrange Point Stations (Crusader)
+            'cru-l1', 'cru-l2', 'cru-l3', 'cru-l4', 'cru-l5',
+            'ambitious dream station', 'faithful dream station',
+            
+            # Lagrange Point Stations (microTech)
             'mic-l1', 'mic-l2', 'mic-l3', 'mic-l4', 'mic-l5',
-            'grimhex', 'spo', 'cru-l1', 'cru-l4', 'cru-l5',
-            'new babbage', 'microtech', 'everus harbor', 'baijini point'
+            'shallow frontier station', 'long forest station',
+            
+            # Moons and Surface Outposts (Stanton)
+            'grimhex', 'grim hex', 'security post kareah', 'kareah',
+            'daymar', 'cellin', 'yela', 'delamar', 'aaron halo',
+            'magda', 'arial', 'lyria', 'wala', 'ita', 'calliope', 'clio', 'euterpe',
+            
+            # Salvage Yards and Outposts (Stanton - corrected)
+            'brio\'s breaker', 'brios breaker', 'samson son\'s', 'samson sons',
+            'devlin scrap', 'devlin scrap & salvage',
+            
+            # Mining Outposts (Stanton)
+            'shubin smca-6', 'shubin smc-ls-1', 'shubin smc-ls-2', 'shubin smc-ls-3',
+            'rayari aneth research outpost', 'rayari deltana research outpost',
+            'rayari kaltag research outpost',
+            
+            # Drug Labs and Outlaw Bases (Stanton)
+            'jumptown', 'paradise cove', 'raven\'s roost', 'ravens roost', 'the orphanage',
+            
+            # Rest Stops and Gateways
+            'pyro gateway', 'terra gateway', 'magnus gateway', 'nyx gateway'
         ]
         
         # Pyro System Terminals
         pyro_terminals = [
+            # Planets and Major Stations
             'ruin station', 'pyro station alpha', 'pyro gateway',
+            
+            # Rest Stops (Citizens for Prosperity)
+            'starlight service station', 'rod\'s fuel \'n supplies', 'rod\'s fuel n supplies',
+            'dudley & daughters', 'dudley and daughters',
+            
+            # Trade Posts and Outposts
+            'canard view', 'jackson\'s swap', 'jackson swap', 'jacksons swap',
+            'gonor steel', 'golden riviera',
+            
+            # Outlaw Locations in Pyro  
+            'rat\'s nest', 'rats nest', 'rat nest',  # CORRECTED: Pyro V
             'checkpoint', 'spider', 'monox', 'bloom', 'wala',
-            'shady glen', 'glory', 'rat\'s nest', 'brio\'s breaker',
-            'orbituary', 'patch city', 'samson son\'s', 'endgame',
-            'devlin scrap', 'checkmate', 'dudley and daughters',
-            'megumi refueling', 'rod\'s fuel \'n supplies'
+            'shady glen', 'glory',
+            
+            # Abandoned Stations
+            'pyam-farstat-1-3', 'pyam-supvisr-3-4', 'pyam-farstat-3-5',
+            
+            # Moons of Pyro V
+            'fairo', 'fuego', 'vuur'
         ]
         
         # Nyx System Terminals  
         nyx_terminals = [
-            'delamar', 'levski', 'rayari aneth research outpost',
-            'rayari deltana research outpost', 'rayari kaltag research outpost'
+            'delamar', 'levski',  # Note: Delamar is temporarily in Stanton but belongs to Nyx
+            'rayari aneth research outpost', 'rayari deltana research outpost', 
+            'rayari kaltag research outpost'
         ]
         
         # Terra System Terminals
@@ -121,7 +172,7 @@ class StarProfitClient:
             if terminal in terminal_name_lower:
                 return "Magnus"
         
-        # Default to Stanton for unknown terminals (most common)
+        # Default to Stanton for unknown terminals (most common system currently)
         return "Stanton"
 
     def generate_system_coordinates(self, system_name: str) -> Dict[str, float]:
