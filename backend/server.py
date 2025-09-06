@@ -477,8 +477,13 @@ async def get_api_status():
     """Check API and UEX connection status"""
     try:
         # Test UEX API connection
-        test_response = await uex_client.get_commodities_routes()
-        uex_status = "connected" if test_response.get('status') == 'ok' else "error"
+        try:
+            test_response = await uex_client.get_commodities_routes()
+            uex_status = "connected" if test_response.get('status') == 'ok' else "error"
+            using_mock = test_response.get('mock_data', False)
+        except:
+            uex_status = "error"
+            using_mock = True
         
         # Check database
         db_status = "connected"
@@ -492,6 +497,7 @@ async def get_api_status():
             "uex_api": uex_status,
             "database": db_status,
             "api_key_configured": bool(UEX_API_KEY),
+            "using_mock_data": using_mock,
             "timestamp": datetime.now(timezone.utc).isoformat()
         }
         
