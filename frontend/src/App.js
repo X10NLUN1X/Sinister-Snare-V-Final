@@ -917,6 +917,58 @@ function App() {
     }
   };
 
+  const handleManualRefresh = async () => {
+    setRefreshModal({ open: true, logs: [], isRefreshing: true });
+    
+    try {
+      const response = await axios.post(`${API}/refresh/manual`);
+      
+      if (response.data.status === 'success') {
+        setRefreshModal(prev => ({ 
+          ...prev, 
+          logs: response.data.logs,
+          isRefreshing: false 
+        }));
+        
+        // Refresh the displayed data
+        setTimeout(() => {
+          loadAllData();
+        }, 1000);
+      } else {
+        setRefreshModal(prev => ({ 
+          ...prev, 
+          logs: response.data.logs || [{ 
+            timestamp: new Date().toISOString(), 
+            message: "Refresh failed", 
+            type: "error" 
+          }],
+          isRefreshing: false 
+        }));
+      }
+    } catch (error) {
+      setRefreshModal(prev => ({ 
+        ...prev, 
+        logs: [{ 
+          timestamp: new Date().toISOString(), 
+          message: `Error: ${error.message}`, 
+          type: "error" 
+        }],
+        isRefreshing: false 
+      }));
+    }
+  };
+
+  const handleSnareNow = async () => {
+    try {
+      const response = await axios.get(`${API}/snare/now`);
+      if (response.data.status === 'success') {
+        setSnareModal({ open: true, data: response.data.snare_data });
+      }
+    } catch (error) {
+      console.error('Error getting snare data:', error);
+    }
+  };
+
   const startTracking = async () => {
     try {
       await axios.post(`${API}/tracking/start`);
