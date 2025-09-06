@@ -1867,6 +1867,18 @@ function App() {
           </div>
         )}
 
+        {activeTab === 'database' && (
+          <div>
+            <h2 className="text-2xl font-bold text-white mb-6">💾 Lokale Datenbank Verwaltung</h2>
+            <DatabasePanel 
+              dbStats={dbStats}
+              onRefreshStats={fetchDbStats}
+              onClearAll={handleClearAllData}
+              onClearOld={handleClearOldData}
+            />
+          </div>
+        )}
+
         {activeTab === 'export' && (
           <div>
             <h2 className="text-2xl font-bold text-white mb-6">📁 Data Export</h2>
