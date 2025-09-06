@@ -916,7 +916,7 @@ async def analyze_routes(
                 analyzed_routes.append(analysis)
                 
                 # Store in database for historical analysis (with fallback)
-                if db:
+                if db is not None:
                     try:
                         await db.route_analyses.replace_one(
                             {"route_code": analysis.route_code},
