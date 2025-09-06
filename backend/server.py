@@ -36,8 +36,17 @@ LOG_LEVEL="INFO"
 # MongoDB connection with fallback
 mongo_url = os.environ.get('MONGO_URL', 'mongodb://localhost:27017')
 db_name = os.environ.get('DB_NAME', 'sinister_snare_db')
-client = AsyncIOMotorClient(mongo_url)
-db = client[db_name]
+try:
+    client = AsyncIOMotorClient(mongo_url)
+    db = client[db_name]
+    print(f"✅ MongoDB connection configured: {mongo_url}")
+    print(f"✅ Database: {db_name}")
+except Exception as e:
+    print(f"⚠️  MongoDB connection error: {e}")
+    print("📝 Note: MongoDB errors won't prevent the server from starting, but database features will be limited")
+    # Create a dummy client that won't crash the app
+    client = None
+    db = None
 
 # Real Data API Configuration
 STAR_PROFIT_API_BASE = "https://star-profit.mathioussee.com/api"
