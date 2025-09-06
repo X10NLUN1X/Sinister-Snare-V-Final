@@ -671,11 +671,14 @@ function App() {
       <div className="container mx-auto px-6 py-4">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
           <StatusCard 
-            title="UEX API Status" 
-            value={apiStatus?.uex_api === 'connected' ? 'Connected' : 'Mock Data'} 
-            status={apiStatus?.uex_api === 'connected' ? 'good' : 'warning'} 
+            title="Data Source" 
+            value={apiStatus?.primary_data_source === 'real' ? 'Live Data' : 'Mock Data'} 
+            status={apiStatus?.primary_data_source === 'real' ? 'good' : 'warning'} 
             icon="🌐" 
-            subtitle={apiStatus?.using_mock_data ? "Using simulation data" : "Live API data"}
+            subtitle={apiStatus?.primary_data_source === 'real' ? 
+              `${apiStatus?.data_sources?.star_profit_api?.records_available || 0} live records` : 
+              "Using simulation data"
+            }
           />
           <StatusCard 
             title="Database" 
