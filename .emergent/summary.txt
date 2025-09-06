@@ -1,0 +1,112 @@
+<analysis>
+The trajectory details the development of Sinister Snare, a Star Citizen piracy intelligence platform. Initial user request was for a desktop app, but an AI engineer successfully pivoted to a local React + FastAPI web application. Development proceeded incrementally, integrating a UI, UEXCorp API (later replaced by Star Profit API due to Cloudflare issues), and core features like route analysis, time-based scoring, and piracy suggestions. Significant enhancements included real-time tracking, interception mapping, alerts, historical trends, and data export.
+
+Multiple bugs were encountered and debugged: Cloudflare API blocking, frontend rendering issues ( errors), incorrect Star Citizen terminal mapping, and backend environment variable () configuration. The AI meticulously researched and implemented fixes, including a robust local data storage solution (IndexedDB) with user management. The final phase involved troubleshooting local setup issues, specifically a  command not found error, which led to creating comprehensive setup scripts and documentation. The current state is debugging an automatic frontend window closure.
+</analysis>
+
+<product_requirements>
+The user requested Sinister Snare, a tool to analyze Star Citizen trading routes and suggest optimal interception points for piracy. Initially envisioned as a desktop GUI application, it was adapted into a local web application (React frontend, FastAPI backend, MongoDB database) for local execution with a modern GUI.
+
+Key functionalities implemented:
+*   **Live UEXCorp API Integration** (later replaced by Star Profit API for real data).
+*   **Route Analysis Dashboard**: Visual charts and heatmaps.
+*   **Time-based Route Scoring**: Frequency, profitability, time factors.
+*   **Piracy Route Suggestions**: Optimal interception points.
+*   **Data Export**: CSV, JSON formats.
+*   **Real-time Updates**: From market data.
+*   **Real-time Route Tracking**.
+*   **Interception Point Mapping**.
+*   **Alert Systems**: For high-value targets.
+*   **Historical Trend Analysis**: 24-hour heatmap.
+*   **Manual Refresh Button**: Refreshes data from API with live logging.
+*   **Snare Now Button**: Identifies the most frequent trading route in the last hour for optimal interdiction.
+*   **Commodity Snare Feature**: Allows targeting specific commodities (e.g., Gold) to calculate buying/selling points and recommend interdiction strategies, including warnings for inter-system routes.
+*   **Local Data Storage**: IndexedDB to collect and supplement (not overwrite) routes and commodity data for more accurate predictions.
+*   **Database Tab**: Displays stored routes, commodities, data size, and provides options to delete all data or data older than X weeks/months.
+*   **Accurate Star Citizen Universe Mapping**: Correct mapping of terminals (stations, plants, moons) to their respective star systems (Stanton, Pyro, Nyx, Terra, Magnus).
+*   **Route Code Format**: .
+</product_requirements>
+
+<key_technical_concepts>
+-   **Full-stack Architecture**: React.js (frontend), FastAPI (backend), MongoDB (database).
+-   **API Integration**: UEXCorp, Star Profit API (external data sources).
+-   **Local Storage**: IndexedDB (client-side data persistence).
+-   **Environment Management**:  files,  for configuration.
+-   **Frontend Tooling**: CRACO, Tailwind CSS.
+-   **Error Handling**: Backend (API, DB, env vars), Frontend (null safety, ).
+-   **OS Scripting**:  files for Windows setup/troubleshooting.
+</key_technical_concepts>
+
+<code_architecture>
+The application follows a standard full-stack architecture with a React frontend, a FastAPI backend, and a MongoDB database. Local data persistence is handled by IndexedDB in the frontend.
+
+**Directory Structure:**
+
+
+**Key Files and Changes:**
+
+-   
+    -   **Importance**: The core of the FastAPI backend, handling API endpoints, data fetching, processing, and database interactions.
+    -   **Changes Made**:
+        -   Initial setup with FastAPI, MongoDB connection, CORS.
+        -   Integration with UEXCorp API (later replaced by Star Profit API).
+        -   Implementation of a Cloudflare bypass for external API calls using .
+        -   Added multiple API endpoints for: , , , , , , .
+        -   Implemented  function to accurately map Star Citizen terminals to their star systems (Stanton, Pyro, Nyx, Terra, Magnus), refined after user feedback.
+        -   Logic for  (most frequent route) and  (commodity-specific interception).
+        -   Error handling for MongoDB connection ( fix) with automatic  file creation and fallback values.
+        -   Defaulting  and  to 0.0 for routes with insufficient data to prevent frontend errors.
+
+-   
+    -   **Importance**: The main React component rendering the entire UI, managing state, making API calls, and handling user interactions.
+    -   **Changes Made**:
+        -   Initial UI structure with Tailwind CSS, dark theme, and navigation tabs (Dashboard, Routes, Priority Targets, Time Analysis).
+        -   Integration of advanced features: Real-time route tracking, interception point mapping, alerts, historical trend analysis, data export.
+        -   Addition of new tabs: Database for local data management.
+        -   Implementation of Manual Refresh, Snare Now, and Commodity Snare buttons and their associated modal components.
+        -   Comprehensive null safety checks ( error fix) and error state management for API responses.
+        -   Integration with local IndexedDB for data storage, including functions for database initialization, data fetching, and management (clear all/old data, size calculation).
+        -   State management for modals, loading states, and dynamic display of data.
+        -   Updates to display Live Data status correctly after Star Profit API integration.
+
+-    and 
+    -   **Importance**: Store environment variables crucial for application configuration (API keys, URLs, database connection strings).
+    -   **Changes Made**:
+        -   Ensured  in frontend points to the external domain, not .
+        -   Added , , , ,  for backend.
+        -   Backend  is now robustly managed, with automatic creation if missing and safe  access for variables.
+
+-   
+    -   **Importance**: Defines project metadata and manages Node.js dependencies.
+    -   **Changes Made**: Included  as a dev dependency for CRACO-based React app setup. This file's complexity is currently causing frontend startup issues.
+
+-   
+    -   **Importance**: Customizes Create React App (CRA) configuration using CRACO, primarily for Tailwind CSS and PostCSS integration.
+    -   **Changes Made**: Configuration for Webpack to handle Tailwind.
+
+-   
+    -   **Importance**: Lists Python dependencies for the FastAPI backend.
+    -   **Changes Made**: Added  and  for API calls, and potentially other libraries.
+
+-    files (, , , , )
+    -   **Importance**: Provide convenient, automated scripts for Windows users to set up, run, and troubleshoot the application locally. These are critical for handling local environment differences and common setup issues like  or  key errors.
+    -   **Changes Made**: Created comprehensive scripts to clean caches, install dependencies, create  files, and manage services.
+
+-   , , 
+    -   **Importance**: Provide documentation for users to understand the project, its features, and how to set it up and run it locally.
+    -   **Changes Made**: Updated with detailed instructions for installation, usage, troubleshooting, and feature explanations, all in German for the user.
+</code_architecture>
+
+<pending_tasks>
+-   **No specific pending tasks** that were discussed but not implemented are explicitly recorded from the trajectory. All features requested were implemented and deemed successful by the AI, though subsequent bugs arose.
+</pending_tasks>
+
+<current_work>
+Immediately before this summary request, the AI engineer was debugging a critical frontend startup issue. The user reported: Frontend Schließt automatisch das fenster und http://localhost:3000 ist nicht erreichbar, nachdem ich schritgte 1 und 2 gemacht habe. (Frontend closes automatically and http://localhost:3000 is not reachable after following steps 1 and 2).
+
+The AI's last action was to diagnose the  file in . It identified that the file contained viel zu viele komplexe Abhängigkeiten die Probleme verursachen (too many complex dependencies causing problems) and planned to create a vereinfachte, funktionsfähige Version (simplified, functional version). This indicates the current work is focused on resolving frontend dependency conflicts or misconfigurations preventing the React application from starting correctly on the user's local machine, despite previous attempts to fix  and provide  scripts.
+</current_work>
+
+<optional_next_step>
+Simplify the  dependencies to resolve the frontend auto-closing issue.
+</optional_next_step>
