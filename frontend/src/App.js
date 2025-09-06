@@ -708,74 +708,90 @@ const CommoditySnareModal = ({ isOpen, onClose, onSnare }) => {
         
         {snareResults && (
           <div>
-            <div className="bg-yellow-900/20 border border-yellow-600 rounded p-4 mb-6">
-              <h4 className="text-yellow-400 font-bold text-lg mb-2">📊 {snareResults.commodity} Analysis</h4>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                <div className="text-center">
-                  <p className="text-yellow-400 font-semibold">{snareResults.summary.total_routes_found}</p>
-                  <p className="text-gray-400">Total Routes</p>
-                </div>
-                <div className="text-center">
-                  <p className="text-green-400 font-semibold">{snareResults.summary.profitable_routes}</p>
-                  <p className="text-gray-400">Profitable Routes</p>
-                </div>
-                <div className="text-center">
-                  <p className="text-red-400 font-semibold">{snareResults.summary.inter_system_routes}</p>
-                  <p className="text-gray-400">Inter-System</p>
-                </div>
-                <div className="text-center">
-                  <p className="text-purple-400 font-semibold">{(snareResults.summary.average_profit / 1000000).toFixed(2)}M</p>
-                  <p className="text-gray-400">Avg Profit</p>
-                </div>
+            {snareResults.status === 'error' ? (
+              <div className="bg-red-900/20 border border-red-600 rounded p-4 mb-6">
+                <h4 className="text-red-400 font-bold text-lg mb-2">❌ {snareResults.commodity} Analysis Failed</h4>
+                <p className="text-gray-300">{snareResults.message}</p>
               </div>
-            </div>
-            
-            <div className="space-y-4 max-h-96 overflow-y-auto">
-              {snareResults.snare_opportunities.slice(0, 10).map((opportunity, idx) => (
-                <div key={idx} className="bg-black/30 rounded p-4 border border-gray-600">
-                  <div className="flex justify-between items-start mb-2">
-                    <div>
-                      <h5 className="text-white font-semibold">{opportunity.route_code}</h5>
-                      <p className="text-yellow-400 text-sm">{opportunity.strategy}</p>
+            ) : (
+              <>
+                <div className="bg-yellow-900/20 border border-yellow-600 rounded p-4 mb-6">
+                  <h4 className="text-yellow-400 font-bold text-lg mb-2">📊 {snareResults.commodity} Analysis</h4>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                    <div className="text-center">
+                      <p className="text-yellow-400 font-semibold">{snareResults.summary?.total_routes_found || 0}</p>
+                      <p className="text-gray-400">Total Routes</p>
                     </div>
-                    <div className="text-right">
-                      <span className={`px-2 py-1 rounded text-xs font-medium ${
-                        opportunity.risk_level === 'ELITE' ? 'bg-purple-900 text-purple-400' :
-                        opportunity.risk_level === 'HIGH' ? 'bg-red-900 text-red-400' :
-                        'bg-yellow-900 text-yellow-400'
-                      }`}>
-                        {opportunity.risk_level}
-                      </span>
+                    <div className="text-center">
+                      <p className="text-green-400 font-semibold">{snareResults.summary?.profitable_routes || 0}</p>
+                      <p className="text-gray-400">Profitable Routes</p>
                     </div>
-                  </div>
-                  
-                  <div className="grid grid-cols-2 gap-4 text-sm mb-3">
-                    <div>
-                      <p className="text-gray-400">Buying Point:</p>
-                      <p className="text-white">{opportunity.buying_point}</p>
+                    <div className="text-center">
+                      <p className="text-red-400 font-semibold">{snareResults.summary?.inter_system_routes || 0}</p>
+                      <p className="text-gray-400">Inter-System</p>
                     </div>
-                    <div>
-                      <p className="text-gray-400">Selling Point:</p>
-                      <p className="text-white">{opportunity.selling_point}</p>
+                    <div className="text-center">
+                      <p className="text-purple-400 font-semibold">{((snareResults.summary?.average_profit || 0) / 1000000).toFixed(2)}M</p>
+                      <p className="text-gray-400">Avg Profit</p>
                     </div>
-                  </div>
-                  
-                  <div className="bg-gray-700/30 rounded p-2">
-                    <p className={`text-sm font-medium ${
-                      opportunity.warning.includes('⚠️') ? 'text-orange-400' : 'text-green-400'
-                    }`}>
-                      {opportunity.warning}
-                    </p>
-                  </div>
-                  
-                  <div className="flex justify-between items-center mt-3 text-sm">
-                    <span className="text-green-400 font-semibold">{(opportunity.profit / 1000000).toFixed(2)}M aUEC</span>
-                    <span className="text-red-400 font-semibold">Score: {opportunity.piracy_rating.toFixed(1)}</span>
-                    <span className="text-blue-400">{opportunity.estimated_traders} traders/hour</span>
                   </div>
                 </div>
-              ))}
-            </div>
+                
+                <div className="space-y-4 max-h-96 overflow-y-auto">
+                  {(snareResults.snare_opportunities || []).slice(0, 10).map((opportunity, idx) => (
+                    <div key={idx} className="bg-black/30 rounded p-4 border border-gray-600">
+                      <div className="flex justify-between items-start mb-2">
+                        <div>
+                          <h5 className="text-white font-semibold">{opportunity.route_code || 'Unknown Route'}</h5>
+                          <p className="text-yellow-400 text-sm">{opportunity.strategy || 'No strategy available'}</p>
+                        </div>
+                        <div className="text-right">
+                          <span className={`px-2 py-1 rounded text-xs font-medium ${
+                            opportunity.risk_level === 'ELITE' ? 'bg-purple-900 text-purple-400' :
+                            opportunity.risk_level === 'HIGH' ? 'bg-red-900 text-red-400' :
+                            'bg-yellow-900 text-yellow-400'
+                          }`}>
+                            {opportunity.risk_level || 'UNKNOWN'}
+                          </span>
+                        </div>
+                      </div>
+                      
+                      <div className="grid grid-cols-2 gap-4 text-sm mb-3">
+                        <div>
+                          <p className="text-gray-400">Buying Point:</p>
+                          <p className="text-white">{opportunity.buying_point || 'Unknown'}</p>
+                        </div>
+                        <div>
+                          <p className="text-gray-400">Selling Point:</p>
+                          <p className="text-white">{opportunity.selling_point || 'Unknown'}</p>
+                        </div>
+                      </div>
+                      
+                      <div className="bg-gray-700/30 rounded p-2">
+                        <p className={`text-sm font-medium ${
+                          (opportunity.warning || '').includes('⚠️') ? 'text-orange-400' : 'text-green-400'
+                        }`}>
+                          {opportunity.warning || 'No additional information'}
+                        </p>
+                      </div>
+                      
+                      <div className="flex justify-between items-center mt-3 text-sm">
+                        <span className="text-green-400 font-semibold">{((opportunity.profit || 0) / 1000000).toFixed(2)}M aUEC</span>
+                        <span className="text-red-400 font-semibold">Score: {(opportunity.piracy_rating || 0).toFixed(1)}</span>
+                        <span className="text-blue-400">{opportunity.estimated_traders || 0} traders/hour</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                
+                {(!snareResults.snare_opportunities || snareResults.snare_opportunities.length === 0) && (
+                  <div className="text-center py-8">
+                    <p className="text-gray-400 text-lg">No profitable routes found for {snareResults.commodity}</p>
+                    <p className="text-gray-500 text-sm mt-2">Try a different commodity or check back later</p>
+                  </div>
+                )}
+              </>
+            )}
           </div>
         )}
         
