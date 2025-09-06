@@ -27,7 +27,6 @@ if not env_file.exists():
         f.write('''MONGO_URL="mongodb://localhost:27017"
 DB_NAME="sinister_snare_db"
 CORS_ORIGINS="*"
-UEX_API_KEY="6b70cf40873c5d6e706e5aa87a5ceab97ac8032b"
 LOG_LEVEL="INFO"
 ''')
     load_dotenv(ROOT_DIR / '.env')
