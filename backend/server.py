@@ -863,8 +863,9 @@ async def analyze_routes(
                 if routes_data.get('status') == 'ok' and routes_data.get('data'):
                     logging.info("Using real Star Citizen trading data from Star Profit API")
                 else:
-                    logging.warning("Star Profit API failed, falling back to UEX API")
-                    routes_data = await uex_client.get_commodities_routes()
+                    logging.warning("Star Profit API failed, using fallback data")
+                    # Return empty data if Star Profit API fails
+                    routes_data = {"status": "error", "data": []}
             except Exception as e:
                 logging.error(f"Star Profit API error, falling back: {e}")
                 routes_data = await uex_client.get_commodities_routes()
