@@ -1,0 +1,55 @@
+[
+  {
+    "test": "UEX API Connection",
+    "status": "FAIL",
+    "message": "HTTP 403: <!DOCTYPE html><html lang=\"en-US\"><head><title>Just a moment...</title><meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\"><meta http-equiv=\"X-UA-Compatible\" content=\"IE=Edge\"><meta nam",
+    "details": null,
+    "timestamp": "2025-09-06T01:49:21.850400"
+  },
+  {
+    "test": "API Status Endpoint",
+    "status": "FAIL",
+    "message": "API status: error",
+    "details": {
+      "status": "error",
+      "error": "500: UEX API Error: Client error '403 Forbidden' for url 'https://uexcorp.space/2.0/commodities_routes'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/403",
+      "timestamp": "2025-09-06T01:49:22.164592+00:00"
+    },
+    "timestamp": "2025-09-06T01:49:22.168113"
+  },
+  {
+    "test": "Routes Analysis Endpoint",
+    "status": "FAIL",
+    "message": "HTTP 500: {\"detail\":\"500: UEX API Error: Client error '403 Forbidden' for url 'https://uexcorp.space/2.0/commodities_routes'\\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status",
+    "details": null,
+    "timestamp": "2025-09-06T01:49:22.375990"
+  },
+  {
+    "test": "Priority Targets Endpoint",
+    "status": "PASS",
+    "message": "No priority targets available (acceptable if no routes analyzed yet)",
+    "details": null,
+    "timestamp": "2025-09-06T01:49:22.387643"
+  },
+  {
+    "test": "Hourly Analysis Endpoint",
+    "status": "PASS",
+    "message": "Successfully retrieved 24-hour analysis with recommendations",
+    "details": null,
+    "timestamp": "2025-09-06T01:49:22.398667"
+  },
+  {
+    "test": "Export Routes Endpoint",
+    "status": "PASS",
+    "message": "Export endpoint working correctly",
+    "details": null,
+    "timestamp": "2025-09-06T01:49:22.410232"
+  },
+  {
+    "test": "Rate Limiting",
+    "status": "PASS",
+    "message": "All 12/12 requests succeeded (rate limiting may not be implemented)",
+    "details": null,
+    "timestamp": "2025-09-06T01:49:24.481023"
+  }
+]
