@@ -171,20 +171,35 @@ class StarProfitClient:
                         sell_stock = float(sell_item.get('scu_sell_stock', 0))
                         route_score = min(buy_stock / 10, 100) * (profit_per_scu / 1000)  # Normalize score
                         
-                        # Estimate distance (simplified)
-                        distance = random.uniform(15000, 50000)  # GM
+                        # Map terminals to correct star systems
+                        origin_system = self.map_terminal_to_system(buy_item.get('terminal_name', ''))
+                        destination_system = self.map_terminal_to_system(sell_item.get('terminal_name', ''))
+                        
+                        # Estimate distance based on system locations
+                        if origin_system == destination_system:
+                            # Same system - shorter distance
+                            distance = random.uniform(15000, 35000)
+                        else:
+                            # Inter-system routes - longer distance
+                            distance = random.uniform(40000, 80000)
+                            
+                        # Calculate investment and profit
                         investment = buy_price * min(buy_stock, 1000)  # Assume 1000 SCU cargo capacity
                         profit = profit_per_scu * min(buy_stock, 1000)
                         
-                        route_code = f"{buy_item.get('terminal_name', 'UNK')[:4].upper()}-{commodity_name[:4].upper()}-{sell_item.get('terminal_name', 'UNK')[:4].upper()}"
+                        # Generate system-appropriate coordinates
+                        origin_coords = self.generate_system_coordinates(origin_system)
+                        destination_coords = self.generate_system_coordinates(destination_system)
+                        
+                        route_code = f"{origin_system[:4].upper()}-{commodity_name[:4].upper()}-{destination_system[:4].upper()}"
                         
                         route = {
                             "id": route_id,
                             "code": route_code,
                             "commodity_name": commodity_name,
-                            "origin_star_system_name": "Stanton",  # Most terminals are in Stanton
+                            "origin_star_system_name": origin_system,
                             "origin_terminal_name": buy_item.get('terminal_name', 'Unknown'),
-                            "destination_star_system_name": "Stanton",
+                            "destination_star_system_name": destination_system,
                             "destination_terminal_name": sell_item.get('terminal_name', 'Unknown'),
                             "profit": profit,
                             "price_roi": roi,
