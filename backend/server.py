@@ -375,9 +375,9 @@ tracking_state = {
 
 # UEX API Client (kept as fallback)
 class UEXClient:
-    def __init__(self, api_key: str):
+    def __init__(self, api_key: str = ""):
         self.api_key = api_key
-        self.base_url = UEX_API_BASE
+        self.base_url = "https://uexcorp.space/2.0"  # Default UEX API base URL
         self.headers = {
             "Authorization": f"Bearer {api_key}",
             "Content-Type": "application/json",
