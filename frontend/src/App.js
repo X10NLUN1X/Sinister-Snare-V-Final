@@ -1603,20 +1603,47 @@ function App() {
 
   useEffect(() => {
     const initializeApp = async () => {
-      // Initialize database
+      setLoading(true);
+      
+      // Initialize database with error handling
       try {
         await sinisterDB.init();
-        console.log('Sinister Database initialized successfully');
+        console.log('✅ Sinister Database initialized successfully');
+        await fetchDbStats();
       } catch (error) {
-        console.error('Error initializing database:', error);
+        console.error('❌ Error initializing database:', error);
+        // Set default stats if database fails
+        setDbStats({
+          routes: 0,
+          commodities: 0,
+          interceptions: 0,
+          totalRecords: 0,
+          sizeBytes: 0,
+          sizeFormatted: '0 B',
+          lastUpdate: null
+        });
       }
       
-      // Load all data
-      loadAllData();
+      // Load other data
+      try {
+        await Promise.all([
+          fetchApiStatus(),
+          fetchRoutes(),
+          fetchTargets(),
+          fetchHourlyData(),
+          fetchAlerts(),
+          fetchTrends(),
+          fetchTrackingStatus()
+        ]);
+      } catch (error) {
+        console.error('Error loading app data:', error);
+      }
+      
+      setLoading(false);
     };
 
     initializeApp();
-  }, [loadAllData]);
+  }, []);
 
   // Auto-refresh effect
   useEffect(() => {
