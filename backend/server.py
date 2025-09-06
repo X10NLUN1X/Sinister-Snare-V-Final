@@ -1340,6 +1340,277 @@ async def get_hourly_analysis():
         logging.error(f"Error in get_hourly_analysis: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+@api_router.post("/refresh/manual")
+async def manual_refresh():
+    """Manual refresh with live update logs"""
+    try:
+        refresh_logs = []
+        
+        refresh_logs.append({"timestamp": datetime.now(timezone.utc).isoformat(), "message": "🔄 Starting manual refresh...", "type": "info"})
+        
+        # Fetch fresh commodity data
+        refresh_logs.append({"timestamp": datetime.now(timezone.utc).isoformat(), "message": "📡 Connecting to Star Profit API...", "type": "info"})
+        commodities_data = await star_profit_client.get_commodities()
+        
+        if not commodities_data.get('commodities'):
+            refresh_logs.append({"timestamp": datetime.now(timezone.utc).isoformat(), "message": "❌ Failed to fetch commodity data", "type": "error"})
+            return {"status": "error", "logs": refresh_logs}
+        
+        commodities = commodities_data.get('commodities', [])
+        refresh_logs.append({"timestamp": datetime.now(timezone.utc).isoformat(), "message": f"✅ Fetched {len(commodities)} commodity records", "type": "success"})
+        
+        # Process commodities into routes
+        refresh_logs.append({"timestamp": datetime.now(timezone.utc).isoformat(), "message": "🔄 Processing commodity data into trading routes...", "type": "info"})
+        
+        # Clear existing route analyses
+        await db.route_analyses.delete_many({})
+        refresh_logs.append({"timestamp": datetime.now(timezone.utc).isoformat(), "message": "🗑️ Cleared existing route analyses", "type": "info"})
+        
+        # Generate fresh routes
+        routes_data = await star_profit_client.get_trading_routes()
+        
+        if routes_data.get('status') == 'ok':
+            routes = routes_data.get('data', [])
+            refresh_logs.append({"timestamp": datetime.now(timezone.utc).isoformat(), "message": f"🛣️ Generated {len(routes)} trading routes", "type": "success"})
+            
+            # Analyze and store routes
+            processed_count = 0
+            for route in routes:
+                try:
+                    piracy_score = RouteAnalyzer.calculate_piracy_score(route)
+                    
+                    analysis = RouteAnalysis(
+                        route_code=route.get('code', 'unknown'),
+                        commodity_name=route.get('commodity_name', 'Unknown'),
+                        origin_name=f"{route.get('origin_star_system_name', 'Unknown')} - {route.get('origin_terminal_name', 'Unknown')}",
+                        destination_name=f"{route.get('destination_star_system_name', 'Unknown')} - {route.get('destination_terminal_name', 'Unknown')}",
+                        profit=float(route.get('profit', 0)),
+                        roi=float(route.get('price_roi', 0)),
+                        distance=float(route.get('distance', 0)),
+                        score=int(route.get('score', 0)),
+                        piracy_rating=piracy_score,
+                        frequency_score=float(route.get('score', 0)) / 10,
+                        risk_level=RouteAnalyzer.categorize_risk_level(piracy_score),
+                        investment=float(route.get('investment', 0)),
+                        coordinates_origin=route.get('coordinates_origin'),
+                        coordinates_destination=route.get('coordinates_destination'),
+                        interception_zones=RouteAnalyzer.calculate_interception_points(route),
+                        last_seen=datetime.now(timezone.utc)
+                    )
+                    
+                    await db.route_analyses.insert_one(analysis.dict())
+                    processed_count += 1
+                    
+                    if processed_count % 10 == 0:
+                        refresh_logs.append({"timestamp": datetime.now(timezone.utc).isoformat(), "message": f"📊 Processed {processed_count} routes...", "type": "info"})
+                        
+                except Exception as e:
+                    continue
+            
+            refresh_logs.append({"timestamp": datetime.now(timezone.utc).isoformat(), "message": f"✅ Successfully processed {processed_count} routes", "type": "success"})
+            refresh_logs.append({"timestamp": datetime.now(timezone.utc).isoformat(), "message": "🎯 Manual refresh completed successfully!", "type": "success"})
+            
+            return {
+                "status": "success",
+                "logs": refresh_logs,
+                "routes_processed": processed_count,
+                "total_commodities": len(commodities)
+            }
+        else:
+            refresh_logs.append({"timestamp": datetime.now(timezone.utc).isoformat(), "message": "❌ Failed to generate trading routes", "type": "error"})
+            return {"status": "error", "logs": refresh_logs}
+        
+    except Exception as e:
+        logging.error(f"Error in manual_refresh: {e}")
+        return {
+            "status": "error", 
+            "logs": [{"timestamp": datetime.now(timezone.utc).isoformat(), "message": f"❌ Refresh failed: {str(e)}", "type": "error"}]
+        }
+
+@api_router.get("/snare/now")
+async def snare_now():
+    """Get the most frequent route in the last hour for optimal interception"""
+    try:
+        # Get routes with highest frequency score from the last hour
+        one_hour_ago = datetime.now(timezone.utc) - timedelta(hours=1)
+        
+        routes = await db.route_analyses.find({
+            "last_seen": {"$gte": one_hour_ago},
+            "score": {"$gte": 10}  # Minimum traffic
+        }).sort("frequency_score", -1).limit(10).to_list(10)
+        
+        if not routes:
+            # If no recent routes, get the most frequent overall
+            routes = await db.route_analyses.find({
+                "score": {"$gte": 10}
+            }).sort("frequency_score", -1).limit(10).to_list(10)
+        
+        if not routes:
+            return {
+                "status": "error",
+                "message": "No suitable routes found for interception"
+            }
+        
+        # Select the top route
+        top_route = routes[0]
+        
+        # Calculate optimal interception strategy
+        origin_coords = top_route.get('coordinates_origin', {})
+        dest_coords = top_route.get('coordinates_destination', {})
+        
+        # Determine if inter-system route
+        origin_parts = top_route.get('origin_name', '').split(' - ')
+        dest_parts = top_route.get('destination_name', '').split(' - ')
+        
+        origin_system = origin_parts[0] if len(origin_parts) > 0 else 'Unknown'
+        dest_system = dest_parts[0] if len(dest_parts) > 0 else 'Unknown'
+        
+        is_inter_system = origin_system != dest_system
+        
+        # Calculate interception point
+        if is_inter_system:
+            # For inter-system routes, suggest gateway interception
+            if 'Pyro' in origin_system and 'Stanton' in dest_system:
+                interception_point = "Pyro Gateway (Jump Point to Stanton)"
+                warning = "⚠️ Inter-system route detected. Target traders at Pyro Gateway before they jump to Stanton."
+            elif 'Stanton' in origin_system and 'Pyro' in dest_system:
+                interception_point = "Stanton-Pyro Jump Point"
+                warning = "⚠️ Inter-system route detected. Target traders at Stanton-Pyro Jump Point before they enter Pyro."
+            else:
+                interception_point = f"Gateway between {origin_system} and {dest_system}"
+                warning = f"⚠️ Inter-system route detected. Target traders at gateway between {origin_system} and {dest_system}."
+        else:
+            # Same system - use midpoint
+            if origin_coords and dest_coords:
+                midpoint_x = (origin_coords.get('x', 0) + dest_coords.get('x', 0)) / 2
+                midpoint_y = (origin_coords.get('y', 0) + dest_coords.get('y', 0)) / 2
+                midpoint_z = (origin_coords.get('z', 0) + dest_coords.get('z', 0)) / 2
+                interception_point = f"Coordinates: X:{midpoint_x:.0f}, Y:{midpoint_y:.0f}, Z:{midpoint_z:.0f}"
+                warning = f"🎯 Optimal interception zone in {origin_system} system between terminals."
+            else:
+                interception_point = f"Midpoint between {origin_parts[1] if len(origin_parts) > 1 else 'origin'} and {dest_parts[1] if len(dest_parts) > 1 else 'destination'}"
+                warning = f"🎯 Position yourself between departure and arrival terminals in {origin_system}."
+        
+        return {
+            "status": "success",
+            "snare_data": {
+                "route_code": top_route.get('route_code'),
+                "commodity_name": top_route.get('commodity_name'),
+                "origin_name": top_route.get('origin_name'),
+                "destination_name": top_route.get('destination_name'),
+                "profit": top_route.get('profit'),
+                "frequency_score": top_route.get('frequency_score'),
+                "piracy_rating": top_route.get('piracy_rating'),
+                "traffic_level": "HIGH" if top_route.get('score', 0) >= 50 else "MODERATE" if top_route.get('score', 0) >= 25 else "LOW",
+                "interception_point": interception_point,
+                "warning": warning,
+                "is_inter_system": is_inter_system,
+                "last_seen": top_route.get('last_seen'),
+                "estimated_traders_per_hour": max(1, int(top_route.get('score', 0) / 10))
+            },
+            "alternatives": [
+                {
+                    "route_code": route.get('route_code'),
+                    "commodity_name": route.get('commodity_name'),
+                    "frequency_score": route.get('frequency_score'),
+                    "piracy_rating": route.get('piracy_rating')
+                } for route in routes[1:6]  # Top 5 alternatives
+            ]
+        }
+        
+    except Exception as e:
+        logging.error(f"Error in snare_now: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.post("/snare/commodity")
+async def commodity_snare(commodity_name: str):
+    """Set up commodity-specific snare for targeted interception"""
+    try:
+        # Find routes for the specific commodity
+        routes = await db.route_analyses.find({
+            "commodity_name": {"$regex": commodity_name, "$options": "i"},
+            "profit": {"$gte": 100000}  # Minimum 100k profit
+        }).sort("piracy_rating", -1).limit(20).to_list(20)
+        
+        if not routes:
+            return {
+                "status": "error",
+                "message": f"No profitable routes found for commodity: {commodity_name}"
+            }
+        
+        # Analyze the best routes for this commodity
+        snare_opportunities = []
+        
+        for route in routes[:10]:  # Top 10 routes
+            origin_parts = route.get('origin_name', '').split(' - ')
+            dest_parts = route.get('destination_name', '').split(' - ')
+            
+            origin_system = origin_parts[0] if len(origin_parts) > 0 else 'Unknown'
+            dest_system = dest_parts[0] if len(dest_parts) > 0 else 'Unknown'
+            origin_terminal = origin_parts[1] if len(origin_parts) > 1 else 'Unknown'
+            dest_terminal = dest_parts[1] if len(dest_parts) > 1 else 'Unknown'
+            
+            is_inter_system = origin_system != dest_system
+            
+            # Determine interception strategy
+            if is_inter_system:
+                if 'Pyro' in origin_system and 'Stanton' in dest_system:
+                    interception_location = "Pyro Gateway"
+                    strategy = f"Interdict between {origin_terminal} and Pyro Gateway"
+                    warning = "⚠️ Inter-system route - Use Pyro Gateway as interception point"
+                elif 'Stanton' in origin_system and 'Pyro' in dest_system:
+                    interception_location = "Stanton-Pyro Jump Point"
+                    strategy = f"Interdict between {origin_terminal} and Stanton-Pyro Jump Point"
+                    warning = "⚠️ Inter-system route - Use Jump Point as interception point"
+                else:
+                    interception_location = f"{origin_system}-{dest_system} Gateway"
+                    strategy = f"Interdict at gateway between {origin_system} and {dest_system}"
+                    warning = f"⚠️ Inter-system route - Use gateway for interception"
+            else:
+                interception_location = f"Between {origin_terminal} and {dest_terminal}"
+                strategy = f"Interdict between {origin_terminal} and {dest_terminal}"
+                warning = f"🎯 Same system route - Position between terminals in {origin_system}"
+            
+            snare_opportunities.append({
+                "route_code": route.get('route_code'),
+                "buying_point": f"{origin_system} - {origin_terminal}",
+                "selling_point": f"{dest_system} - {dest_terminal}",
+                "interception_location": interception_location,
+                "strategy": strategy,
+                "warning": warning,
+                "profit": route.get('profit'),
+                "piracy_rating": route.get('piracy_rating'),
+                "frequency_score": route.get('frequency_score'),
+                "is_inter_system": is_inter_system,
+                "risk_level": route.get('risk_level'),
+                "estimated_traders": max(1, int(route.get('score', 0) / 10))
+            })
+        
+        # Calculate commodity summary
+        total_routes = len(routes)
+        avg_profit = sum(route.get('profit', 0) for route in routes) / len(routes) if routes else 0
+        max_piracy_rating = max(route.get('piracy_rating', 0) for route in routes) if routes else 0
+        inter_system_count = sum(1 for opp in snare_opportunities if opp['is_inter_system'])
+        
+        return {
+            "status": "success",
+            "commodity": commodity_name,
+            "summary": {
+                "total_routes_found": total_routes,
+                "profitable_routes": len(snare_opportunities),
+                "inter_system_routes": inter_system_count,
+                "same_system_routes": len(snare_opportunities) - inter_system_count,
+                "average_profit": avg_profit,
+                "max_piracy_rating": max_piracy_rating,
+                "recommended_strategy": "Focus on inter-system routes for higher profits" if inter_system_count > 0 else "Target same-system routes for easier interception"
+            },
+            "snare_opportunities": snare_opportunities
+        }
+        
+    except Exception as e:
+        logging.error(f"Error in commodity_snare: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 @api_router.get("/status")
 async def get_api_status():
     """Enhanced API status with real data source information"""
