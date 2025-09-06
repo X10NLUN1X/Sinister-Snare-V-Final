@@ -257,15 +257,18 @@ backend:
 
   - task: "Export Routes Endpoint"
     implemented: true
-    working: false
+    working: true
     file: "backend/server.py"
     stuck_count: 1
     priority: "low"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: false
         - agent: "testing"
         - comment: "ISSUE: /api/export/routes endpoint returns HTTP 500 Internal Server Error. This appears to be a database-related issue as the database status shows 'error'. Export functionality depends on database access for route storage."
+        - working: true
+        - agent: "testing"
+        - comment: "FIXED: Export endpoint now working correctly after database fixes. Successfully exports 56 route records in JSON format with proper ObjectId serialization. No more MongoDB serialization errors. Database connectivity restored."
 
   - task: "Snare Commodity Endpoint"
     implemented: true
