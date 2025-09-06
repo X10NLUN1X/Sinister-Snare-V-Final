@@ -325,17 +325,17 @@ async def test_backend_endpoints():
                 f"Connection error: {str(e)}"
             )
         
-        # Test 5: CORS and Additional Endpoints
+        # Test 5: Export Routes Endpoint
         try:
-            # Test export endpoint
             response = await client.get(f"{BACKEND_URL}/api/export/routes?format=json")
             if response.status_code == 200:
                 data = response.json()
                 if data.get('status') == 'success':
+                    record_count = data.get('record_count', 0)
                     results.add_result(
                         "Export Routes Endpoint",
                         "PASS",
-                        "Export endpoint working correctly"
+                        f"Export endpoint working correctly - {record_count} records"
                     )
                 else:
                     results.add_result(
@@ -352,6 +352,195 @@ async def test_backend_endpoints():
         except Exception as e:
             results.add_result(
                 "Export Routes Endpoint",
+                "FAIL",
+                f"Connection error: {str(e)}"
+            )
+        
+        # Test 6: Alerts Endpoint
+        try:
+            response = await client.get(f"{BACKEND_URL}/api/alerts?limit=10")
+            if response.status_code == 200:
+                data = response.json()
+                if data.get('status') == 'success':
+                    alert_count = data.get('total_alerts', 0)
+                    results.add_result(
+                        "Alerts Endpoint",
+                        "PASS",
+                        f"Alerts endpoint working - {alert_count} alerts retrieved"
+                    )
+                else:
+                    results.add_result(
+                        "Alerts Endpoint",
+                        "FAIL",
+                        f"Alerts API returned status: {data.get('status')}"
+                    )
+            else:
+                results.add_result(
+                    "Alerts Endpoint",
+                    "FAIL",
+                    f"HTTP {response.status_code}: {response.text[:200]}"
+                )
+        except Exception as e:
+            results.add_result(
+                "Alerts Endpoint",
+                "FAIL",
+                f"Connection error: {str(e)}"
+            )
+        
+        # Test 7: Historical Trends Endpoint
+        try:
+            response = await client.get(f"{BACKEND_URL}/api/trends/historical?hours_back=24")
+            if response.status_code == 200:
+                data = response.json()
+                if data.get('status') == 'success':
+                    route_count = data.get('total_routes', 0)
+                    time_range = data.get('time_range_hours', 0)
+                    results.add_result(
+                        "Historical Trends Endpoint",
+                        "PASS",
+                        f"Trends endpoint working - {route_count} routes over {time_range} hours"
+                    )
+                else:
+                    results.add_result(
+                        "Historical Trends Endpoint",
+                        "FAIL",
+                        f"Trends API returned status: {data.get('status')}"
+                    )
+            else:
+                results.add_result(
+                    "Historical Trends Endpoint",
+                    "FAIL",
+                    f"HTTP {response.status_code}: {response.text[:200]}"
+                )
+        except Exception as e:
+            results.add_result(
+                "Historical Trends Endpoint",
+                "FAIL",
+                f"Connection error: {str(e)}"
+            )
+        
+        # Test 8: Snare Now Endpoint (New Feature)
+        try:
+            response = await client.get(f"{BACKEND_URL}/api/snare/now")
+            if response.status_code == 200:
+                data = response.json()
+                if data.get('status') == 'success':
+                    active_snares = data.get('active_snares', 0)
+                    results.add_result(
+                        "Snare Now Endpoint",
+                        "PASS",
+                        f"Snare Now endpoint working - {active_snares} active snares"
+                    )
+                else:
+                    results.add_result(
+                        "Snare Now Endpoint",
+                        "FAIL",
+                        f"Snare Now API returned status: {data.get('status')}"
+                    )
+            else:
+                results.add_result(
+                    "Snare Now Endpoint",
+                    "FAIL",
+                    f"HTTP {response.status_code}: {response.text[:200]}"
+                )
+        except Exception as e:
+            results.add_result(
+                "Snare Now Endpoint",
+                "FAIL",
+                f"Connection error: {str(e)}"
+            )
+        
+        # Test 9: Snare Commodity Endpoint (New Feature)
+        try:
+            response = await client.get(f"{BACKEND_URL}/api/snare/commodity?commodity=Laranite")
+            if response.status_code == 200:
+                data = response.json()
+                if data.get('status') == 'success':
+                    snare_points = len(data.get('snare_points', []))
+                    results.add_result(
+                        "Snare Commodity Endpoint",
+                        "PASS",
+                        f"Snare Commodity endpoint working - {snare_points} snare points for Laranite"
+                    )
+                else:
+                    results.add_result(
+                        "Snare Commodity Endpoint",
+                        "FAIL",
+                        f"Snare Commodity API returned status: {data.get('status')}"
+                    )
+            else:
+                results.add_result(
+                    "Snare Commodity Endpoint",
+                    "FAIL",
+                    f"HTTP {response.status_code}: {response.text[:200]}"
+                )
+        except Exception as e:
+            results.add_result(
+                "Snare Commodity Endpoint",
+                "FAIL",
+                f"Connection error: {str(e)}"
+            )
+        
+        # Test 10: Tracking Status Endpoint
+        try:
+            response = await client.get(f"{BACKEND_URL}/api/tracking/status")
+            if response.status_code == 200:
+                data = response.json()
+                if data.get('status') == 'success':
+                    tracking_info = data.get('tracking', {})
+                    active = tracking_info.get('active', False)
+                    route_count = tracking_info.get('route_count', 0)
+                    results.add_result(
+                        "Tracking Status Endpoint",
+                        "PASS",
+                        f"Tracking status endpoint working - Active: {active}, Routes: {route_count}"
+                    )
+                else:
+                    results.add_result(
+                        "Tracking Status Endpoint",
+                        "FAIL",
+                        f"Tracking Status API returned status: {data.get('status')}"
+                    )
+            else:
+                results.add_result(
+                    "Tracking Status Endpoint",
+                    "FAIL",
+                    f"HTTP {response.status_code}: {response.text[:200]}"
+                )
+        except Exception as e:
+            results.add_result(
+                "Tracking Status Endpoint",
+                "FAIL",
+                f"Connection error: {str(e)}"
+            )
+        
+        # Test 11: Interception Points Endpoint
+        try:
+            response = await client.get(f"{BACKEND_URL}/api/interception/points?min_probability=0.5")
+            if response.status_code == 200:
+                data = response.json()
+                if data.get('status') == 'success':
+                    point_count = data.get('total_points', 0)
+                    results.add_result(
+                        "Interception Points Endpoint",
+                        "PASS",
+                        f"Interception Points endpoint working - {point_count} strategic points"
+                    )
+                else:
+                    results.add_result(
+                        "Interception Points Endpoint",
+                        "FAIL",
+                        f"Interception Points API returned status: {data.get('status')}"
+                    )
+            else:
+                results.add_result(
+                    "Interception Points Endpoint",
+                    "FAIL",
+                    f"HTTP {response.status_code}: {response.text[:200]}"
+                )
+        except Exception as e:
+            results.add_result(
+                "Interception Points Endpoint",
                 "FAIL",
                 f"Connection error: {str(e)}"
             )
