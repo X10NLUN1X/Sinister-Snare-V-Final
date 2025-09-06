@@ -444,7 +444,319 @@ const HistoricalTrends = ({ trends }) => (
   </div>
 );
 
-const ExportPanel = ({ onExport, exportLoading }) => (
+const RefreshModal = ({ isOpen, onClose, logs, isRefreshing }) => {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-gray-800 rounded-lg p-6 max-w-2xl w-full mx-4 max-h-96 border border-gray-700">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-white text-lg font-semibold">🔄 Manual Refresh Progress</h3>
+          {!isRefreshing && (
+            <button onClick={onClose} className="text-gray-400 hover:text-white">✕</button>
+          )}
+        </div>
+        
+        <div className="bg-black rounded p-4 h-64 overflow-y-auto font-mono text-sm">
+          {logs.map((log, idx) => (
+            <div key={idx} className={`mb-1 ${
+              log.type === 'error' ? 'text-red-400' : 
+              log.type === 'success' ? 'text-green-400' : 'text-gray-300'
+            }`}>
+              <span className="text-gray-500">{new Date(log.timestamp).toLocaleTimeString()}</span> {log.message}
+            </div>
+          ))}
+          {isRefreshing && (
+            <div className="text-yellow-400 animate-pulse">
+              ⏳ Refreshing in progress...
+            </div>
+          )}
+        </div>
+        
+        {!isRefreshing && (
+          <div className="mt-4 text-center">
+            <button 
+              onClick={onClose}
+              className="bg-red-600 hover:bg-red-700 px-4 py-2 rounded text-white"
+            >
+              Close
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+const SnareModal = ({ isOpen, onClose, snareData }) => {
+  if (!isOpen || !snareData) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-gray-800 rounded-lg p-6 max-w-3xl w-full mx-4 border border-red-700">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-red-400 text-xl font-bold">🎯 SNARE NOW - OPTIMAL TARGET</h3>
+          <button onClick={onClose} className="text-gray-400 hover:text-white text-xl">✕</button>
+        </div>
+        
+        <div className="bg-red-900/20 border border-red-600 rounded p-4 mb-4">
+          <div className="flex items-center mb-2">
+            <span className="text-red-400 text-2xl mr-2">⚠️</span>
+            <h4 className="text-white font-semibold">PRIORITY INTERCEPTION TARGET</h4>
+          </div>
+          <p className="text-gray-300">{snareData.warning}</p>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="bg-black/30 rounded p-4">
+            <h4 className="text-yellow-400 font-semibold mb-3">📊 Route Details</h4>
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span className="text-gray-400">Route Code:</span>
+                <span className="text-white font-mono">{snareData.route_code}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-400">Commodity:</span>
+                <span className="text-white">{snareData.commodity_name}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-400">Origin:</span>
+                <span className="text-white text-xs">{snareData.origin_name}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-400">Destination:</span>
+                <span className="text-white text-xs">{snareData.destination_name}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-400">Expected Value:</span>
+                <span className="text-green-400 font-bold">{(snareData.profit / 1000000).toFixed(2)}M aUEC</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-400">Traffic Level:</span>
+                <span className={`font-bold ${
+                  snareData.traffic_level === 'HIGH' ? 'text-red-400' : 
+                  snareData.traffic_level === 'MODERATE' ? 'text-yellow-400' : 'text-green-400'
+                }`}>{snareData.traffic_level}</span>
+              </div>
+            </div>
+          </div>
+          
+          <div className="bg-black/30 rounded p-4">
+            <h4 className="text-red-400 font-semibold mb-3">🎯 Interception Strategy</h4>
+            <div className="space-y-3">
+              <div>
+                <p className="text-gray-400 text-sm mb-1">Optimal Position:</p>
+                <p className="text-white font-semibold">{snareData.interception_point}</p>
+              </div>
+              <div>
+                <p className="text-gray-400 text-sm mb-1">Estimated Traders/Hour:</p>
+                <p className="text-yellow-400 font-bold text-lg">{snareData.estimated_traders_per_hour}</p>
+              </div>
+              <div>
+                <p className="text-gray-400 text-sm mb-1">Piracy Rating:</p>
+                <p className="text-red-400 font-bold text-lg">{snareData.piracy_rating.toFixed(1)}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        {snareData.alternatives && snareData.alternatives.length > 0 && (
+          <div className="mt-6 bg-black/30 rounded p-4">
+            <h4 className="text-purple-400 font-semibold mb-3">🔄 Alternative Targets</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {snareData.alternatives.map((alt, idx) => (
+                <div key={idx} className="bg-gray-700/30 rounded p-2 text-sm">
+                  <div className="flex justify-between items-center">
+                    <span className="text-white">{alt.commodity_name}</span>
+                    <span className="text-red-400 font-semibold">{alt.piracy_rating.toFixed(1)}</span>
+                  </div>
+                  <p className="text-gray-400 text-xs font-mono">{alt.route_code}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+        
+        <div className="mt-6 text-center">
+          <button 
+            onClick={onClose}
+            className="bg-red-600 hover:bg-red-700 px-6 py-2 rounded text-white font-semibold"
+          >
+            🏴‍☠️ Begin Hunt
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const CommoditySnareModal = ({ isOpen, onClose, onSnare }) => {
+  const [selectedCommodity, setSelectedCommodity] = useState('');
+  const [snareResults, setSnareResults] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const commonCommodities = [
+    'Gold', 'Laranite', 'Titanium', 'Medical Supplies', 'Quantum Superconductors',
+    'Altruciatoxin', 'Agricium', 'Processed Narcotics', 'WiDoW', 'SLAM',
+    'Astatine', 'Copper', 'Diamond', 'Aluminum', 'Tungsten'
+  ];
+
+  const handleSnare = async () => {
+    if (!selectedCommodity) return;
+    
+    setIsLoading(true);
+    try {
+      const response = await axios.post(`${API}/snare/commodity?commodity_name=${selectedCommodity}`);
+      setSnareResults(response.data);
+    } catch (error) {
+      console.error('Error setting commodity snare:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleClose = () => {
+    setSnareResults(null);
+    setSelectedCommodity('');
+    onClose();
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-gray-800 rounded-lg p-6 max-w-4xl w-full mx-4 max-h-screen overflow-y-auto border border-yellow-600">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-yellow-400 text-xl font-bold">💎 COMMODITY SNARE</h3>
+          <button onClick={handleClose} className="text-gray-400 hover:text-white text-xl">✕</button>
+        </div>
+        
+        {!snareResults && (
+          <div>
+            <div className="mb-6">
+              <label className="block text-white font-semibold mb-2">Select Target Commodity:</label>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mb-4">
+                {commonCommodities.map(commodity => (
+                  <button
+                    key={commodity}
+                    onClick={() => setSelectedCommodity(commodity)}
+                    className={`p-2 rounded text-sm font-medium transition-colors ${
+                      selectedCommodity === commodity 
+                        ? 'bg-yellow-600 text-white' 
+                        : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                    }`}
+                  >
+                    {commodity}
+                  </button>
+                ))}
+              </div>
+              
+              <input
+                type="text"
+                placeholder="Or enter custom commodity name..."
+                value={selectedCommodity}
+                onChange={(e) => setSelectedCommodity(e.target.value)}
+                className="w-full bg-gray-700 text-white p-3 rounded border border-gray-600 focus:border-yellow-400"
+              />
+            </div>
+            
+            <div className="text-center">
+              <button
+                onClick={handleSnare}
+                disabled={!selectedCommodity || isLoading}
+                className="bg-yellow-600 hover:bg-yellow-700 disabled:bg-gray-600 px-6 py-3 rounded text-white font-bold"
+              >
+                {isLoading ? '⏳ Analyzing...' : '🎯 Set Commodity Snare'}
+              </button>
+            </div>
+          </div>
+        )}
+        
+        {snareResults && (
+          <div>
+            <div className="bg-yellow-900/20 border border-yellow-600 rounded p-4 mb-6">
+              <h4 className="text-yellow-400 font-bold text-lg mb-2">📊 {snareResults.commodity} Analysis</h4>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                <div className="text-center">
+                  <p className="text-yellow-400 font-semibold">{snareResults.summary.total_routes_found}</p>
+                  <p className="text-gray-400">Total Routes</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-green-400 font-semibold">{snareResults.summary.profitable_routes}</p>
+                  <p className="text-gray-400">Profitable Routes</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-red-400 font-semibold">{snareResults.summary.inter_system_routes}</p>
+                  <p className="text-gray-400">Inter-System</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-purple-400 font-semibold">{(snareResults.summary.average_profit / 1000000).toFixed(2)}M</p>
+                  <p className="text-gray-400">Avg Profit</p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="space-y-4 max-h-96 overflow-y-auto">
+              {snareResults.snare_opportunities.slice(0, 10).map((opportunity, idx) => (
+                <div key={idx} className="bg-black/30 rounded p-4 border border-gray-600">
+                  <div className="flex justify-between items-start mb-2">
+                    <div>
+                      <h5 className="text-white font-semibold">{opportunity.route_code}</h5>
+                      <p className="text-yellow-400 text-sm">{opportunity.strategy}</p>
+                    </div>
+                    <div className="text-right">
+                      <span className={`px-2 py-1 rounded text-xs font-medium ${
+                        opportunity.risk_level === 'ELITE' ? 'bg-purple-900 text-purple-400' :
+                        opportunity.risk_level === 'HIGH' ? 'bg-red-900 text-red-400' :
+                        'bg-yellow-900 text-yellow-400'
+                      }`}>
+                        {opportunity.risk_level}
+                      </span>
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-4 text-sm mb-3">
+                    <div>
+                      <p className="text-gray-400">Buying Point:</p>
+                      <p className="text-white">{opportunity.buying_point}</p>
+                    </div>
+                    <div>
+                      <p className="text-gray-400">Selling Point:</p>
+                      <p className="text-white">{opportunity.selling_point}</p>
+                    </div>
+                  </div>
+                  
+                  <div className="bg-gray-700/30 rounded p-2">
+                    <p className={`text-sm font-medium ${
+                      opportunity.warning.includes('⚠️') ? 'text-orange-400' : 'text-green-400'
+                    }`}>
+                      {opportunity.warning}
+                    </p>
+                  </div>
+                  
+                  <div className="flex justify-between items-center mt-3 text-sm">
+                    <span className="text-green-400 font-semibold">{(opportunity.profit / 1000000).toFixed(2)}M aUEC</span>
+                    <span className="text-red-400 font-semibold">Score: {opportunity.piracy_rating.toFixed(1)}</span>
+                    <span className="text-blue-400">{opportunity.estimated_traders} traders/hour</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+        
+        <div className="mt-6 text-center">
+          <button 
+            onClick={handleClose}
+            className="bg-gray-600 hover:bg-gray-700 px-6 py-2 rounded text-white"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
   <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
     <h3 className="text-white text-lg font-semibold mb-4">📁 Export Data</h3>
     <div className="space-y-4">
