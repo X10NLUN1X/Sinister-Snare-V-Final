@@ -1594,10 +1594,11 @@ function App() {
       fetchHourlyData(),
       fetchAlerts(),
       fetchTrends(),
-      fetchTrackingStatus()
+      fetchTrackingStatus(),
+      fetchDbStats()
     ]);
     setLoading(false);
-  }, [fetchApiStatus, fetchRoutes, fetchTargets, fetchHourlyData, fetchAlerts, fetchTrends, fetchTrackingStatus]);
+  }, [fetchApiStatus, fetchRoutes, fetchTargets, fetchHourlyData, fetchAlerts, fetchTrends, fetchTrackingStatus, fetchDbStats]);
 
   useEffect(() => {
     loadAllData();
