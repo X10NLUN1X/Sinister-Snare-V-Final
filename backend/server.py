@@ -32,14 +32,25 @@ LOG_LEVEL="INFO"
     load_dotenv(ROOT_DIR / '.env')
     print("✅ Default .env file created")
 
-# MongoDB connection with fallback
+# MongoDB connection with fallback and optimized timeouts
 mongo_url = os.environ.get('MONGO_URL', 'mongodb://localhost:27017')
 db_name = os.environ.get('DB_NAME', 'sinister_snare_db')
 try:
-    client = AsyncIOMotorClient(mongo_url)
+    # Optimized MongoDB connection with timeout settings
+    client = AsyncIOMotorClient(
+        mongo_url,
+        serverSelectionTimeoutMS=5000,  # 5 seconds for server selection
+        connectTimeoutMS=10000,         # 10 seconds for connection
+        socketTimeoutMS=10000,          # 10 seconds for socket operations
+        heartbeatFrequencyMS=5000,      # 5 seconds heartbeat
+        retryWrites=True,               # Enable retry writes
+        maxPoolSize=10,                 # Connection pool size
+        minPoolSize=2                   # Minimum connections
+    )
     db = client[db_name]
     print(f"✅ MongoDB connection configured: {mongo_url}")
     print(f"✅ Database: {db_name}")
+    print("✅ MongoDB timeouts optimized: 5s server selection, 10s connection, 10s socket")
 except Exception as e:
     print(f"⚠️  MongoDB connection error: {e}")
     print("📝 Note: MongoDB errors won't prevent the server from starting, but database features will be limited")
