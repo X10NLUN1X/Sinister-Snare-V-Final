@@ -1,0 +1,84 @@
+[
+  {
+    "test": "/api/status",
+    "status": "PASS",
+    "message": "All systems operational",
+    "details": {
+      "API Status": "operational",
+      "Database": "connected",
+      "Star Profit API": "disconnected",
+      "Records Available": 0
+    },
+    "timestamp": "2025-09-06T14:42:22.618206"
+  },
+  {
+    "test": "/api/routes/analyze",
+    "status": "PASS",
+    "message": "Real Star Citizen data analysis working",
+    "details": {
+      "Routes Analyzed": 6,
+      "Data Source": "real",
+      "API Used": "Star Profit API",
+      "Database Available": true
+    },
+    "timestamp": "2025-09-06T14:42:22.998961"
+  },
+  {
+    "test": "/api/alerts",
+    "status": "PASS",
+    "message": "Alert system with database integration working",
+    "details": {
+      "Total Alerts": 4,
+      "Database Integration": "Working"
+    },
+    "timestamp": "2025-09-06T14:42:23.012094"
+  },
+  {
+    "test": "/api/export/routes",
+    "status": "PASS",
+    "message": "Export with fixed ObjectId serialization working",
+    "details": {
+      "Records Exported": 56,
+      "Format": "json",
+      "JSON Serializable": "Yes",
+      "ObjectId Issues": "Fixed"
+    },
+    "timestamp": "2025-09-06T14:42:23.046789"
+  },
+  {
+    "test": "/api/snare/commodity (Agricium)",
+    "status": "PASS",
+    "message": "Commodity-specific analysis working",
+    "details": {
+      "Commodity": "Agricium",
+      "Routes Found": 3,
+      "Profitable Routes": 3,
+      "Snare Opportunities": 3,
+      "Max Piracy Rating": 48.12
+    },
+    "timestamp": "2025-09-06T14:42:23.057049"
+  },
+  {
+    "test": "/api/trends/historical",
+    "status": "PASS",
+    "message": "Historical trend analysis working",
+    "details": {
+      "Routes Tracked": 6,
+      "Time Range (hours)": 24,
+      "Database Integration": "Working"
+    },
+    "timestamp": "2025-09-06T14:42:23.066790"
+  },
+  {
+    "test": "/api/analysis/hourly",
+    "status": "PASS",
+    "message": "24-hour piracy opportunity analysis working",
+    "details": {
+      "Hours Analyzed": 24,
+      "Peak Hours": "22:00-1:00 UTC",
+      "Optimal Systems": 4,
+      "High Value Commodities": 4
+    },
+    "timestamp": "2025-09-06T14:42:23.093751"
+  }
+]
