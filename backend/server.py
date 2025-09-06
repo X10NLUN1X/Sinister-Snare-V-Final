@@ -1163,9 +1163,22 @@ async def get_hourly_analysis():
 
 @api_router.get("/status")
 async def get_api_status():
-    """Enhanced API status with detailed information"""
+    """Enhanced API status with real data source information"""
     try:
-        # Test UEX API connection
+        # Test Star Profit API connection
+        star_profit_status = "disconnected"
+        star_profit_records = 0
+        try:
+            test_response = await star_profit_client.get_commodities()
+            if test_response.get('commodities'):
+                star_profit_status = "connected"
+                star_profit_records = len(test_response.get('commodities', []))
+        except:
+            star_profit_status = "error"
+        
+        # Test UEX API connection (fallback)
+        uex_status = "disconnected"
+        using_mock = False
         try:
             test_response = await uex_client.get_commodities_routes()
             uex_status = "connected" if test_response.get('status') == 'ok' else "error"
@@ -1173,6 +1186,9 @@ async def get_api_status():
         except:
             uex_status = "error"
             using_mock = True
+        
+        # Determine primary data source
+        primary_data_source = "real" if star_profit_status == "connected" else "simulated"
         
         # Check database
         db_status = "connected"
@@ -1189,10 +1205,21 @@ async def get_api_status():
         return {
             "status": "operational",
             "version": "2.0.0",
-            "uex_api": uex_status,
+            "primary_data_source": primary_data_source,
+            "data_sources": {
+                "star_profit_api": {
+                    "status": star_profit_status,
+                    "records_available": star_profit_records,
+                    "description": "Real Star Citizen commodity data"
+                },
+                "uex_api": {
+                    "status": uex_status,
+                    "using_mock_data": using_mock,
+                    "description": "UEXCorp trading data (fallback)"
+                }
+            },
             "database": db_status,
             "api_key_configured": bool(UEX_API_KEY),
-            "using_mock_data": using_mock,
             "statistics": {
                 "total_routes_analyzed": route_count,
                 "active_alerts": alert_count,
@@ -1200,7 +1227,7 @@ async def get_api_status():
                 "tracking_active": tracking_state.get('active', False)
             },
             "features": {
-                "real_time_tracking": True,
+                "real_time_data": star_profit_status == "connected",
                 "interception_mapping": True,
                 "historical_analysis": True,
                 "alert_system": True,
