@@ -1526,16 +1526,11 @@ async def get_api_status():
                 "star_profit_api": {
                     "status": star_profit_status,
                     "records_available": star_profit_records,
-                    "description": "Real Star Citizen commodity data"
-                },
-                "uex_api": {
-                    "status": "deprecated",
-                    "using_mock_data": using_mock,
-                    "description": "UEXCorp trading data (deprecated - replaced by Star Profit API)"
+                    "description": "Real Star Citizen commodity data (primary)"
                 }
             },
             "database": db_status,
-            "api_key_configured": bool(os.environ.get('UEX_API_KEY', '')),
+            "api_configured": star_profit_status == "connected",
             "statistics": {
                 "total_routes_analyzed": route_count,
                 "active_alerts": alert_count,
