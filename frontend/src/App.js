@@ -1698,7 +1698,7 @@ function App() {
             { id: 'map', label: '🗺️ Map', desc: 'Interception' },
             { id: 'alerts', label: '🚨 Alerts', desc: 'Notifications' },
             { id: 'trends', label: '📈 Trends', desc: 'Historical' },
-            { id: 'export', label: '📁 Export', desc: 'Data Export' }
+            { id: 'database', label: '💾 Database', desc: 'Lokale Daten' },
           ].map(tab => (
             <button 
               key={tab.id}
