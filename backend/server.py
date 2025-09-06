@@ -1486,30 +1486,22 @@ async def commodity_snare(commodity_name: str = Query(...)):
 async def get_api_status():
     """Enhanced API status with real data source information"""
     try:
-        # Test Star Profit API connection
+        # Test Star Profit API connection (primary)
         star_profit_status = "disconnected"
         star_profit_records = 0
+        using_mock = False
         try:
             test_response = await star_profit_client.get_commodities()
             if test_response.get('commodities'):
                 star_profit_status = "connected"
                 star_profit_records = len(test_response.get('commodities', []))
-        except:
-            star_profit_status = "error"
-        
-        # Test Star Profit API connection (primary)
-        star_profit_status = "disconnected"
-        using_mock = False
-        try:
-            test_response = await star_profit_client.get_commodities()
-            star_profit_status = "connected" if test_response.get('commodities') else "error"
-            using_mock = False  # Star Profit API doesn't use mock data
+                using_mock = False  # Star Profit API doesn't use mock data
         except:
             star_profit_status = "error"
             using_mock = True
         
         # Determine primary data source
-        primary_data_source = "real" if star_profit_status == "connected" else "simulated"
+        primary_data_source = "real" if star_profit_status == "connected" else "unavailable"
         
         # Check database
         db_status = "connected"
