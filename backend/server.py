@@ -867,8 +867,9 @@ async def analyze_routes(
                     # Return empty data if Star Profit API fails
                     routes_data = {"status": "error", "data": []}
             except Exception as e:
-                logging.error(f"Star Profit API error, falling back: {e}")
-                routes_data = await uex_client.get_commodities_routes()
+                logging.error(f"Star Profit API error: {e}")
+                # Return empty data if Star Profit API fails
+                routes_data = {"status": "error", "data": []}
         else:
             routes_data = await uex_client.get_commodities_routes()
         
