@@ -1231,7 +1231,7 @@ async def export_routes(
         if format == "csv":
             # Enhanced CSV format
             csv_data = "Route Code,Commodity,Origin,Destination,Profit (aUEC),ROI (%),Distance (GM),Traffic Score,Piracy Rating,Risk Level,Investment (aUEC),Last Seen\n"
-            for analysis in analyses:
+            for analysis in clean_analyses:
                 csv_data += f"{analysis['route_code']},{analysis['commodity_name']},{analysis['origin_name']},{analysis['destination_name']},{analysis['profit']},{analysis['roi']},{analysis['distance']},{analysis['score']},{analysis['piracy_rating']},{analysis['risk_level']},{analysis['investment']},{analysis['last_seen']}\n"
             
             return {
@@ -1239,15 +1239,15 @@ async def export_routes(
                 "format": "csv", 
                 "filename": f"sinister_snare_routes_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
                 "data": csv_data,
-                "record_count": len(analyses)
+                "record_count": len(clean_analyses)
             }
         else:
             return {
                 "status": "success", 
                 "format": "json", 
                 "filename": f"sinister_snare_routes_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json",
-                "data": analyses,
-                "record_count": len(analyses)
+                "data": clean_analyses,
+                "record_count": len(clean_analyses)
             }
         
     except Exception as e:
