@@ -1352,7 +1352,14 @@ function App() {
   const fetchRoutes = useCallback(async () => {
     try {
       const response = await axios.get(`${API}/routes/analyze?limit=20&min_score=10&include_coordinates=true`);
-      setRoutes(response.data.routes || []);
+      const newRoutes = response.data.routes || [];
+      setRoutes(newRoutes);
+      
+      // Store routes in local database for historical analysis
+      if (newRoutes.length > 0) {
+        await sinisterDB.addRoutes(newRoutes);
+        console.log(`Stored ${newRoutes.length} routes in local database`);
+      }
     } catch (error) {
       console.error('Error fetching routes:', error);
     }
@@ -1366,6 +1373,70 @@ function App() {
       console.error('Error fetching targets:', error);
     }
   }, []);
+
+  const fetchDbStats = useCallback(async () => {
+    try {
+      const stats = await sinisterDB.getStats();
+      setDbStats(stats);
+    } catch (error) {
+      console.error('Error fetching database stats:', error);
+      setDbStats({
+        routes: 0,
+        commodities: 0,
+        interceptions: 0,
+        totalRecords: 0,
+        sizeBytes: 0,
+        sizeFormatted: '0 B',
+        lastUpdate: null
+      });
+    }
+  }, []);
+
+  const handleClearAllData = async () => {
+    try {
+      await sinisterDB.clearAllData();
+      await fetchDbStats();
+      console.log('All local data cleared');
+    } catch (error) {
+      console.error('Error clearing data:', error);
+    }
+  };
+
+  const handleClearOldData = async (weeks) => {
+    try {
+      await sinisterDB.clearOldData(weeks);
+      await fetchDbStats();
+      console.log(`Cleared data older than ${weeks} weeks`);
+    } catch (error) {
+      console.error('Error clearing old data:', error);
+    }
+  };
+
+  const getEnhancedSnareRecommendations = async () => {
+    try {
+      // Get best routes from local database with historical data
+      const localRoutes = await sinisterDB.getBestInterceptionRoutes(10);
+      
+      if (localRoutes.length > 0) {
+        // Use local data for more accurate predictions
+        const bestRoute = localRoutes[0];
+        const routeHistory = await sinisterDB.getRouteHistory(bestRoute.route_code, 7);
+        
+        console.log(`Found ${localRoutes.length} local routes, ${routeHistory.length} historical entries for best route`);
+        
+        return {
+          route: bestRoute,
+          history: routeHistory,
+          confidence: routeHistory.length > 5 ? 'HIGH' : routeHistory.length > 2 ? 'MEDIUM' : 'LOW'
+        };
+      }
+      
+      return null;
+    } catch (error) {
+      console.error('Error getting enhanced recommendations:', error);
+      return null;
+    }
+  };
 
   const fetchHourlyData = useCallback(async () => {
     try {
