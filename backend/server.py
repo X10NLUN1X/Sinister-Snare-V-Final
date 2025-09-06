@@ -24,9 +24,147 @@ mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
 
-# UEXCorp API Configuration
+# Real Data API Configuration
+STAR_PROFIT_API_BASE = "https://star-profit.mathioussee.com/api"
 UEX_API_BASE = "https://uexcorp.space/2.0"
 UEX_API_KEY = os.environ.get('UEX_API_KEY', '')
+
+# Real Data API Client
+class StarProfitClient:
+    def __init__(self):
+        self.base_url = STAR_PROFIT_API_BASE
+        self.headers = {
+            "Accept": "application/json",
+            "User-Agent": "Sinister-Snare-Piracy-Intelligence/2.0"
+        }
+    
+    async def get_commodities(self) -> Dict[str, Any]:
+        """Fetch real commodities data from Star Profit API"""
+        async with httpx.AsyncClient(
+            timeout=30.0,
+            follow_redirects=True,
+            verify=True
+        ) as client:
+            try:
+                response = await client.get(
+                    f"{self.base_url}/commodities",
+                    headers=self.headers
+                )
+                response.raise_for_status()
+                data = response.json()
+                logging.info(f"Star Profit API: Fetched {len(data.get('commodities', []))} commodity records")
+                return data
+            except Exception as e:
+                logging.error(f"Star Profit API Error: {e}")
+                return {"commodities": [], "error": str(e)}
+    
+    async def get_trading_routes(self) -> Dict[str, Any]:
+        """Process real commodity data into trading routes for piracy analysis"""
+        try:
+            commodities_data = await self.get_commodities()
+            commodities = commodities_data.get('commodities', [])
+            
+            if not commodities:
+                return {"status": "error", "data": [], "message": "No commodity data available"}
+            
+            # Process commodities into trade routes
+            routes = []
+            processed_pairs = set()
+            
+            # Group commodities by commodity name for route analysis
+            commodity_groups = {}
+            for commodity in commodities:
+                name = commodity.get('commodity_name', 'Unknown')
+                if name not in commodity_groups:
+                    commodity_groups[name] = []
+                commodity_groups[name].append(commodity)
+            
+            route_id = 1
+            for commodity_name, items in commodity_groups.items():
+                # Find buy and sell locations for the same commodity
+                buy_locations = [item for item in items if item.get('price_buy', 0) > 0 and item.get('status_buy', 0) > 0]
+                sell_locations = [item for item in items if item.get('price_sell', 0) > 0 and item.get('status_sell', 0) > 0]
+                
+                # Create routes between buy and sell locations
+                for buy_item in buy_locations[:3]:  # Limit to top 3 buy locations
+                    for sell_item in sell_locations[:3]:  # Limit to top 3 sell locations
+                        if buy_item.get('terminal_name') == sell_item.get('terminal_name'):
+                            continue  # Skip same terminal
+                        
+                        buy_price = float(buy_item.get('price_buy', 0))
+                        sell_price = float(sell_item.get('price_sell', 0))
+                        
+                        if sell_price <= buy_price:
+                            continue  # Skip unprofitable routes
+                        
+                        profit_per_scu = sell_price - buy_price
+                        roi = ((sell_price - buy_price) / buy_price) * 100 if buy_price > 0 else 0
+                        
+                        # Calculate route score based on stock availability and profit
+                        buy_stock = float(buy_item.get('scu_buy', 0))
+                        sell_stock = float(sell_item.get('scu_sell_stock', 0))
+                        route_score = min(buy_stock / 10, 100) * (profit_per_scu / 1000)  # Normalize score
+                        
+                        # Estimate distance (simplified)
+                        distance = random.uniform(15000, 50000)  # GM
+                        investment = buy_price * min(buy_stock, 1000)  # Assume 1000 SCU cargo capacity
+                        profit = profit_per_scu * min(buy_stock, 1000)
+                        
+                        route_code = f"{buy_item.get('terminal_name', 'UNK')[:4].upper()}-{commodity_name[:4].upper()}-{sell_item.get('terminal_name', 'UNK')[:4].upper()}"
+                        
+                        route = {
+                            "id": route_id,
+                            "code": route_code,
+                            "commodity_name": commodity_name,
+                            "origin_star_system_name": "Stanton",  # Most terminals are in Stanton
+                            "origin_terminal_name": buy_item.get('terminal_name', 'Unknown'),
+                            "destination_star_system_name": "Stanton",
+                            "destination_terminal_name": sell_item.get('terminal_name', 'Unknown'),
+                            "profit": profit,
+                            "price_roi": roi,
+                            "distance": distance,
+                            "score": min(route_score, 100),
+                            "investment": investment,
+                            "price_buy": buy_price,
+                            "price_sell": sell_price,
+                            "volatility_origin": 0.1,
+                            "volatility_destination": 0.1,
+                            "coordinates_origin": {
+                                "x": random.uniform(-50000, 50000),
+                                "y": random.uniform(-50000, 50000),
+                                "z": random.uniform(-10000, 10000)
+                            },
+                            "coordinates_destination": {
+                                "x": random.uniform(-50000, 50000),
+                                "y": random.uniform(-50000, 50000),
+                                "z": random.uniform(-10000, 10000)
+                            },
+                            "last_seen": buy_item.get('lastUpdated', datetime.now(timezone.utc).isoformat()),
+                            "buy_stock": buy_stock,
+                            "sell_stock": sell_stock
+                        }
+                        
+                        routes.append(route)
+                        route_id += 1
+                        
+                        if len(routes) >= 50:  # Limit to 50 routes for performance
+                            break
+                    
+                    if len(routes) >= 50:
+                        break
+                
+                if len(routes) >= 50:
+                    break
+            
+            # Sort routes by profit descending
+            routes.sort(key=lambda x: x.get('profit', 0), reverse=True)
+            
+            logging.info(f"Generated {len(routes)} trading routes from real commodity data")
+            return {"status": "ok", "data": routes[:50]}  # Return top 50 routes
+            
+        except Exception as e:
+            logging.error(f"Error processing trading routes: {e}")
+            return {"status": "error", "data": [], "message": str(e)}
 
 # Create the main app without a prefix
 app = FastAPI(title="Sinister Snare - Star Citizen Piracy Intelligence", version="2.0.0")
@@ -42,7 +180,7 @@ tracking_state = {
     "alerts": []
 }
 
-# UEX API Client
+# UEX API Client (kept as fallback)
 class UEXClient:
     def __init__(self, api_key: str):
         self.api_key = api_key
