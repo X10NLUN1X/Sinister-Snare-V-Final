@@ -776,8 +776,8 @@ async def update_tracking_data():
     global tracking_state
     
     try:
-        # Fetch latest routes
-        routes_data = await uex_client.get_commodities_routes()
+        # Fetch latest routes from Star Profit API
+        routes_data = await star_profit_client.get_trading_routes()
         if routes_data.get('status') == 'ok':
             routes = routes_data.get('data', [])
             
