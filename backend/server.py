@@ -647,19 +647,28 @@ async def analyze_routes(
     limit: int = Query(default=50, le=500),
     min_profit: Optional[float] = Query(default=None),
     min_score: Optional[int] = Query(default=None),
-    include_coordinates: bool = Query(default=True)
+    include_coordinates: bool = Query(default=True),
+    use_real_data: bool = Query(default=True)
 ):
-    """Enhanced route analysis with interception points"""
+    """Enhanced route analysis with real Star Citizen trading data"""
     try:
-        # Fetch routes from UEX API
-        params = {}
-        if min_profit:
-            params['investment'] = int(min_profit)
-        
-        routes_data = await uex_client.get_commodities_routes(**params)
+        # Fetch routes from real data API first, then fallback to UEX/mock
+        if use_real_data:
+            try:
+                routes_data = await star_profit_client.get_trading_routes()
+                if routes_data.get('status') == 'ok' and routes_data.get('data'):
+                    logging.info("Using real Star Citizen trading data from Star Profit API")
+                else:
+                    logging.warning("Star Profit API failed, falling back to UEX API")
+                    routes_data = await uex_client.get_commodities_routes()
+            except Exception as e:
+                logging.error(f"Star Profit API error, falling back: {e}")
+                routes_data = await uex_client.get_commodities_routes()
+        else:
+            routes_data = await uex_client.get_commodities_routes()
         
         if routes_data.get('status') != 'ok':
-            raise HTTPException(status_code=400, detail="Failed to fetch routes from UEX API")
+            raise HTTPException(status_code=400, detail="Failed to fetch routes from trading APIs")
         
         routes = routes_data.get('data', [])[:limit]
         analyzed_routes = []
@@ -672,6 +681,8 @@ async def analyze_routes(
                 
                 # Apply filters
                 if min_score and route.get('score', 0) < min_score:
+                    continue
+                if min_profit and route.get('profit', 0) < min_profit:
                     continue
                 
                 piracy_score = RouteAnalyzer.calculate_piracy_score(route)
@@ -712,11 +723,15 @@ async def analyze_routes(
         # Sort by piracy rating
         analyzed_routes.sort(key=lambda x: x.piracy_rating, reverse=True)
         
+        data_source = "real" if use_real_data and routes_data.get('data') else "simulated"
+        
         return {
             "status": "success",
             "total_routes": len(analyzed_routes),
             "routes": analyzed_routes,
-            "analysis_timestamp": datetime.now(timezone.utc).isoformat()
+            "analysis_timestamp": datetime.now(timezone.utc).isoformat(),
+            "data_source": data_source,
+            "api_used": "Star Profit API" if data_source == "real" else "Mock Data"
         }
         
     except Exception as e:
