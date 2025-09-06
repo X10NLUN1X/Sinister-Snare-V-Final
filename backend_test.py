@@ -587,6 +587,155 @@ async def test_rate_limiting():
     
     return results
 
+async def test_star_profit_api():
+    """Test Star Profit API integration"""
+    results = TestResults()
+    
+    print(f"\n🌟 Testing Star Profit API Integration")
+    
+    # Test Star Profit API directly
+    star_profit_base = "https://star-profit.mathioussee.com/api"
+    
+    async with httpx.AsyncClient(timeout=30.0) as client:
+        try:
+            response = await client.get(
+                f"{star_profit_base}/commodities",
+                headers={
+                    "Accept": "application/json",
+                    "User-Agent": "Sinister-Snare-Piracy-Intelligence/2.0"
+                }
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                commodities = data.get('commodities', [])
+                if commodities:
+                    results.add_result(
+                        "Star Profit API Direct",
+                        "PASS",
+                        f"Successfully connected to Star Profit API, received {len(commodities)} commodities"
+                    )
+                else:
+                    results.add_result(
+                        "Star Profit API Direct",
+                        "FAIL",
+                        "Star Profit API returned empty commodities list"
+                    )
+            else:
+                results.add_result(
+                    "Star Profit API Direct",
+                    "FAIL",
+                    f"HTTP {response.status_code}: {response.text[:200]}"
+                )
+                
+        except Exception as e:
+            results.add_result(
+                "Star Profit API Direct",
+                "FAIL",
+                f"Connection error: {str(e)}"
+            )
+    
+    # Test backend's use of Star Profit API
+    async with httpx.AsyncClient(timeout=30.0) as client:
+        try:
+            response = await client.get(f"{BACKEND_URL}/api/routes/analyze?use_real_data=true&limit=5")
+            if response.status_code == 200:
+                data = response.json()
+                if data.get('status') == 'success':
+                    api_used = data.get('api_used', 'Unknown')
+                    data_source = data.get('data_source', 'Unknown')
+                    
+                    if 'Star Profit' in api_used or data_source == 'real':
+                        results.add_result(
+                            "Backend Star Profit Integration",
+                            "PASS",
+                            f"Backend successfully using Star Profit API - Source: {data_source}, API: {api_used}"
+                        )
+                    else:
+                        results.add_result(
+                            "Backend Star Profit Integration",
+                            "FAIL",
+                            f"Backend not using Star Profit API - Source: {data_source}, API: {api_used}"
+                        )
+                else:
+                    results.add_result(
+                        "Backend Star Profit Integration",
+                        "FAIL",
+                        f"Backend API returned status: {data.get('status')}"
+                    )
+            else:
+                results.add_result(
+                    "Backend Star Profit Integration",
+                    "FAIL",
+                    f"HTTP {response.status_code}: {response.text[:200]}"
+                )
+        except Exception as e:
+            results.add_result(
+                "Backend Star Profit Integration",
+                "FAIL",
+                f"Connection error: {str(e)}"
+            )
+    
+    return results
+
+async def test_uex_api_direct():
+    """Test UEX API directly to isolate connection issues"""
+    results = TestResults()
+    
+    print(f"\n🔍 Testing UEX API Direct Connection (Fallback)")
+    print(f"Base URL: {UEX_API_BASE}")
+    print(f"API Key: {UEX_API_KEY[:10]}...")
+    
+    headers = {
+        "Authorization": f"Bearer {UEX_API_KEY}",
+        "Content-Type": "application/json"
+    }
+    
+    async with httpx.AsyncClient(timeout=30.0) as client:
+        try:
+            # Test commodities_routes endpoint
+            response = await client.get(
+                f"{UEX_API_BASE}/commodities_routes",
+                headers=headers
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                if data.get('status') == 'ok':
+                    route_count = len(data.get('data', []))
+                    results.add_result(
+                        "UEX API Connection",
+                        "PASS",
+                        f"Successfully connected to UEX API, received {route_count} routes"
+                    )
+                else:
+                    results.add_result(
+                        "UEX API Connection",
+                        "FAIL",
+                        f"UEX API returned status: {data.get('status')}"
+                    )
+            else:
+                results.add_result(
+                    "UEX API Connection",
+                    "FAIL",
+                    f"HTTP {response.status_code}: {response.text[:200]}"
+                )
+                
+        except httpx.TimeoutException:
+            results.add_result(
+                "UEX API Connection",
+                "FAIL",
+                "Connection timeout to UEX API"
+            )
+        except Exception as e:
+            results.add_result(
+                "UEX API Connection",
+                "FAIL",
+                f"Connection error: {str(e)}"
+            )
+    
+    return results
+
 async def main():
     """Run all tests"""
     print("🏴‍☠️ SINISTER SNARE BACKEND API TEST SUITE")
