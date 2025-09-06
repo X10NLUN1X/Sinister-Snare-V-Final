@@ -1,55 +1,139 @@
 [
   {
+    "test": "Star Profit API Direct",
+    "status": "PASS",
+    "message": "Successfully connected to Star Profit API, received 2261 commodities",
+    "details": null,
+    "timestamp": "2025-09-06T13:03:07.361647"
+  },
+  {
+    "test": "Backend Star Profit Integration",
+    "status": "PASS",
+    "message": "Backend successfully using Star Profit API - Source: real, API: Star Profit API",
+    "details": null,
+    "timestamp": "2025-09-06T13:03:07.724982"
+  },
+  {
     "test": "UEX API Connection",
     "status": "FAIL",
     "message": "HTTP 403: <!DOCTYPE html><html lang=\"en-US\"><head><title>Just a moment...</title><meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\"><meta http-equiv=\"X-UA-Compatible\" content=\"IE=Edge\"><meta nam",
     "details": null,
-    "timestamp": "2025-09-06T01:49:21.850400"
+    "timestamp": "2025-09-06T13:03:07.891177"
   },
   {
     "test": "API Status Endpoint",
-    "status": "FAIL",
-    "message": "API status: error",
+    "status": "PASS",
+    "message": "API operational - Star Profit: unknown, UEX: unknown, DB: error, API Key: True",
     "details": {
-      "status": "error",
-      "error": "500: UEX API Error: Client error '403 Forbidden' for url 'https://uexcorp.space/2.0/commodities_routes'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/403",
-      "timestamp": "2025-09-06T01:49:22.164592+00:00"
+      "status": "operational",
+      "version": "2.0.0",
+      "primary_data_source": "real",
+      "data_sources": {
+        "star_profit_api": {
+          "status": "connected",
+          "records_available": 2261,
+          "description": "Real Star Citizen commodity data"
+        },
+        "uex_api": {
+          "status": "connected",
+          "using_mock_data": false,
+          "description": "UEXCorp trading data (fallback)"
+        }
+      },
+      "database": "error",
+      "api_key_configured": true,
+      "statistics": {
+        "total_routes_analyzed": 50,
+        "active_alerts": 4,
+        "historical_data_points": 6,
+        "tracking_active": true
+      },
+      "features": {
+        "real_time_data": true,
+        "interception_mapping": true,
+        "historical_analysis": true,
+        "alert_system": true,
+        "export_functionality": true
+      },
+      "timestamp": "2025-09-06T13:03:08.392669+00:00"
     },
-    "timestamp": "2025-09-06T01:49:22.168113"
+    "timestamp": "2025-09-06T13:03:08.395575"
   },
   {
     "test": "Routes Analysis Endpoint",
-    "status": "FAIL",
-    "message": "HTTP 500: {\"detail\":\"500: UEX API Error: Client error '403 Forbidden' for url 'https://uexcorp.space/2.0/commodities_routes'\\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status",
+    "status": "PASS",
+    "message": "Successfully analyzed 10 routes with proper structure",
     "details": null,
-    "timestamp": "2025-09-06T01:49:22.375990"
+    "timestamp": "2025-09-06T13:03:08.645302"
   },
   {
     "test": "Priority Targets Endpoint",
     "status": "PASS",
     "message": "No priority targets available (acceptable if no routes analyzed yet)",
     "details": null,
-    "timestamp": "2025-09-06T01:49:22.387643"
+    "timestamp": "2025-09-06T13:03:08.654195"
   },
   {
     "test": "Hourly Analysis Endpoint",
     "status": "PASS",
     "message": "Successfully retrieved 24-hour analysis with recommendations",
     "details": null,
-    "timestamp": "2025-09-06T01:49:22.398667"
+    "timestamp": "2025-09-06T13:03:08.681856"
   },
   {
     "test": "Export Routes Endpoint",
-    "status": "PASS",
-    "message": "Export endpoint working correctly",
+    "status": "FAIL",
+    "message": "HTTP 500: Internal Server Error",
     "details": null,
-    "timestamp": "2025-09-06T01:49:22.410232"
+    "timestamp": "2025-09-06T13:03:08.694799"
+  },
+  {
+    "test": "Alerts Endpoint",
+    "status": "PASS",
+    "message": "Alerts endpoint working - 4 alerts retrieved",
+    "details": null,
+    "timestamp": "2025-09-06T13:03:08.710608"
+  },
+  {
+    "test": "Historical Trends Endpoint",
+    "status": "PASS",
+    "message": "Trends endpoint working - 6 routes over 24 hours",
+    "details": null,
+    "timestamp": "2025-09-06T13:03:08.721765"
+  },
+  {
+    "test": "Snare Now Endpoint",
+    "status": "PASS",
+    "message": "Snare Now endpoint working - 0 active snares",
+    "details": null,
+    "timestamp": "2025-09-06T13:03:08.775317"
+  },
+  {
+    "test": "Snare Commodity Endpoint",
+    "status": "FAIL",
+    "message": "HTTP 422: {\"detail\":[{\"type\":\"missing\",\"loc\":[\"query\",\"commodity_name\"],\"msg\":\"Field required\",\"input\":null,\"url\":\"https://errors.pydantic.dev/2.11/v/missing\"}]}",
+    "details": null,
+    "timestamp": "2025-09-06T13:03:08.783968"
+  },
+  {
+    "test": "Tracking Status Endpoint",
+    "status": "PASS",
+    "message": "Tracking status endpoint working - Active: True, Routes: 0",
+    "details": null,
+    "timestamp": "2025-09-06T13:03:08.794128"
+  },
+  {
+    "test": "Interception Points Endpoint",
+    "status": "PASS",
+    "message": "Interception Points endpoint working - 0 strategic points",
+    "details": null,
+    "timestamp": "2025-09-06T13:03:08.803362"
   },
   {
     "test": "Rate Limiting",
     "status": "PASS",
     "message": "All 12/12 requests succeeded (rate limiting may not be implemented)",
     "details": null,
-    "timestamp": "2025-09-06T01:49:24.481023"
+    "timestamp": "2025-09-06T13:03:14.679344"
   }
 ]
