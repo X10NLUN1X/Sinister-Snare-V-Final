@@ -48,10 +48,8 @@ except Exception as e:
     client = None
     db = None
 
-# Real Data API Configuration
+# Configuration
 STAR_PROFIT_API_BASE = "https://star-profit.mathioussee.com/api"
-UEX_API_BASE = "https://uexcorp.space/2.0"
-UEX_API_KEY = os.environ.get('UEX_API_KEY', '')
 
 # Real Data API Client
 class StarProfitClient:
