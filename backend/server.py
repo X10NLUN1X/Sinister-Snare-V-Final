@@ -651,23 +651,35 @@ async def analyze_routes(
 ):
     """Enhanced route analysis with real Star Citizen trading data"""
     try:
-        # Fetch routes from real data API first, then fallback to UEX/mock
-        if use_real_data:
-            try:
-                routes_data = await star_profit_client.get_trading_routes()
-                if routes_data.get('status') == 'ok' and routes_data.get('data'):
-                    logging.info("Using real Star Citizen trading data from Star Profit API")
-                else:
-                    logging.warning("Star Profit API failed, using fallback data")
-                    # Return empty data if Star Profit API fails
-                    routes_data = {"status": "error", "data": []}
-            except Exception as e:
-                logging.error(f"Star Profit API error: {e}")
-                # Return empty data if Star Profit API fails
-                routes_data = {"status": "error", "data": []}
-        else:
-            # Use Star Profit API as the only source
+        # Fetch routes from Star Profit API only
+        try:
             routes_data = await star_profit_client.get_trading_routes()
+            if routes_data.get('status') == 'ok' and routes_data.get('data'):
+                logging.info("Using real Star Citizen trading data from Star Profit API")
+            else:
+                logging.warning("Star Profit API failed, returning empty data")
+                return {
+                    "status": "error",
+                    "message": "Star Profit API unavailable",
+                    "routes": [],
+                    "total_routes": 0,
+                    "analysis_timestamp": datetime.now(timezone.utc).isoformat(),
+                    "data_source": "none",
+                    "api_used": "Star Profit API (failed)",
+                    "database_available": db is not None
+                }
+        except Exception as e:
+            logging.error(f"Star Profit API error: {e}")
+            return {
+                "status": "error", 
+                "message": f"Star Profit API error: {str(e)}",
+                "routes": [],
+                "total_routes": 0,
+                "analysis_timestamp": datetime.now(timezone.utc).isoformat(),
+                "data_source": "none",
+                "api_used": "Star Profit API (error)",
+                "database_available": db is not None
+            }
         
         if routes_data.get('status') != 'ok':
             raise HTTPException(status_code=400, detail="Failed to fetch routes from trading APIs")
