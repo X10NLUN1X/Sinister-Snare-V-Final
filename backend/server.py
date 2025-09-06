@@ -282,7 +282,12 @@ class StarProfitClient:
                         origin_coords = self.generate_system_coordinates(origin_system)
                         destination_coords = self.generate_system_coordinates(destination_system)
                         
-                        route_code = f"{origin_system[:4].upper()}-{commodity_name[:4].upper()}-{destination_system[:4].upper()}"
+                        # Generate proper route code: StartLocation-Commodity-EndLocation
+                        origin_terminal_short = buy_item.get('terminal_name', 'UNK')[:8].replace(' ', '').replace('\'', '').upper()
+                        dest_terminal_short = sell_item.get('terminal_name', 'UNK')[:8].replace(' ', '').replace('\'', '').upper()
+                        commodity_short = commodity_name[:8].replace(' ', '').upper()
+                        
+                        route_code = f"{origin_terminal_short}-{commodity_short}-{dest_terminal_short}"
                         
                         route = {
                             "id": route_id,
