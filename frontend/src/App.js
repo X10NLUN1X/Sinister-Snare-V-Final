@@ -297,6 +297,9 @@ class SinisterDatabase {
 // Initialize database
 const sinisterDB = new SinisterDatabase();
 
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+const API = `${BACKEND_URL}/api`;
+
 // Enhanced Components
 const Header = () => (
   <header className="bg-gradient-to-r from-red-900 via-black to-red-900 text-white p-6 shadow-2xl border-b border-red-800">
