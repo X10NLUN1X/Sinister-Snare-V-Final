@@ -2,8 +2,300 @@ import { useState, useEffect, useCallback } from "react";
 import "./App.css";
 import axios from "axios";
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
-const API = `${BACKEND_URL}/api`;
+// IndexedDB Database Manager
+class SinisterDatabase {
+  constructor() {
+    this.dbName = 'SinisterSnareDB';
+    this.version = 1;
+    this.db = null;
+  }
+
+  async init() {
+    return new Promise((resolve, reject) => {
+      const request = indexedDB.open(this.dbName, this.version);
+      
+      request.onerror = () => reject(request.error);
+      request.onsuccess = () => {
+        this.db = request.result;
+        resolve(this.db);
+      };
+      
+      request.onupgradeneeded = (event) => {
+        const db = event.target.result;
+        
+        // Routes store
+        if (!db.objectStoreNames.contains('routes')) {
+          const routeStore = db.createObjectStore('routes', { keyPath: 'id', autoIncrement: true });
+          routeStore.createIndex('route_code', 'route_code', { unique: false });
+          routeStore.createIndex('commodity_name', 'commodity_name', { unique: false });
+          routeStore.createIndex('timestamp', 'timestamp', { unique: false });
+          routeStore.createIndex('origin_system', 'origin_system', { unique: false });
+          routeStore.createIndex('destination_system', 'destination_system', { unique: false });
+        }
+        
+        // Commodities store
+        if (!db.objectStoreNames.contains('commodities')) {
+          const commodityStore = db.createObjectStore('commodities', { keyPath: 'id', autoIncrement: true });
+          commodityStore.createIndex('commodity_name', 'commodity_name', { unique: false });
+          commodityStore.createIndex('terminal_name', 'terminal_name', { unique: false });
+          commodityStore.createIndex('timestamp', 'timestamp', { unique: false });
+        }
+        
+        // Interception History store
+        if (!db.objectStoreNames.contains('interceptions')) {
+          const interceptionStore = db.createObjectStore('interceptions', { keyPath: 'id', autoIncrement: true });
+          interceptionStore.createIndex('route_code', 'route_code', { unique: false });
+          interceptionStore.createIndex('timestamp', 'timestamp', { unique: false });
+        }
+      };
+    });
+  }
+
+  async addRoutes(routes) {
+    if (!this.db) await this.init();
+    
+    const transaction = this.db.transaction(['routes'], 'readwrite');
+    const store = transaction.objectStore('routes');
+    const timestamp = new Date().toISOString();
+    
+    const addedRoutes = [];
+    
+    for (const route of routes) {
+      // Check if route already exists (by route_code and similar timestamp)
+      const existing = await this.getRouteByCode(route.route_code);
+      const routeData = {
+        ...route,
+        timestamp,
+        origin_system: route.origin_name?.split(' - ')[0] || 'Unknown',
+        destination_system: route.destination_name?.split(' - ')[0] || 'Unknown',
+        data_source: 'api_fetch'
+      };
+      
+      if (!existing || this.shouldUpdateRoute(existing, routeData)) {
+        await store.add(routeData);
+        addedRoutes.push(routeData);
+      }
+    }
+    
+    return addedRoutes;
+  }
+
+  async addCommodities(commodities) {
+    if (!this.db) await this.init();
+    
+    const transaction = this.db.transaction(['commodities'], 'readwrite');
+    const store = transaction.objectStore('commodities');
+    const timestamp = new Date().toISOString();
+    
+    for (const commodity of commodities) {
+      const commodityData = {
+        ...commodity,
+        timestamp,
+        data_source: 'api_fetch'
+      };
+      await store.add(commodityData);
+    }
+  }
+
+  async getRouteByCode(routeCode) {
+    if (!this.db) await this.init();
+    
+    const transaction = this.db.transaction(['routes'], 'readonly');
+    const store = transaction.objectStore('routes');
+    const index = store.index('route_code');
+    
+    return new Promise((resolve) => {
+      const request = index.get(routeCode);
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => resolve(null);
+    });
+  }
+
+  shouldUpdateRoute(existing, newRoute) {
+    const existingTime = new Date(existing.timestamp);
+    const now = new Date();
+    const hoursDiff = (now - existingTime) / (1000 * 60 * 60);
+    
+    // Update if older than 1 hour or profit significantly different
+    return hoursDiff > 1 || Math.abs(existing.profit - newRoute.profit) > (existing.profit * 0.1);
+  }
+
+  async getStats() {
+    if (!this.db) await this.init();
+    
+    const routeCount = await this.getCountFromStore('routes');
+    const commodityCount = await this.getCountFromStore('commodities');
+    const interceptionCount = await this.getCountFromStore('interceptions');
+    
+    // Estimate database size
+    const sizeBytes = await this.estimateDbSize();
+    const sizeFormatted = this.formatBytes(sizeBytes);
+    
+    return {
+      routes: routeCount,
+      commodities: commodityCount,
+      interceptions: interceptionCount,
+      totalRecords: routeCount + commodityCount + interceptionCount,
+      sizeBytes,
+      sizeFormatted,
+      lastUpdate: await this.getLastUpdateTime()
+    };
+  }
+
+  async getCountFromStore(storeName) {
+    const transaction = this.db.transaction([storeName], 'readonly');
+    const store = transaction.objectStore(storeName);
+    
+    return new Promise((resolve) => {
+      const request = store.count();
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => resolve(0);
+    });
+  }
+
+  async estimateDbSize() {
+    if (!navigator.storage || !navigator.storage.estimate) {
+      return 0;
+    }
+    
+    try {
+      const estimate = await navigator.storage.estimate();
+      return estimate.usage || 0;
+    } catch {
+      return 0;
+    }
+  }
+
+  formatBytes(bytes) {
+    if (bytes === 0) return '0 B';
+    
+    const k = 1024;
+    const sizes = ['B', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  }
+
+  async getLastUpdateTime() {
+    const transaction = this.db.transaction(['routes'], 'readonly');
+    const store = transaction.objectStore('routes');
+    const index = store.index('timestamp');
+    
+    return new Promise((resolve) => {
+      const request = index.openCursor(null, 'prev');
+      request.onsuccess = () => {
+        const cursor = request.result;
+        resolve(cursor ? cursor.value.timestamp : null);
+      };
+      request.onerror = () => resolve(null);
+    });
+  }
+
+  async clearAllData() {
+    if (!this.db) await this.init();
+    
+    const transaction = this.db.transaction(['routes', 'commodities', 'interceptions'], 'readwrite');
+    
+    await Promise.all([
+      transaction.objectStore('routes').clear(),
+      transaction.objectStore('commodities').clear(),
+      transaction.objectStore('interceptions').clear()
+    ]);
+  }
+
+  async clearOldData(weeks) {
+    if (!this.db) await this.init();
+    
+    const cutoffDate = new Date();
+    cutoffDate.setDate(cutoffDate.getDate() - (weeks * 7));
+    const cutoffTimestamp = cutoffDate.toISOString();
+    
+    const stores = ['routes', 'commodities', 'interceptions'];
+    const transaction = this.db.transaction(stores, 'readwrite');
+    
+    for (const storeName of stores) {
+      const store = transaction.objectStore(storeName);
+      const index = store.index('timestamp');
+      const range = IDBKeyRange.upperBound(cutoffTimestamp);
+      
+      const request = index.openCursor(range);
+      request.onsuccess = (event) => {
+        const cursor = event.target.result;
+        if (cursor) {
+          cursor.delete();
+          cursor.continue();
+        }
+      };
+    }
+  }
+
+  async getRouteHistory(routeCode, days = 7) {
+    if (!this.db) await this.init();
+    
+    const transaction = this.db.transaction(['routes'], 'readonly');
+    const store = transaction.objectStore('routes');
+    const index = store.index('route_code');
+    
+    const cutoffDate = new Date();
+    cutoffDate.setDate(cutoffDate.getDate() - days);
+    
+    return new Promise((resolve) => {
+      const results = [];
+      const request = index.openCursor(IDBKeyRange.only(routeCode));
+      
+      request.onsuccess = (event) => {
+        const cursor = event.target.result;
+        if (cursor) {
+          const route = cursor.value;
+          if (new Date(route.timestamp) >= cutoffDate) {
+            results.push(route);
+          }
+          cursor.continue();
+        } else {
+          resolve(results.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)));
+        }
+      };
+      request.onerror = () => resolve([]);
+    });
+  }
+
+  async getBestInterceptionRoutes(limit = 20) {
+    if (!this.db) await this.init();
+    
+    const transaction = this.db.transaction(['routes'], 'readonly');
+    const store = transaction.objectStore('routes');
+    
+    // Get routes from the last 24 hours
+    const oneDayAgo = new Date();
+    oneDayAgo.setDate(oneDayAgo.getDate() - 1);
+    
+    return new Promise((resolve) => {
+      const results = [];
+      const request = store.openCursor();
+      
+      request.onsuccess = (event) => {
+        const cursor = event.target.result;
+        if (cursor) {
+          const route = cursor.value;
+          if (new Date(route.timestamp) >= oneDayAgo && route.piracy_rating >= 40) {
+            results.push(route);
+          }
+          cursor.continue();
+        } else {
+          // Sort by piracy rating and frequency, take top results
+          const sorted = results
+            .sort((a, b) => (b.piracy_rating * b.frequency_score) - (a.piracy_rating * a.frequency_score))
+            .slice(0, limit);
+          resolve(sorted);
+        }
+      };
+      request.onerror = () => resolve([]);
+    });
+  }
+}
+
+// Initialize database
+const sinisterDB = new SinisterDatabase();
 
 // Enhanced Components
 const Header = () => (
