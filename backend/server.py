@@ -835,6 +835,19 @@ async def update_tracking_data():
 async def root():
     return {"message": "Sinister Snare v2.0 - Advanced Star Citizen Piracy Intelligence System"}
 
+# Database fallback functions
+async def safe_db_operation(operation, fallback_result=None):
+    """Safely execute database operations with fallback"""
+    if db is None:
+        logging.warning("Database not available, using fallback")
+        return fallback_result
+    try:
+        return await operation()
+    except Exception as e:
+        logging.error(f"Database error: {e}")
+        return fallback_result
+
+# Enhanced route analysis endpoint with database fallback
 @api_router.get("/routes/analyze")
 async def analyze_routes(
     limit: int = Query(default=50, le=500),
@@ -902,12 +915,16 @@ async def analyze_routes(
                 
                 analyzed_routes.append(analysis)
                 
-                # Store in database for historical analysis
-                await db.route_analyses.replace_one(
-                    {"route_code": analysis.route_code},
-                    analysis.dict(),
-                    upsert=True
-                )
+                # Store in database for historical analysis (with fallback)
+                if db:
+                    try:
+                        await db.route_analyses.replace_one(
+                            {"route_code": analysis.route_code},
+                            analysis.dict(),
+                            upsert=True
+                        )
+                    except Exception as db_error:
+                        logging.warning(f"Database storage failed: {db_error}")
                 
             except Exception as e:
                 logging.error(f"Error analyzing route: {e}")
@@ -924,7 +941,8 @@ async def analyze_routes(
             "routes": analyzed_routes,
             "analysis_timestamp": datetime.now(timezone.utc).isoformat(),
             "data_source": data_source,
-            "api_used": "Star Profit API" if data_source == "real" else "Mock Data"
+            "api_used": "Star Profit API" if data_source == "real" else "Mock Data",
+            "database_available": db is not None
         }
         
     except Exception as e:
