@@ -247,16 +247,8 @@ class StarProfitClient:
                             "price_sell": sell_price,
                             "volatility_origin": 0.1,
                             "volatility_destination": 0.1,
-                            "coordinates_origin": {
-                                "x": random.uniform(-50000, 50000),
-                                "y": random.uniform(-50000, 50000),
-                                "z": random.uniform(-10000, 10000)
-                            },
-                            "coordinates_destination": {
-                                "x": random.uniform(-50000, 50000),
-                                "y": random.uniform(-50000, 50000),
-                                "z": random.uniform(-10000, 10000)
-                            },
+                            "coordinates_origin": origin_coords,
+                            "coordinates_destination": destination_coords,
                             "last_seen": buy_item.get('lastUpdated', datetime.now(timezone.utc).isoformat()),
                             "buy_stock": buy_stock,
                             "sell_stock": sell_stock
