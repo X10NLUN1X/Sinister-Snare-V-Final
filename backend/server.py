@@ -899,15 +899,25 @@ async def get_historical_trends(
         # Calculate trend statistics
         for route_key, route_data in route_trends.items():
             data_points = route_data["data_points"]
-            if len(data_points) >= 2:
+            if len(data_points) >= 1:
                 # Calculate trends
                 profits = [dp["profit"] for dp in data_points]
                 piracy_ratings = [dp["piracy_rating"] for dp in data_points]
                 
-                route_data["profit_trend"] = "increasing" if profits[-1] > profits[0] else "decreasing"
+                if len(data_points) >= 2:
+                    route_data["profit_trend"] = "increasing" if profits[-1] > profits[0] else "decreasing"
+                else:
+                    route_data["profit_trend"] = "stable"
+                
                 route_data["avg_profit"] = sum(profits) / len(profits)
                 route_data["max_piracy_rating"] = max(piracy_ratings)
                 route_data["current_piracy_rating"] = piracy_ratings[-1]
+            else:
+                # Provide default values if no data points
+                route_data["profit_trend"] = "stable"
+                route_data["avg_profit"] = 0.0
+                route_data["max_piracy_rating"] = 0.0
+                route_data["current_piracy_rating"] = 0.0
         
         return {
             "status": "success",
