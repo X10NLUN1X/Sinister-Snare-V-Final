@@ -19,8 +19,23 @@ import math
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
-# MongoDB connection
-mongo_url = os.environ['MONGO_URL']
+# Check if .env file exists and create default if not
+env_file = ROOT_DIR / '.env'
+if not env_file.exists():
+    print("⚠️  .env file not found, creating default...")
+    with open(env_file, 'w') as f:
+        f.write('''MONGO_URL="mongodb://localhost:27017"
+DB_NAME="sinister_snare_db"
+CORS_ORIGINS="*"
+UEX_API_KEY="6b70cf40873c5d6e706e5aa87a5ceab97ac8032b"
+LOG_LEVEL="INFO"
+''')
+    load_dotenv(ROOT_DIR / '.env')
+    print("✅ Default .env file created")
+
+# MongoDB connection with fallback
+mongo_url = os.environ.get('MONGO_URL', 'mongodb://localhost:27017')
+db_name = os.environ.get('DB_NAME', 'sinister_snare_db')
 client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
 
