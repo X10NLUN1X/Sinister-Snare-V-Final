@@ -1522,8 +1522,8 @@ async def snare_now():
         logging.error(f"Error in snare_now: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@api_router.post("/snare/commodity")
-async def commodity_snare(commodity_name: str):
+@api_router.get("/snare/commodity")
+async def commodity_snare(commodity_name: str = Query(...)):
     """Set up commodity-specific snare for targeted interception"""
     try:
         # Find routes for the specific commodity
