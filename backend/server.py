@@ -58,6 +58,72 @@ class StarProfitClient:
                 logging.error(f"Star Profit API Error: {e}")
                 return {"commodities": [], "error": str(e)}
     
+    def map_terminal_to_system(self, terminal_name: str) -> str:
+        """Map terminal names to their correct star systems"""
+        terminal_name_lower = terminal_name.lower()
+        
+        # Stanton System Terminals
+        stanton_terminals = [
+            'port olisar', 'crusader l1', 'crusader l4', 'crusader l5',
+            'arc-l1', 'arc-l2', 'arc-l3', 'arc-l4', 'arc-l5', 'arccorp 141',
+            'area18', 'cbd lorville', 'teasa spaceport', 'lorville',
+            'hur-l1', 'hur-l2', 'hur-l3', 'hur-l4', 'hur-l5',
+            'mic-l1', 'mic-l2', 'mic-l3', 'mic-l4', 'mic-l5',
+            'grimhex', 'spo', 'cru-l1', 'cru-l4', 'cru-l5',
+            'new babbage', 'microtech', 'everus harbor', 'baijini point'
+        ]
+        
+        # Pyro System Terminals
+        pyro_terminals = [
+            'ruin station', 'pyro station alpha', 'pyro gateway',
+            'checkpoint', 'spider', 'monox', 'bloom', 'wala',
+            'shady glen', 'glory', 'rat\'s nest', 'brio\'s breaker',
+            'orbituary', 'patch city', 'samson son\'s', 'endgame',
+            'devlin scrap', 'checkmate', 'dudley and daughters',
+            'megumi refueling', 'rod\'s fuel \'n supplies'
+        ]
+        
+        # Nyx System Terminals  
+        nyx_terminals = [
+            'delamar', 'levski', 'rayari aneth research outpost',
+            'rayari deltana research outpost', 'rayari kaltag research outpost'
+        ]
+        
+        # Terra System Terminals
+        terra_terminals = [
+            'terra prime', 'quasi', 'new cordoba', 'oya',
+            'terra tech', 'terra mills'
+        ]
+        
+        # Magnus System Terminals
+        magnus_terminals = [
+            'borea', 'solas', 'high course station'
+        ]
+        
+        # Check which system the terminal belongs to
+        for terminal in stanton_terminals:
+            if terminal in terminal_name_lower:
+                return "Stanton"
+        
+        for terminal in pyro_terminals:
+            if terminal in terminal_name_lower:
+                return "Pyro"
+                
+        for terminal in nyx_terminals:
+            if terminal in terminal_name_lower:
+                return "Nyx"
+                
+        for terminal in terra_terminals:
+            if terminal in terminal_name_lower:
+                return "Terra"
+                
+        for terminal in magnus_terminals:
+            if terminal in terminal_name_lower:
+                return "Magnus"
+        
+        # Default to Stanton for unknown terminals (most common)
+        return "Stanton"
+
     async def get_trading_routes(self) -> Dict[str, Any]:
         """Process real commodity data into trading routes for piracy analysis"""
         try:
