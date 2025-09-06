@@ -1730,9 +1730,9 @@ async def get_api_status():
                     "description": "Real Star Citizen commodity data"
                 },
                 "uex_api": {
-                    "status": uex_status,
+                    "status": "deprecated",
                     "using_mock_data": using_mock,
-                    "description": "UEXCorp trading data (fallback)"
+                    "description": "UEXCorp trading data (deprecated - replaced by Star Profit API)"
                 }
             },
             "database": db_status,
