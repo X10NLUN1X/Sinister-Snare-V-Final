@@ -1690,15 +1690,15 @@ async def get_api_status():
         except:
             star_profit_status = "error"
         
-        # Test UEX API connection (fallback)
-        uex_status = "disconnected"
+        # Test Star Profit API connection (primary)
+        star_profit_status = "disconnected"
         using_mock = False
         try:
-            test_response = await uex_client.get_commodities_routes()
-            uex_status = "connected" if test_response.get('status') == 'ok' else "error"
-            using_mock = test_response.get('mock_data', False)
+            test_response = await star_profit_client.get_commodities()
+            star_profit_status = "connected" if test_response.get('commodities') else "error"
+            using_mock = False  # Star Profit API doesn't use mock data
         except:
-            uex_status = "error"
+            star_profit_status = "error"
             using_mock = True
         
         # Determine primary data source
