@@ -1,37 +1,37 @@
 [
   {
     "test": "Star Profit API Direct",
-    "status": "FAIL",
-    "message": "HTTP 403: <!DOCTYPE html><html lang=\"en\" data-astro-cid-nbv56vs3> <head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"><meta name=\"theme-color\" content=\"#000\"><title>V",
+    "status": "PASS",
+    "message": "Successfully connected to Star Profit API, received 2261 commodities",
     "details": null,
-    "timestamp": "2025-09-06T13:04:10.987806"
+    "timestamp": "2025-09-06T14:40:39.274517"
   },
   {
     "test": "Backend Star Profit Integration",
     "status": "PASS",
     "message": "Backend successfully using Star Profit API - Source: real, API: Star Profit API",
     "details": null,
-    "timestamp": "2025-09-06T13:04:11.547764"
+    "timestamp": "2025-09-06T14:40:39.641799"
   },
   {
     "test": "UEX API Connection",
     "status": "FAIL",
     "message": "HTTP 403: <!DOCTYPE html><html lang=\"en-US\"><head><title>Just a moment...</title><meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\"><meta http-equiv=\"X-UA-Compatible\" content=\"IE=Edge\"><meta nam",
     "details": null,
-    "timestamp": "2025-09-06T13:04:11.648496"
+    "timestamp": "2025-09-06T14:40:39.842370"
   },
   {
     "test": "API Status Endpoint",
     "status": "PASS",
-    "message": "API operational - Star Profit: unknown, UEX: unknown, DB: error, API Key: True",
+    "message": "API operational - Star Profit: unknown, UEX: unknown, DB: connected, API Key: True",
     "details": {
       "status": "operational",
       "version": "2.0.0",
-      "primary_data_source": "simulated",
+      "primary_data_source": "real",
       "data_sources": {
         "star_profit_api": {
-          "status": "disconnected",
-          "records_available": 0,
+          "status": "connected",
+          "records_available": 2261,
           "description": "Real Star Citizen commodity data"
         },
         "uex_api": {
@@ -40,7 +40,7 @@
           "description": "UEXCorp trading data (fallback)"
         }
       },
-      "database": "error",
+      "database": "connected",
       "api_key_configured": true,
       "statistics": {
         "total_routes_analyzed": 50,
@@ -49,91 +49,91 @@
         "tracking_active": true
       },
       "features": {
-        "real_time_data": false,
+        "real_time_data": true,
         "interception_mapping": true,
         "historical_analysis": true,
         "alert_system": true,
         "export_functionality": true
       },
-      "timestamp": "2025-09-06T13:04:12.073554+00:00"
+      "timestamp": "2025-09-06T14:40:40.327159+00:00"
     },
-    "timestamp": "2025-09-06T13:04:12.077060"
+    "timestamp": "2025-09-06T14:40:40.331405"
   },
   {
     "test": "Routes Analysis Endpoint",
     "status": "PASS",
-    "message": "Successfully analyzed 6 routes with proper structure",
+    "message": "Successfully analyzed 10 routes with proper structure",
     "details": null,
-    "timestamp": "2025-09-06T13:04:12.454652"
+    "timestamp": "2025-09-06T14:40:40.587909"
   },
   {
     "test": "Priority Targets Endpoint",
     "status": "PASS",
     "message": "No priority targets available (acceptable if no routes analyzed yet)",
     "details": null,
-    "timestamp": "2025-09-06T13:04:12.466075"
+    "timestamp": "2025-09-06T14:40:40.597558"
   },
   {
     "test": "Hourly Analysis Endpoint",
     "status": "PASS",
     "message": "Successfully retrieved 24-hour analysis with recommendations",
     "details": null,
-    "timestamp": "2025-09-06T13:04:12.496922"
+    "timestamp": "2025-09-06T14:40:40.620643"
   },
   {
     "test": "Export Routes Endpoint",
-    "status": "FAIL",
-    "message": "HTTP 500: Internal Server Error",
+    "status": "PASS",
+    "message": "Export endpoint working correctly - 50 records",
     "details": null,
-    "timestamp": "2025-09-06T13:04:12.519232"
+    "timestamp": "2025-09-06T14:40:40.648811"
   },
   {
     "test": "Alerts Endpoint",
     "status": "PASS",
     "message": "Alerts endpoint working - 4 alerts retrieved",
     "details": null,
-    "timestamp": "2025-09-06T13:04:12.531787"
+    "timestamp": "2025-09-06T14:40:40.698243"
   },
   {
     "test": "Historical Trends Endpoint",
     "status": "PASS",
     "message": "Trends endpoint working - 6 routes over 24 hours",
     "details": null,
-    "timestamp": "2025-09-06T13:04:12.544077"
+    "timestamp": "2025-09-06T14:40:40.709691"
   },
   {
     "test": "Snare Now Endpoint",
     "status": "PASS",
     "message": "Snare Now endpoint working - 0 active snares",
     "details": null,
-    "timestamp": "2025-09-06T13:04:12.555633"
+    "timestamp": "2025-09-06T14:40:40.759161"
   },
   {
     "test": "Snare Commodity Endpoint",
     "status": "FAIL",
     "message": "Snare Commodity API returned status: error",
     "details": null,
-    "timestamp": "2025-09-06T13:04:12.567049"
+    "timestamp": "2025-09-06T14:40:40.768552"
   },
   {
     "test": "Tracking Status Endpoint",
     "status": "PASS",
     "message": "Tracking status endpoint working - Active: True, Routes: 0",
     "details": null,
-    "timestamp": "2025-09-06T13:04:12.576742"
+    "timestamp": "2025-09-06T14:40:40.816218"
   },
   {
     "test": "Interception Points Endpoint",
     "status": "PASS",
     "message": "Interception Points endpoint working - 0 strategic points",
     "details": null,
-    "timestamp": "2025-09-06T13:04:12.586618"
+    "timestamp": "2025-09-06T14:40:40.827011"
   },
   {
     "test": "Rate Limiting",
     "status": "PASS",
     "message": "All 12/12 requests succeeded (rate limiting may not be implemented)",
     "details": null,
-    "timestamp": "2025-09-06T13:04:17.185789"
+    "timestamp": "2025-09-06T14:40:46.647373"
   }
 ]
