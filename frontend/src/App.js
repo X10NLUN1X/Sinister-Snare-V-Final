@@ -1283,6 +1283,8 @@ const DatabasePanel = ({ dbStats, onRefreshStats, onClearAll, onClearOld }) => {
     </div>
   );
 };
+
+const ExportPanel = ({ onExport, exportLoading }) => (
   <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
     <h3 className="text-white text-lg font-semibold mb-4">📁 Export Data</h3>
     <div className="space-y-4">
