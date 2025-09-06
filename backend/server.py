@@ -959,11 +959,17 @@ async def get_tracking_status():
         if tracking_state.get('last_update'):
             uptime_minutes = int((datetime.now(timezone.utc) - tracking_state['last_update']).total_seconds() / 60)
         
-        # Get recent alert count
-        recent_alerts = await db.alerts.count_documents({
-            "created_at": {"$gte": datetime.now(timezone.utc) - timedelta(hours=1)},
-            "acknowledged": False
-        })
+        # Get recent alert count with database error handling
+        recent_alerts = 0
+        if db is not None:
+            try:
+                recent_alerts = await db.alerts.count_documents({
+                    "created_at": {"$gte": datetime.now(timezone.utc) - timedelta(hours=1)},
+                    "acknowledged": False
+                })
+            except Exception as db_error:
+                logging.warning(f"Database error in tracking status: {db_error}")
+                recent_alerts = 0
         
         status = TrackingStatus(
             active=tracking_state.get('active', False),
