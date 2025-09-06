@@ -1269,7 +1269,18 @@ async def get_priority_targets(
         priority_targets = []
         for analysis in analyses:
             # Calculate time-sensitive factors
-            last_seen = datetime.fromisoformat(analysis['last_seen'].replace('Z', '+00:00'))
+            try:
+                if isinstance(analysis['last_seen'], str):
+                    last_seen = datetime.fromisoformat(analysis['last_seen'].replace('Z', '+00:00'))
+                else:
+                    # Handle datetime objects directly
+                    last_seen = analysis['last_seen']
+                    if last_seen.tzinfo is None:
+                        last_seen = last_seen.replace(tzinfo=timezone.utc)
+            except (ValueError, KeyError):
+                # Fallback to current time if parsing fails
+                last_seen = datetime.now(timezone.utc)
+            
             hours_since_seen = (datetime.now(timezone.utc) - last_seen).total_seconds() / 3600
             freshness_factor = max(0.1, 1.0 - (hours_since_seen / 24))  # Decay over 24 hours
             
