@@ -606,10 +606,44 @@ const CommoditySnareModal = ({ isOpen, onClose, onSnare }) => {
     
     setIsLoading(true);
     try {
-      const response = await axios.post(`${API}/snare/commodity?commodity_name=${selectedCommodity}`);
-      setSnareResults(response.data);
+      const response = await axios.get(`${API}/snare/commodity?commodity_name=${selectedCommodity}`);
+      if (response.data.status === 'success') {
+        setSnareResults(response.data);
+      } else {
+        console.error('Snare API error:', response.data);
+        setSnareResults({
+          status: 'error',
+          commodity: selectedCommodity,
+          message: response.data.message || 'Failed to analyze commodity routes',
+          summary: {
+            total_routes_found: 0,
+            profitable_routes: 0,
+            inter_system_routes: 0,
+            same_system_routes: 0,
+            average_profit: 0,
+            max_piracy_rating: 0,
+            recommended_strategy: 'No routes found'
+          },
+          snare_opportunities: []
+        });
+      }
     } catch (error) {
       console.error('Error setting commodity snare:', error);
+      setSnareResults({
+        status: 'error',
+        commodity: selectedCommodity,
+        message: error.response?.data?.message || error.message || 'Failed to connect to API',
+        summary: {
+          total_routes_found: 0,
+          profitable_routes: 0,
+          inter_system_routes: 0,
+          same_system_routes: 0,
+          average_profit: 0,
+          max_piracy_rating: 0,
+          recommended_strategy: 'Connection error'
+        },
+        snare_opportunities: []
+      });
     } finally {
       setIsLoading(false);
     }
