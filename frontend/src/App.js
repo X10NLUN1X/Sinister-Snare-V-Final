@@ -1528,9 +1528,10 @@ function App() {
           isRefreshing: false 
         }));
         
-        // Refresh the displayed data
-        setTimeout(() => {
-          loadAllData();
+        // Refresh the displayed data and update database stats
+        setTimeout(async () => {
+          await loadAllData();
+          console.log('Data refreshed and stored in local database');
         }, 1000);
       } else {
         setRefreshModal(prev => ({ 
