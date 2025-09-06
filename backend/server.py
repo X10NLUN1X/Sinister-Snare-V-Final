@@ -1218,6 +1218,16 @@ async def export_routes(
         
         analyses = await db.route_analyses.find(query).sort("piracy_rating", -1).to_list(1000)
         
+        # Clean the data to remove MongoDB ObjectId fields and ensure JSON serialization
+        clean_analyses = []
+        for analysis in analyses:
+            # Remove the MongoDB _id field and any other non-serializable fields
+            clean_analysis = {}
+            for key, value in analysis.items():
+                if key != '_id' and not str(type(value)).startswith("<class 'bson."):
+                    clean_analysis[key] = value
+            clean_analyses.append(clean_analysis)
+        
         if format == "csv":
             # Enhanced CSV format
             csv_data = "Route Code,Commodity,Origin,Destination,Profit (aUEC),ROI (%),Distance (GM),Traffic Score,Piracy Rating,Risk Level,Investment (aUEC),Last Seen\n"
