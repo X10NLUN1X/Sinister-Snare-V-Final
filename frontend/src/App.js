@@ -2351,32 +2351,6 @@ function App() {
     }
   };
 
-  const getEnhancedSnareRecommendations = async () => {
-    try {
-      // Get best routes from local database with historical data
-      const localRoutes = await sinisterDB.getBestInterceptionRoutes(10);
-      
-      if (localRoutes.length > 0) {
-        // Use local data for more accurate predictions
-        const bestRoute = localRoutes[0];
-        const routeHistory = await sinisterDB.getRouteHistory(bestRoute.route_code, 7);
-        
-        console.log(`Found ${localRoutes.length} local routes, ${routeHistory.length} historical entries for best route`);
-        
-        return {
-          route: bestRoute,
-          history: routeHistory,
-          confidence: routeHistory.length > 5 ? 'HIGH' : routeHistory.length > 2 ? 'MEDIUM' : 'LOW'
-        };
-      }
-      
-      return null;
-    } catch (error) {
-      console.error('Error getting enhanced recommendations:', error);
-      return null;
-    }
-  };
-
   const fetchHourlyData = useCallback(async () => {
     try {
       const response = await axios.get(`${API}/analysis/hourly`);
