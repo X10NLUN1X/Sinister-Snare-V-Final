@@ -891,17 +891,49 @@ async def analyze_routes(
             # Generate trading routes from commodity data directly
             raw_routes = []
             for i, commodity in enumerate(commodities[:50]):  # Limit for performance
-                # Create realistic trading routes
+                
+                # Parse terminal name to get system and location
+                terminal_name = commodity.get('terminal', 'Port Olisar')
+                origin_system = star_profit_client.map_terminal_to_system(terminal_name)
+                
+                # Generate destination (different system preferred for variety)
+                dest_options = [
+                    {"system": "Pyro", "terminal": "Rat's Nest"},
+                    {"system": "Stanton", "terminal": "Port Olisar"},
+                    {"system": "Stanton", "terminal": "Area18"},
+                    {"system": "Stanton", "terminal": "Lorville"},
+                    {"system": "Stanton", "terminal": "New Babbage"}
+                ]
+                dest = dest_options[i % len(dest_options)]
+                
+                # Calculate route code
+                origin_short = terminal_name[:6].replace(' ', '').replace('\'', '').upper()
+                dest_short = dest["terminal"][:6].replace(' ', '').replace('\'', '').upper()
+                commodity_short = commodity.get('commodity_name', 'CARGO')[:8].replace(' ', '').upper()
+                route_code = f"{origin_short}-{commodity_short}-{dest_short}"
+                
+                # Create realistic trading route with proper structure
                 route = {
                     "id": str(uuid.uuid4()),
+                    "code": route_code,
                     "commodity_name": commodity.get('commodity_name', f'Commodity_{i}'),
-                    "origin_name": f"Stanton - {commodity.get('terminal', 'Unknown Terminal')}",
-                    "destination_name": f"Pyro - Rat's Nest" if i % 3 == 0 else f"Stanton - Port Olisar",
+                    "origin_star_system_name": origin_system,
+                    "origin_terminal_name": terminal_name,
+                    "destination_star_system_name": dest["system"],
+                    "destination_terminal_name": dest["terminal"],
+                    "origin_name": f"{origin_system} - {terminal_name}",
+                    "destination_name": f"{dest['system']} - {dest['terminal']}",
                     "profit": abs(commodity.get('sell_price', 100) - commodity.get('buy_price', 50)) * 1000,
                     "investment": commodity.get('buy_price', 100) * random.randint(100, 1000),
-                    "roi": ((commodity.get('sell_price', 100) - commodity.get('buy_price', 50)) / max(commodity.get('buy_price', 1), 1)) * 100,
+                    "price_roi": ((commodity.get('sell_price', 100) - commodity.get('buy_price', 50)) / max(commodity.get('buy_price', 1), 1)) * 100,
                     "distance": random.randint(45000, 85000),
                     "score": min(100, max(10, commodity.get('sell_price', 100) / 10)),
+                    "buy_price": commodity.get('buy_price', 0),
+                    "sell_price": commodity.get('sell_price', 0),
+                    "buy_stock": commodity.get('stock', random.randint(100, 1000)),
+                    "sell_stock": commodity.get('stock', random.randint(100, 1000)),
+                    "coordinates_origin": star_profit_client.generate_system_coordinates(origin_system),
+                    "coordinates_destination": star_profit_client.generate_system_coordinates(dest["system"]),
                     "last_seen": datetime.now(timezone.utc).isoformat()
                 }
                 raw_routes.append(route)
