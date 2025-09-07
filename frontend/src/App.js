@@ -1588,7 +1588,10 @@ const AlternativeRoutesDropdown = ({ commodity, onRouteSelect, currentRoute }) =
       </button>
       
       {isOpen && (
-        <div className="mt-3 bg-gray-800/50 rounded-lg p-3 max-h-96 overflow-y-auto">
+        <div 
+          className="mt-3 bg-gray-800/50 rounded-lg p-3 max-h-96 overflow-y-auto"
+          onClick={(e) => e.stopPropagation()} // CRITICAL FIX: Prevent dropdown content from triggering route clicks
+        >
           {/* NEW: Back button for workflow navigation */}
           {workflowStep !== 'overview' && (
             <div className="mb-3">
