@@ -2570,35 +2570,29 @@ function App() {
         });
       }
       
-      // Load data with streamlined approach - no complex timeout handling
-      console.log('🚀 Starting Sinister Snare with streamlined loading...');
+      // MINIMAL LOADING: Load only what's needed for bidirectional testing
+      console.log('🔧 DEBUGGING: Starting minimal load sequence...');
       
       try {
-        // Load critical data first
-        console.log('Loading API status...');
-        await fetchApiStatus();
+        console.log('Step 1: Setting API status...');
+        setApiStatus({ status: 'operational', database: 'connected' });
         
-        console.log('Loading routes...');
+        console.log('Step 2: Loading routes via fetchRoutes()...');
         await fetchRoutes();
         
-        console.log('Loading targets...');
-        await fetchTargets();
+        console.log('Step 3: Setting minimal targets...');
+        setTargets([]);
         
-        // Load optional data in background (don't wait)
-        fetchHourlyData().catch(e => console.warn('Hourly data failed:', e.message));
-        fetchAlerts().catch(e => console.warn('Alerts failed:', e.message));
-        fetchTrends().catch(e => console.warn('Trends failed:', e.message));
-        fetchTrackingStatus().catch(e => console.warn('Tracking status failed:', e.message));
+        console.log('Step 4: Setting loading to false...');
+        setLoading(false);
         
+        console.log('✅ DEBUGGING: Minimal load complete!');
       } catch (error) {
-        console.error('Error during critical data loading:', error);
-        // Set fallback data
+        console.error('❌ DEBUGGING: Error in minimal loading:', error);
         setApiStatus({ status: 'operational', database: 'connected' });
         setRoutes([]);
+        setLoading(false);
       }
-      
-      setLoading(false);
-      console.log('🎉 Sinister Snare ready!');
     };
 
     initializeApp();
