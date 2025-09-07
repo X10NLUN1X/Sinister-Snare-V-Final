@@ -1855,7 +1855,7 @@ function App() {
   const [commoditySnareModal, setCommoditySnareModal] = useState(false);
   const [routeDetailModal, setRouteDetailModal] = useState({ open: false, route: null });
   const [dbStats, setDbStats] = useState(null);
-  const [dataSource, setDataSource] = useState('api'); // 'api' or 'web'
+  const [dataSource, setDataSource] = useState('web'); // Default: Web Crawling only
   const [showAverageData, setShowAverageData] = useState(false); // Toggle between average and current data
 
   const fetchApiStatus = useCallback(async () => {
