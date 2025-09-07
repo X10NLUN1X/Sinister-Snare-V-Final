@@ -1569,6 +1569,11 @@ function App() {
     }
   }, []);
 
+  // Route Detail Modal Handler
+  const handleRouteClick = (route) => {
+    setRouteDetailModal({ open: true, route });
+  };
+
   const handleClearAllData = async () => {
     try {
       await sinisterDB.clearAllData();
