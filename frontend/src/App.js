@@ -2177,29 +2177,36 @@ function App() {
     console.log(`Opened route details for: ${route.route_code}`);
   };
 
-  // Alternative Route Selection Handler (NEW)
+  // Alternative Route Selection Handler - Enhanced with complete state updates
   const handleAlternativeRouteSelect = (newRoute) => {
-    // Update the routes array with the new route
+    console.log(`[StateUpdate] Alternative route selected:`, newRoute);
+    
+    // Update the routes array - replace or add the new route
     setRoutes(prevRoutes => {
       const updatedRoutes = [...prevRoutes];
-      // Find the index of the current route and replace it, or add to the beginning
-      const existingIndex = updatedRoutes.findIndex(r => r.commodity_name === newRoute.commodity_name);
+      
+      // Find existing route with same commodity to replace
+      const existingIndex = updatedRoutes.findIndex(r => 
+        r.commodity_name === newRoute.commodity_name && 
+        !newRoute.is_alternative_selection  // Don't replace other alternative selections
+      );
       
       if (existingIndex >= 0) {
-        // Replace existing route
+        // Replace existing route completely
         updatedRoutes[existingIndex] = {
-          ...updatedRoutes[existingIndex],
           ...newRoute,
-          id: updatedRoutes[existingIndex].id || generateRouteId(),
+          id: newRoute.id || generateRouteId(),
           last_updated: new Date().toISOString()
         };
+        console.log(`[StateUpdate] Replaced route at index ${existingIndex}`);
       } else {
-        // Add new route to the beginning
+        // Add new route to the beginning of the list
         updatedRoutes.unshift({
           ...newRoute,
-          id: generateRouteId(),
+          id: newRoute.id || generateRouteId(),
           last_updated: new Date().toISOString()
         });
+        console.log(`[StateUpdate] Added new route to beginning of list`);
       }
       
       return updatedRoutes;
@@ -2210,14 +2217,17 @@ function App() {
       setRouteDetailModal(prev => ({
         ...prev,
         route: {
-          ...prev.route,
           ...newRoute,
           last_updated: new Date().toISOString()
         }
       }));
+      console.log(`[StateUpdate] Updated RouteDetailModal with new route data`);
     }
     
-    console.log(`Alternative route selected: ${newRoute.commodity_name} via ${newRoute.terminal_name}`);
+    // Force UI re-render to show updated route information
+    fetchDbStats(); // Update database stats
+    
+    console.log(`[StateUpdate] Alternative route integration completed for ${newRoute.commodity_name}`);
   };
 
   // Helper function to generate unique route IDs
