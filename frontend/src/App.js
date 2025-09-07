@@ -1107,8 +1107,8 @@ const SnareModal = ({ isOpen, onClose, snareData }) => {
 };
 
 // Route Detail Modal Component  
-// Alternative Routes Dropdown Component
-const AlternativeRoutesDropdown = ({ commodity }) => {
+// Alternative Routes Dropdown Component  
+const AlternativeRoutesDropdown = ({ commodity, onRouteSelect, currentRoute }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [terminals, setTerminals] = useState([]);
   const [loading, setLoading] = useState(false);
