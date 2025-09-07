@@ -974,7 +974,13 @@ const LAGRANGE_EXCLUSIONS = [
 
 // Function to map terminal name to Snareplan-compatible location
 const mapTerminalForSnareplan = (terminalName) => {
-  // Check if this is a Lagrange Point that should be excluded
+  // Check if this is a main station that should be excluded (starts with CRU, HUR, ARC, MIC)
+  const mainStationPrefixes = ['CRU-', 'HUR-', 'ARC-', 'MIC-'];
+  if (mainStationPrefixes.some(prefix => terminalName.startsWith(prefix))) {
+    return terminalName; // Keep original name for main stations
+  }
+  
+  // Check if this is a Lagrange Point that should be excluded (legacy support)
   if (LAGRANGE_EXCLUSIONS.includes(terminalName)) {
     return terminalName; // Keep original name
   }
@@ -1022,7 +1028,7 @@ const SNAREPLAN_LOCATIONS = {
     'Whala Emergency': 'Whala Emergency',
     
     // Planets and Moons (common variations)
-    'MicroTech': 'Microtech',
+    'Microtech': 'Microtech',
     'ArcCorp': 'ArcCorp', 
     'Hurston': 'Hurston',
     'Crusader': 'Crusader',
