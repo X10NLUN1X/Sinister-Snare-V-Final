@@ -4,63 +4,63 @@
     "status": "FAIL",
     "message": "Manual refresh returned status: error",
     "details": null,
-    "timestamp": "2025-09-07T02:37:14.496069"
+    "timestamp": "2025-09-07T02:38:30.178904"
   },
   {
     "test": "Manual Refresh with Web Data Source",
     "status": "FAIL",
     "message": "Manual refresh returned status: error",
     "details": null,
-    "timestamp": "2025-09-07T02:37:14.780067"
+    "timestamp": "2025-09-07T02:38:30.388449"
   },
   {
     "test": "Route Data Structure Fix",
     "status": "PASS",
-    "message": "All required fields present with real data. Sample: {'origin_name': 'Stanton - Port Olisar', 'destination_name': 'Stanton - Port Olisar', 'buy_price': 0.0, 'sell_price': 0.0, 'buy_stock': 307, 'sell_stock': 519}",
+    "message": "All required fields present with real data. Sample: {'origin_name': 'Stanton - Port Olisar', 'destination_name': 'Stanton - Area18', 'buy_price': 0.0, 'sell_price': 0.0, 'buy_stock': 699, 'sell_stock': 309}",
     "details": null,
-    "timestamp": "2025-09-07T02:37:15.054354"
+    "timestamp": "2025-09-07T02:38:30.645265"
   },
   {
     "test": "Commodity Snare Agricium Analysis",
-    "status": "FAIL",
-    "message": "Agricium commodity not found in analysis",
+    "status": "PASS",
+    "message": "Agricium analysis successful - Found 5 total routes, 5 profitable",
     "details": null,
-    "timestamp": "2025-09-07T02:37:15.065185"
+    "timestamp": "2025-09-07T02:38:30.653665"
   },
   {
     "test": "Routes Analysis API Data Source",
     "status": "PASS",
     "message": "Routes analysis correctly uses API data source: real, API: Star Profit API",
     "details": null,
-    "timestamp": "2025-09-07T02:37:15.322311"
+    "timestamp": "2025-09-07T02:38:30.897332"
   },
   {
     "test": "Routes Analysis Web Data Source",
     "status": "FAIL",
     "message": "Expected web data source, got: real, API: Star Profit API",
     "details": null,
-    "timestamp": "2025-09-07T02:37:15.857679"
+    "timestamp": "2025-09-07T02:38:31.096578"
   },
   {
     "test": "Star Profit API Direct",
     "status": "PASS",
     "message": "Successfully connected to Star Profit API, received 2261 commodities",
     "details": null,
-    "timestamp": "2025-09-07T02:37:16.092395"
+    "timestamp": "2025-09-07T02:38:31.334626"
   },
   {
     "test": "Backend Star Profit Integration",
     "status": "PASS",
     "message": "Backend successfully using Star Profit API - Source: real, API: Star Profit API",
     "details": null,
-    "timestamp": "2025-09-07T02:37:16.411082"
+    "timestamp": "2025-09-07T02:38:31.629350"
   },
   {
     "test": "UEX API Connection",
     "status": "FAIL",
     "message": "HTTP 403: <!DOCTYPE html><html lang=\"en-US\"><head><title>Just a moment...</title><meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\"><meta http-equiv=\"X-UA-Compatible\" content=\"IE=Edge\"><meta nam",
     "details": null,
-    "timestamp": "2025-09-07T02:37:16.567161"
+    "timestamp": "2025-09-07T02:38:31.805443"
   },
   {
     "test": "API Status Endpoint",
@@ -92,85 +92,85 @@
         "alert_system": true,
         "export_functionality": true
       },
-      "timestamp": "2025-09-07T02:37:16.875656+00:00"
+      "timestamp": "2025-09-07T02:38:32.086495+00:00"
     },
-    "timestamp": "2025-09-07T02:37:16.880033"
+    "timestamp": "2025-09-07T02:38:32.090279"
   },
   {
     "test": "Routes Analysis Endpoint",
     "status": "PASS",
     "message": "Successfully analyzed 10 routes with proper structure",
     "details": null,
-    "timestamp": "2025-09-07T02:37:17.146908"
+    "timestamp": "2025-09-07T02:38:32.381328"
   },
   {
     "test": "Priority Targets Endpoint",
     "status": "PASS",
     "message": "No priority targets available (acceptable if no routes analyzed yet)",
     "details": null,
-    "timestamp": "2025-09-07T02:37:17.155367"
+    "timestamp": "2025-09-07T02:38:32.388766"
   },
   {
     "test": "Hourly Analysis Endpoint",
     "status": "PASS",
     "message": "Successfully retrieved 24-hour analysis with recommendations",
     "details": null,
-    "timestamp": "2025-09-07T02:37:17.183445"
+    "timestamp": "2025-09-07T02:38:32.410568"
   },
   {
     "test": "Export Routes Endpoint",
     "status": "PASS",
     "message": "Export endpoint working correctly - 26 records",
     "details": null,
-    "timestamp": "2025-09-07T02:37:17.200928"
+    "timestamp": "2025-09-07T02:38:32.426224"
   },
   {
     "test": "Alerts Endpoint",
     "status": "PASS",
     "message": "Alerts endpoint working - 3 alerts retrieved",
     "details": null,
-    "timestamp": "2025-09-07T02:37:17.212844"
+    "timestamp": "2025-09-07T02:38:32.436671"
   },
   {
     "test": "Historical Trends Endpoint",
     "status": "PASS",
     "message": "Trends endpoint working - 0 routes over 24 hours",
     "details": null,
-    "timestamp": "2025-09-07T02:37:17.221238"
+    "timestamp": "2025-09-07T02:38:32.443757"
   },
   {
     "test": "Snare Now Endpoint",
     "status": "PASS",
     "message": "Snare Now endpoint working - 0 active snares",
     "details": null,
-    "timestamp": "2025-09-07T02:37:17.270603"
+    "timestamp": "2025-09-07T02:38:32.491073"
   },
   {
     "test": "Snare Commodity Endpoint (Agricium)",
     "status": "PASS",
     "message": "Snare Commodity endpoint working - 0 snare points for Agricium",
     "details": null,
-    "timestamp": "2025-09-07T02:37:17.280188"
+    "timestamp": "2025-09-07T02:38:32.501673"
   },
   {
     "test": "Tracking Status Endpoint",
     "status": "PASS",
     "message": "Tracking status endpoint working - Active: True, Routes: 0",
     "details": null,
-    "timestamp": "2025-09-07T02:37:17.329747"
+    "timestamp": "2025-09-07T02:38:32.508893"
   },
   {
     "test": "Interception Points Endpoint",
     "status": "PASS",
     "message": "Interception Points endpoint working - 0 strategic points",
     "details": null,
-    "timestamp": "2025-09-07T02:37:17.338179"
+    "timestamp": "2025-09-07T02:38:32.556414"
   },
   {
     "test": "Rate Limiting",
     "status": "PASS",
     "message": "All 12/12 requests succeeded (rate limiting may not be implemented)",
     "details": null,
-    "timestamp": "2025-09-07T02:37:20.872183"
+    "timestamp": "2025-09-07T02:38:35.747379"
   }
 ]
