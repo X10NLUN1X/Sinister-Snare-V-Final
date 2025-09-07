@@ -859,11 +859,13 @@ const TERMINAL_TO_SNAREPLAN_MAPPING = {
   "Baijini Point": "ArcCorp",
   "Everus Harbor": "Hurston", 
   "Port Tressler": "Microtech",
+  "Port Olisar": "Crusader",
   "Seraphim": "Crusader",
   
   // Landing Zones -> Planets (these are already compatible, but explicit mapping)
   "Area 18 IO Tower": "ArcCorp",
   "CBD Lorville": "Hurston",
+  "Lorville L19": "Hurston",
   "MTP New Babbage": "Microtech", 
   "Orison Providence": "Crusader",
   
@@ -931,6 +933,76 @@ const TERMINAL_TO_SNAREPLAN_MAPPING = {
   
   // GrimHEX -> Crusader (Yela moon)
   "GrimHEX": "Crusader",
+  
+  // === LAGRANGE POINT STATIONS ===
+  // ArcCorp Lagrange Points
+  "ARC-L1": "ArcCorp",
+  "ARC-L2": "ArcCorp", 
+  "ARC-L3": "ArcCorp",
+  "ARC-L4": "ArcCorp",
+  "ARC-L5": "ArcCorp",
+  "ARC-L1 Wide Forest Station": "ArcCorp",
+  "Wide Forest Station": "ArcCorp",
+  
+  // Crusader Lagrange Points
+  "CRU-L1": "Crusader",
+  "CRU-L2": "Crusader",
+  "CRU-L3": "Crusader", 
+  "CRU-L4": "Crusader",
+  "CRU-L5": "Crusader",
+  "CRU-L1 Ambitious Dream Station": "Crusader",
+  "Ambitious Dream Station": "Crusader",
+  "CRU-L4 Locker": "Crusader",
+  "CRU-L5 Maintenance": "Crusader",
+  
+  // Hurston Lagrange Points
+  "HUR-L1": "Hurston",
+  "HUR-L2": "Hurston",
+  "HUR-L3": "Hurston",
+  "HUR-L4": "Hurston", 
+  "HUR-L5": "Hurston",
+  "HUR-L1 Green Glade Station": "Hurston",
+  "Green Glade Station": "Hurston",
+  
+  // Microtech Lagrange Points
+  "MIC-L1": "Microtech",
+  "MIC-L2": "Microtech",
+  "MIC-L3": "Microtech",
+  "MIC-L4": "Microtech",
+  "MIC-L5": "Microtech",
+  "MIC-L1 Shallow Frontier Station": "Microtech",
+  "Shallow Frontier Station": "Microtech",
+  
+  // === SPECIAL SERVICE STATIONS ===
+  // TDD (Trade & Development Division)
+  "TDD Area 18": "ArcCorp",
+  "TDD New Babbage": "Microtech",
+  "TDD Orison": "Crusader",
+  
+  // Dumper's Operations
+  "Dumper's Area 18": "ArcCorp",
+  "Dumper's GrimHEX": "Crusader",
+  
+  // Platinum Stations
+  "Platinum ARCL1": "ArcCorp",
+  "Platinum Baijini": "ArcCorp",
+  "Platinum CRUL1": "Crusader",
+  "Platinum CRUL4": "Crusader",
+  "Platinum CRUL5": "Crusader",
+  "Platinum Everus": "Hurston",
+  "Platinum HURL2": "Hurston",
+  "Platinum HURL3": "Hurston",
+  "Platinum HURL5": "Hurston",
+  "Platinum Tressler": "Microtech",
+  "Platinum Magnus": "Stanton",
+  "Platinum Pyro Gateway": "Stanton",
+  "Platinum Stanton Gateway": "Stanton",
+  
+  // === GATEWAY STATIONS ===
+  "Pyro Gateway": "Stanton",
+  "Terra Gateway": "Stanton",
+  "Magnus Gateway": "Stanton",
+  "Stanton Gateway": "Stanton",
   
   // === PYRO SYSTEM ===
   // Major Stations -> Pyro (general system)
