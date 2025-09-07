@@ -228,7 +228,7 @@ class StarProfitClient:
             }
         ]
     
-    async def get_trading_routes(self, source_type: str = "api") -> Dict[str, Any]:
+    async def get_trading_routes(self, source_type: str = "web") -> Dict[str, Any]:  # Changed default to "web"
         """
         Generate trading routes from commodity data
         source_type: 'api' or 'web'
