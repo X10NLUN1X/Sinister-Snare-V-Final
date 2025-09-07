@@ -1206,6 +1206,9 @@ const RouteDetailModal = ({ isOpen, onClose, route }) => {
                 <span className="text-red-400 font-bold">{route.piracy_rating?.toFixed(1)}</span>
               </div>
             </div>
+            
+            {/* Alternative Routes Dropdown */}
+            <AlternativeRoutesDropdown commodity={route.commodity_name} />
           </div>
         </div>
 
