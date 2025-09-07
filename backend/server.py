@@ -1547,6 +1547,171 @@ async def manual_refresh(data_source: str = Query(default="api", description="Da
             "logs": [{"timestamp": datetime.now(timezone.utc).isoformat(), "message": f"❌ Refresh failed: {str(e)}", "type": "error"}]
         }
 
+@api_router.get("/snare/commodity")
+async def snare_commodity(commodity_name: str = Query(description="Commodity name to analyze")):
+    """Analyze specific commodity for optimal snare opportunities"""
+    try:
+        if not commodity_name:
+            return {
+                "status": "error",
+                "message": "Commodity name is required",
+                "commodity": "",
+                "summary": {},
+                "snare_opportunities": []
+            }
+        
+        logging.info(f"Starting commodity snare analysis for: {commodity_name}")
+        
+        # Search for routes with this commodity
+        commodity_routes = await db.route_analyses.find({
+            "commodity_name": {"$regex": commodity_name, "$options": "i"}
+        }).sort("piracy_rating", -1).limit(50).to_list(50)
+        
+        if not commodity_routes:
+            # Try to generate new routes for this commodity
+            logging.info(f"No existing routes found for {commodity_name}, generating new data...")
+            
+            # Fetch fresh commodity data
+            commodities_data = await star_profit_client.get_commodities("api")
+            commodities = commodities_data.get('commodities', [])
+            
+            # Filter for the specific commodity
+            matching_commodities = [c for c in commodities if commodity_name.lower() in c.get('commodity_name', '').lower()]
+            
+            if not matching_commodities:
+                return {
+                    "status": "error",
+                    "message": f"No data found for commodity '{commodity_name}'. Try a different commodity name or check back later.",
+                    "commodity": commodity_name,
+                    "summary": {
+                        "total_routes_found": 0,
+                        "profitable_routes": 0,
+                        "inter_system_routes": 0,
+                        "same_system_routes": 0,
+                        "average_profit": 0,
+                        "max_piracy_rating": 0,
+                        "recommended_strategy": "No routes available"
+                    },
+                    "snare_opportunities": []
+                }
+            
+            # Generate routes for this commodity
+            for commodity in matching_commodities:
+                route = {
+                    "commodity_name": commodity.get('commodity_name', commodity_name),
+                    "origin_name": f"Stanton - {commodity.get('terminal', 'Port Olisar')}",
+                    "destination_name": f"Pyro - Rat's Nest",
+                    "profit": abs(commodity.get('sell_price', 100) - commodity.get('buy_price', 50)) * 1000,
+                    "investment": commodity.get('buy_price', 100) * random.randint(100, 1000),
+                    "roi": ((commodity.get('sell_price', 100) - commodity.get('buy_price', 50)) / max(commodity.get('buy_price', 1), 1)) * 100,
+                    "distance": random.randint(45000, 85000),
+                    "score": min(100, max(10, commodity.get('sell_price', 100) / 10)),
+                    "buy_price": commodity.get('buy_price', 0),
+                    "sell_price": commodity.get('sell_price', 0),
+                    "stock": commodity.get('stock', random.randint(100, 1000))
+                }
+                
+                piracy_score = RouteAnalyzer.calculate_piracy_score(route)
+                route_code = f"{commodity.get('terminal', 'PORT')[:6].replace(' ', '').upper()}-{commodity_name[:8].replace(' ', '').upper()}-RATSNE"
+                
+                analysis = RouteAnalysis(
+                    route_code=route_code,
+                    commodity_name=commodity.get('commodity_name', commodity_name),
+                    origin_name=route['origin_name'],
+                    destination_name=route['destination_name'],
+                    profit=float(route['profit']),
+                    roi=float(route['roi']),
+                    distance=float(route['distance']),
+                    score=int(route['score']),
+                    piracy_rating=piracy_score,
+                    frequency_score=float(route['score']) / 10,
+                    risk_level=RouteAnalyzer.categorize_risk_level(piracy_score),
+                    investment=float(route['investment']),
+                    coordinates_origin=star_profit_client.generate_system_coordinates("Stanton"),
+                    coordinates_destination=star_profit_client.generate_system_coordinates("Pyro"),
+                    interception_zones=RouteAnalyzer.calculate_interception_points(route),
+                    last_seen=datetime.now(timezone.utc)
+                )
+                
+                await db.route_analyses.insert_one(analysis.dict())
+                commodity_routes.append(analysis.dict())
+        
+        if not commodity_routes:
+            return {
+                "status": "error",
+                "message": f"No profitable routes found for '{commodity_name}'",
+                "commodity": commodity_name,
+                "summary": {
+                    "total_routes_found": 0,
+                    "profitable_routes": 0,
+                    "inter_system_routes": 0,
+                    "same_system_routes": 0,
+                    "average_profit": 0,
+                    "max_piracy_rating": 0,
+                    "recommended_strategy": "No profitable opportunities"
+                },
+                "snare_opportunities": []
+            }
+        
+        # Analyze the routes
+        profitable_routes = [r for r in commodity_routes if r.get('profit', 0) > 0]
+        inter_system_routes = [r for r in commodity_routes if 'Pyro' in r.get('destination_name', '') or 'Pyro' in r.get('origin_name', '')]
+        same_system_routes = [r for r in commodity_routes if r not in inter_system_routes]
+        
+        average_profit = sum(r.get('profit', 0) for r in profitable_routes) / max(len(profitable_routes), 1)
+        max_piracy_rating = max((r.get('piracy_rating', 0) for r in commodity_routes), default=0)
+        
+        # Generate snare opportunities
+        snare_opportunities = []
+        for route in sorted(commodity_routes, key=lambda x: x.get('piracy_rating', 0), reverse=True)[:10]:
+            opportunity = {
+                "route_code": route.get('route_code', 'UNKNOWN'),
+                "strategy": f"Intercept {route.get('commodity_name', commodity_name)} traders on {route.get('route_code', 'this route')}",
+                "risk_level": route.get('risk_level', 'MODERATE'),
+                "buying_point": route.get('origin_name', 'Unknown'),
+                "selling_point": route.get('destination_name', 'Unknown'),
+                "profit": route.get('profit', 0),
+                "piracy_rating": route.get('piracy_rating', 0),
+                "estimated_traders": max(1, int(route.get('score', 0) / 10)),
+                "warning": f"⚠️ Inter-system route - expect security patrols" if route in inter_system_routes else "✅ Same-system route - lower security risk"
+            }
+            snare_opportunities.append(opportunity)
+        
+        # Determine strategy
+        if max_piracy_rating > 80:
+            strategy = "ELITE target detected - high-value interceptions possible"
+        elif max_piracy_rating > 60:
+            strategy = "HIGH value routes available - focus on peak traffic hours"
+        elif max_piracy_rating > 40:
+            strategy = "MODERATE opportunities - consider alternative targets"
+        else:
+            strategy = "LOW priority commodity - minimal profit potential"
+        
+        return {
+            "status": "success",
+            "commodity": commodity_name,
+            "summary": {
+                "total_routes_found": len(commodity_routes),
+                "profitable_routes": len(profitable_routes),
+                "inter_system_routes": len(inter_system_routes),
+                "same_system_routes": len(same_system_routes),
+                "average_profit": average_profit,
+                "max_piracy_rating": max_piracy_rating,
+                "recommended_strategy": strategy
+            },
+            "snare_opportunities": snare_opportunities
+        }
+        
+    except Exception as e:
+        logging.error(f"Error in snare_commodity: {e}")
+        return {
+            "status": "error",
+            "message": f"Analysis failed: {str(e)}",
+            "commodity": commodity_name or "",
+            "summary": {},
+            "snare_opportunities": []
+        }
+
 @api_router.get("/snare/now")
 async def snare_now():
     """Get the most frequent route in the last hour for optimal interception"""
