@@ -1170,6 +1170,30 @@ const RouteDetailModal = ({ isOpen, onClose, route }) => {
                 <span className="text-gray-400">ROI:</span>
                 <span className="text-yellow-400">{route.roi?.toFixed(1)}%</span>
               </div>
+              {route.buy_price > 0 && (
+                <div className="flex justify-between">
+                  <span className="text-gray-400">Buy Price:</span>
+                  <span className="text-yellow-400">{route.buy_price.toFixed(2)} aUEC</span>
+                </div>
+              )}
+              {route.sell_price > 0 && (
+                <div className="flex justify-between">
+                  <span className="text-gray-400">Sell Price:</span>
+                  <span className="text-green-400">{route.sell_price.toFixed(2)} aUEC</span>
+                </div>
+              )}
+              {route.buy_stock > 0 && (
+                <div className="flex justify-between">
+                  <span className="text-gray-400">Buy Stock:</span>
+                  <span className="text-blue-400">{route.buy_stock} SCU</span>
+                </div>
+              )}
+              {route.sell_stock > 0 && (
+                <div className="flex justify-between">
+                  <span className="text-gray-400">Sell Stock:</span>
+                  <span className="text-purple-400">{route.sell_stock} SCU</span>
+                </div>
+              )}
               <div className="flex justify-between">
                 <span className="text-gray-400">Risk Level:</span>
                 <span className={`font-bold ${
