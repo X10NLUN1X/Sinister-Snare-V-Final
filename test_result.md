@@ -419,6 +419,8 @@ test_plan:
 agent_communication:
     - agent: "main"
     - message: "Phase 1 completed successfully: Fixed critical frontend startup issue by simplifying package.json dependencies. Frontend now loads correctly at localhost:3000. Ready to proceed with Phase 2: Backend testing. Need to verify if API integration has switched from UEX to Star Profit API and test all backend endpoints."
+    - agent: "main"
+    - message: "CRITICAL BUGS IDENTIFIED: 1) Manual Refresh ignores dataSource dropdown (always uses API), 2) Commodity Snare fails with 404 (missing /api/snare/commodity endpoint), 3) Routes show 'Unknown' origins/destinations, 4) Missing Buy/Sell Price data in routes display. Starting systematic debugging and fixes."
     - agent: "testing"
     - message: "Phase 2 COMPLETED: Comprehensive backend testing completed. MAJOR SUCCESS: Backend has successfully migrated from UEX API to Star Profit API as primary data source. 11/15 endpoints working perfectly (73% success rate). Core piracy intelligence functionality is operational. Issues: Database connectivity error affecting export and some commodity features. UEX API still blocked by Cloudflare but this is acceptable as Star Profit API is working. Ready for production use with minor database fixes needed."
     - agent: "testing"
