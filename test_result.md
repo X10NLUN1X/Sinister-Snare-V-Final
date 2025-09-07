@@ -411,10 +411,10 @@ metadata:
 
 test_plan:
   current_focus:
-    - "SnarePlan URL Format Correction Verified"
+    - "SnarePlan Terminologie-Synchronisation Complete"
   stuck_tasks: []
   test_all: false
-  test_priority: "snareplan_url_correction_complete"
+  test_priority: "terminologie_synchronisation_verified"
 
 agent_communication:
     - agent: "main"
