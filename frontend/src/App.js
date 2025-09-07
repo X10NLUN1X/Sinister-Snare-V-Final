@@ -1112,6 +1112,7 @@ const AlternativeRoutesDropdown = ({ commodity }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [terminals, setTerminals] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [lastUpdated, setLastUpdated] = useState(null);
 
   const fetchAlternativeRoutes = async () => {
     if (!commodity || terminals.length > 0) return; // Don't fetch if already loaded
@@ -1131,6 +1132,7 @@ const AlternativeRoutesDropdown = ({ commodity }) => {
       
       if (data.status === 'success') {
         setTerminals(data.terminals || []);
+        setLastUpdated(new Date()); // Set current timestamp on successful data fetch
         console.log(`[AlternativeRoutes] Set ${data.terminals?.length || 0} terminals`); // Debug log
       } else {
         console.error('Failed to fetch alternative routes:', data.message);
