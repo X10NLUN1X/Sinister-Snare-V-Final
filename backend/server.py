@@ -1020,7 +1020,7 @@ async def analyze_routes(
                 "total_routes": 0,
                 "analysis_timestamp": datetime.now(timezone.utc).isoformat(),
                 "data_source": data_source,
-                "api_used": f"Star Profit {data_source.upper()} (error)",
+                "api_used": f"UEXCorp (error)",
                 "database_available": db is not None
             }
         
