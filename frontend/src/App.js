@@ -916,7 +916,6 @@ const TERMINAL_TO_SNAREPLAN_MAPPING = {
   "Reclamation Orinth": "Hurston",
   
   // Outposts -> Nearest Planet
-  "Seraphim": "Crusader",
   "Ashland": "Hurston",
   "Checkmate": "Hurston", 
   "Deakins Research": "microTech",
