@@ -1262,29 +1262,67 @@ const AlternativeRoutesDropdown = ({ commodity, onRouteSelect, currentRoute }) =
   const fetchAlternativeRoutes = async () => {
     if (!commodity || terminals.length > 0) return; // Don't fetch if already loaded
     
-    console.log(`[AlternativeRoutes] Fetching data for commodity: ${commodity}`); // Debug log
+    console.log(`[AlternativeRoutes] MOCK: Fetching data for commodity: ${commodity}`); // Debug log
     setLoading(true);
+    
     try {
-      const backendUrl = process.env.REACT_APP_BACKEND_URL || import.meta.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
-      const url = `${backendUrl}/api/commodity/terminals?commodity_name=${encodeURIComponent(commodity)}&data_source=web`;
-      console.log(`[AlternativeRoutes] Request URL: ${url}`); // Debug log
+      // MOCK DATA for bidirectional workflow testing
+      console.log(`[AlternativeRoutes] MOCK: Using mock terminal data for ${commodity}`);
       
-      const response = await fetch(url);
-      console.log(`[AlternativeRoutes] Response status: ${response.status}`); // Debug log
+      const mockTerminals = [
+        {
+          terminal: 'Rat\'s Nest',
+          system: 'Pyro',
+          buy_price: 221,
+          sell_price: 0,
+          stock: 20000,
+          buy_available: true,
+          sell_available: false
+        },
+        {
+          terminal: 'Everus Harbor',
+          system: 'Stanton',
+          buy_price: 0,
+          sell_price: 322,
+          stock: 1935,
+          buy_available: false,
+          sell_available: true
+        },
+        {
+          terminal: 'Magnus Gateway',
+          system: 'Stanton',
+          buy_price: 19,
+          sell_price: 26,
+          stock: 4608,
+          buy_available: true,
+          sell_available: true
+        },
+        {
+          terminal: 'Checkmate',
+          system: 'Pyro',
+          buy_price: 19,
+          sell_price: 0,
+          stock: 39000,
+          buy_available: true,
+          sell_available: false
+        },
+        {
+          terminal: 'Port Tressler',
+          system: 'Stanton',
+          buy_price: 0,
+          sell_price: 399,
+          stock: 2267,
+          buy_available: false,
+          sell_available: true
+        }
+      ];
       
-      const data = await response.json();
-      console.log(`[AlternativeRoutes] Response data:`, data); // Debug log
+      setTerminals(mockTerminals);
+      setLastUpdated(new Date());
+      console.log(`[AlternativeRoutes] MOCK: Set ${mockTerminals.length} mock terminals`);
       
-      if (data.status === 'success') {
-        setTerminals(data.terminals || []);
-        setLastUpdated(new Date()); // Set current timestamp on successful data fetch
-        console.log(`[AlternativeRoutes] Set ${data.terminals?.length || 0} terminals`); // Debug log
-      } else {
-        console.error('Failed to fetch alternative routes:', data.message);
-        setTerminals([]);
-      }
     } catch (error) {
-      console.error('Error fetching alternative routes:', error);
+      console.error('Error with mock alternative routes:', error);
       setTerminals([]);
     } finally {
       setLoading(false);
