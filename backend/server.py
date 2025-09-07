@@ -217,6 +217,80 @@ class StarProfitClient:
             logging.error(f"Error generating trading routes from {source_type}: {e}")
             return {"status": "error", "data": [], "message": str(e)}
     
+    def cleanup_terminal_name(self, terminal_name: str) -> str:
+        """Clean up terminal names to match Star Citizen lore and naming conventions"""
+        if not terminal_name or terminal_name == 'Unknown':
+            return terminal_name
+        
+        # Remove common prefixes/suffixes that don't match lore
+        cleaned = terminal_name.strip()
+        
+        # Fix common naming issues
+        name_fixes = {
+            # Common API inconsistencies
+            'port olisar station': 'Port Olisar',
+            'lorville city': 'Lorville',
+            'area 18 landing zone': 'Area18',
+            'new babbage city': 'New Babbage',
+            'orison city': 'Orison',
+            'grim hex station': 'GrimHEX',
+            'everus harbor station': 'Everus Harbor',
+            'port tressler station': 'Port Tressler',
+            'baijini point station': 'Baijini Point',
+            
+            # Mining stations
+            'shubin mining facility smca-6': 'Shubin SMCA-6',
+            'shubin mining facility smca-8': 'Shubin SMCA-8',
+            
+            # Outlaw stations
+            'rats nest outpost': "Rat's Nest",
+            'spider outlaw base': 'Spider',
+            'jumptown drug lab': 'Jumptown',
+            
+            # Research stations
+            'rayari aneth research': 'Rayari Aneth Research Outpost',
+            'rayari deltana research': 'Rayari Deltana Research Outpost',
+            'rayari kaltag research': 'Rayari Kaltag Research Outpost',
+        }
+        
+        # Check for exact matches first
+        cleaned_lower = cleaned.lower()
+        for old_name, new_name in name_fixes.items():
+            if cleaned_lower == old_name:
+                return new_name
+        
+        # Apply general cleanup rules
+        # Remove redundant words
+        redundant_words = ['station', 'outpost', 'facility', 'base', 'terminal', 'spaceport']
+        words = cleaned.split()
+        
+        # Only remove redundant words if they're at the end and the name would still be meaningful
+        if len(words) > 1 and words[-1].lower() in redundant_words:
+            # Check if removing the word would create a known location
+            potential_name = ' '.join(words[:-1])
+            if len(potential_name) > 3:  # Ensure we don't make names too short
+                cleaned = potential_name
+        
+        # Capitalize properly
+        cleaned = ' '.join(word.capitalize() for word in cleaned.split())
+        
+        # Fix specific capitalization issues
+        capitalization_fixes = {
+            'Grimhex': 'GrimHEX',
+            'Arccorp': 'ArcCorp',
+            'Microtech': 'microTech',
+            'Hur-L1': 'HUR-L1',
+            'Cru-L1': 'CRU-L1',
+            'Arc-L1': 'ARC-L1',
+            'Mic-L1': 'MIC-L1',
+        }
+        
+        for old_cap, new_cap in capitalization_fixes.items():
+            if cleaned.lower() == old_cap.lower():
+                cleaned = new_cap
+        
+        return cleaned
+    
     def map_terminal_to_system(self, terminal_name: str) -> str:
         """Map terminal names to their correct star systems based on real Star Citizen data (Updated 2025)"""
         terminal_name_lower = terminal_name.lower()
