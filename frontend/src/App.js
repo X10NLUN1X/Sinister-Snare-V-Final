@@ -1271,11 +1271,17 @@ const AlternativeRoutesDropdown = ({ commodity, onRouteSelect, currentRoute }) =
       const url = `${backendUrl}/api/commodity/terminals?commodity_name=${encodeURIComponent(commodity)}&data_source=web`;
       console.log(`[AlternativeRoutes] REAL: Request URL: ${url}`);
       
+      // Create manual timeout controller
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 second timeout
+      
       const response = await fetch(url, {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' },
         signal: controller.signal
       });
+      
+      clearTimeout(timeoutId); // Clear timeout on successful response
       
       if (response.ok) {
         const data = await response.json();
