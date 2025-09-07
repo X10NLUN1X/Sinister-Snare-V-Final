@@ -1678,25 +1678,37 @@ function App() {
 
   const fetchRoutes = useCallback(async () => {
     try {
-      const response = await axios.get(`${API}/routes/analyze?limit=20&min_score=10&include_coordinates=true`);
-      const newRoutes = response.data.routes || [];
-      setRoutes(newRoutes);
+      const dataTypeParam = showAverageData ? 'averaged' : 'current';
+      let response;
       
-      // Store routes in local database for historical analysis
-      if (newRoutes.length > 0) {
-        try {
-          await sinisterDB.addRoutes(newRoutes);
-          console.log(`✅ Stored ${newRoutes.length} routes in local database`);
-          // Update database stats after adding routes
-          await fetchDbStats();
-        } catch (dbError) {
-          console.warn('Database storage failed, continuing without local storage:', dbError);
+      if (showAverageData) {
+        // Fetch averaged/merged data from backend
+        response = await axios.get(`${API}/database/routes/${dataTypeParam}`);
+        const routes = response.data.routes || [];
+        setRoutes(routes);
+        console.log(`✅ Fetched ${routes.length} ${dataTypeParam} routes`);
+      } else {
+        // Fetch current data with specified data source
+        response = await axios.get(`${API}/routes/analyze?limit=20&min_score=10&include_coordinates=true&data_source=${dataSource}`);
+        const newRoutes = response.data.routes || [];
+        setRoutes(newRoutes);
+        
+        // Store routes in local database for historical analysis
+        if (newRoutes.length > 0) {
+          try {
+            await sinisterDB.addRoutes(newRoutes);
+            console.log(`✅ Stored ${newRoutes.length} routes from ${dataSource} in local database`);
+            // Update database stats after adding routes
+            await fetchDbStats();
+          } catch (dbError) {
+            console.warn('Database storage failed, continuing without local storage:', dbError);
+          }
         }
       }
     } catch (error) {
       console.error('Error fetching routes:', error);
     }
-  }, []);
+  }, [dataSource, showAverageData]);
 
   const fetchTargets = useCallback(async () => {
     try {
