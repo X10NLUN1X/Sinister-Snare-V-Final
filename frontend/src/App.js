@@ -1379,6 +1379,13 @@ const AlternativeRoutesDropdown = ({ commodity, onRouteSelect, currentRoute }) =
 
   // NEW: Create new route from selected origin and destination
   const createNewRoute = (originTerminal, destinationTerminal) => {
+    console.log(`[AlternativeRoutes] createNewRoute called with:`, {
+      originTerminal: originTerminal?.terminal,
+      destinationTerminal: destinationTerminal?.terminal,
+      onRouteSelect: !!onRouteSelect,
+      currentRoute: !!currentRoute
+    });
+    
     if (onRouteSelect && currentRoute) {
       console.log(`[AlternativeRoutes] Creating new route: ${originTerminal.terminal} → ${destinationTerminal.terminal}`);
       
@@ -1419,8 +1426,10 @@ const AlternativeRoutesDropdown = ({ commodity, onRouteSelect, currentRoute }) =
       setWorkflowStep('overview');
       setSelectedOrigin(null);
       setSelectedDestination(null);
+      
+      console.log(`[AlternativeRoutes] ✅ Route creation complete - dropdown closed and state reset`);
     } else {
-      console.warn('[AlternativeRoutes] onRouteSelect callback not available');
+      console.warn(`[AlternativeRoutes] ❌ Cannot create route: onRouteSelect=${!!onRouteSelect}, currentRoute=${!!currentRoute}`);
     }
   };
 
