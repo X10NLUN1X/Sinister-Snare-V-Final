@@ -2598,8 +2598,9 @@ function App() {
         });
       }
       
-      // Load other data with individual error handling and timeouts
-      const fetchWithTimeout = async (fetchFunction, name, timeoutMs = 10000) => {
+      // TEMPORARY: Simplified loading to test the new bidirectional workflow
+      // Load only essential data with very short timeouts
+      const fetchWithTimeout = async (fetchFunction, name, timeoutMs = 3000) => {
         try {
           console.log(`⏳ Loading ${name}...`);
           const timeoutPromise = new Promise((_, reject) => 
@@ -2614,19 +2615,15 @@ function App() {
         }
       };
 
-      // Load all data independently - failures don't block the app
+      // Load minimal essential data to get app working
       await Promise.allSettled([
-        fetchWithTimeout(fetchApiStatus, 'API Status', 5000),
-        fetchWithTimeout(fetchRoutes, 'Routes', 15000),
-        fetchWithTimeout(fetchTargets, 'Targets', 10000),
-        fetchWithTimeout(fetchHourlyData, 'Hourly Data', 10000),
-        fetchWithTimeout(fetchAlerts, 'Alerts', 8000),
-        fetchWithTimeout(fetchTrends, 'Trends', 12000),
-        fetchWithTimeout(fetchTrackingStatus, 'Tracking Status', 5000)
+        fetchWithTimeout(fetchApiStatus, 'API Status', 3000),
+        fetchWithTimeout(fetchRoutes, 'Routes', 5000)
+        // Temporarily skip other problematic endpoints
       ]);
       
+      console.log('🎉 Sinister Snare loading complete (minimal mode)!');
       setLoading(false);
-      console.log('🎉 Sinister Snare initialization complete!');
     };
 
     initializeApp();
