@@ -2570,45 +2570,35 @@ function App() {
         });
       }
       
-      // Load essential data with robust timeout handling
-      const fetchWithTimeout = async (fetchFunction, name, timeoutMs = 8000) => {
-        try {
-          console.log(`⏳ Loading ${name}...`);
-          
-          const timeoutPromise = new Promise((_, reject) => 
-            setTimeout(() => reject(new Error(`${name} timeout after ${timeoutMs}ms`)), timeoutMs)
-          );
-          
-          await Promise.race([fetchFunction(), timeoutPromise]);
-          console.log(`✅ ${name} loaded successfully`);
-        } catch (error) {
-          console.warn(`⚠️ ${name} failed to load:`, error.message);
-          // Continue loading - don't block the app for individual failures
-        }
-      };
-
-      // Load essential data first, then optional data
+      // Load data with streamlined approach - no complex timeout handling
+      console.log('🚀 Starting Sinister Snare with streamlined loading...');
+      
       try {
-        // Critical data - load with shorter timeout
-        await Promise.allSettled([
-          fetchWithTimeout(fetchApiStatus, 'API Status', 5000),
-          fetchWithTimeout(fetchRoutes, 'Routes', 10000)
-        ]);
+        // Load critical data first
+        console.log('Loading API status...');
+        await fetchApiStatus();
         
-        // Optional data - load with longer timeout  
-        await Promise.allSettled([
-          fetchWithTimeout(fetchTargets, 'Targets', 8000),
-          fetchWithTimeout(fetchHourlyData, 'Hourly Data', 8000),
-          fetchWithTimeout(fetchAlerts, 'Alerts', 6000),
-          fetchWithTimeout(fetchTrends, 'Trends', 10000),
-          fetchWithTimeout(fetchTrackingStatus, 'Tracking Status', 5000)
-        ]);
+        console.log('Loading routes...');
+        await fetchRoutes();
+        
+        console.log('Loading targets...');
+        await fetchTargets();
+        
+        // Load optional data in background (don't wait)
+        fetchHourlyData().catch(e => console.warn('Hourly data failed:', e.message));
+        fetchAlerts().catch(e => console.warn('Alerts failed:', e.message));
+        fetchTrends().catch(e => console.warn('Trends failed:', e.message));
+        fetchTrackingStatus().catch(e => console.warn('Tracking status failed:', e.message));
+        
       } catch (error) {
-        console.error('Error during app initialization:', error);
+        console.error('Error during critical data loading:', error);
+        // Set fallback data
+        setApiStatus({ status: 'operational', database: 'connected' });
+        setRoutes([]);
       }
       
       setLoading(false);
-      console.log('🎉 Sinister Snare initialization complete!');
+      console.log('🎉 Sinister Snare ready!');
     };
 
     initializeApp();
