@@ -972,7 +972,34 @@ const TERMINAL_TO_SNAREPLAN_MAPPING = {
   // === MISSING DUMPER'S OPERATIONS TERMINALS ===
   // Dumper's Operations -> Planet Locations  
   "Dumper's Area 18": "ArcCorp",
-  "Dumper's GrimHEX": "Crusader"
+  "Dumper's GrimHEX": "Crusader",
+  
+  // === MISSING CRU MAINTENANCE TERMINALS ===
+  // CRU Maintenance -> Crusader system
+  "CRU-L4 Locker": "Crusader",
+  "CRU-L5 Maintenance": "Crusader",
+  
+  // === MISSING PLATINUM STATIONS ===
+  // Platinum Stations -> Respective Planet Systems
+  "Platinum ARCL1": "ArcCorp",
+  "Platinum Baijini": "ArcCorp", 
+  "Platinum CRUL1": "Crusader",
+  "Platinum CRUL4": "Crusader",
+  "Platinum CRUL5": "Crusader",
+  "Platinum Everus": "Hurston",
+  "Platinum HURL2": "Hurston",
+  "Platinum HURL3": "Hurston", 
+  "Platinum HURL5": "Hurston",
+  "Platinum Tressler": "Microtech",
+  
+  // Gateway Stations -> Origin System
+  "Pyro Gateway": "Stanton",
+  "Terra Gateway": "Stanton", 
+  "Magnus Gateway": "Stanton",
+  "Stanton Gateway": "Stanton",
+  "Platinum Pyro Gateway": "Stanton",
+  "Platinum Stanton Gateway": "Stanton",
+  "Platinum Magnus": "Stanton"
 };
 
 // Lagrange Points that should NOT be mapped (keep original names)
