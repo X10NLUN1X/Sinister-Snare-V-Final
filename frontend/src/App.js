@@ -979,7 +979,13 @@ const LAGRANGE_EXCLUSIONS = [
 
 // Function to map terminal name to Snareplan-compatible location
 const mapTerminalForSnareplan = (terminalName) => {
-  // Check if this is a Lagrange Point that should be excluded
+  // Check if this is a main station that should be excluded (starts with CRU, HUR, ARC, MIC)
+  const mainStationPrefixes = ['CRU-', 'HUR-', 'ARC-', 'MIC-'];
+  if (mainStationPrefixes.some(prefix => terminalName.startsWith(prefix))) {
+    return terminalName; // Keep original name for main stations
+  }
+  
+  // Check if this is a Lagrange Point that should be excluded (legacy support)
   if (LAGRANGE_EXCLUSIONS.includes(terminalName)) {
     return terminalName; // Keep original name
   }
@@ -1027,27 +1033,29 @@ const SNAREPLAN_LOCATIONS = {
     'Whala Emergency': 'Whala Emergency',
     
     // Planets and Moons (common variations)
-    'MicroTech': 'MicroTech',
+    'Microtech': 'Microtech',
     'ArcCorp': 'ArcCorp', 
     'Hurston': 'Hurston',
     'Crusader': 'Crusader',
-    'Area18': 'Area18',
-    'Lorville': 'Lorville',
-    'New Babbage': 'New Babbage',
-    'Orison': 'Orison',
+    'Area18': 'ArcCorp',
+    'Lorville': 'Hurston',
+    'New Babbage': 'Microtech',
+    'Orison': 'Crusader',
     
     // Common Station Names 
-    'Port Olisar': 'Port Olisar',
-    'Port Tressler': 'Port Tressler',
-    'Everus Harbor': 'Everus Harbor',
-    'Baijini Point': 'Baijini Point'
+    'Port Olisar': 'Crusader',
+    'Port Tressler': 'Microtech',
+    'Everus Harbor': 'Hurston',
+    'Baijini Point': 'ArcCorp'
   },
   
   // PYRO SYSTEM  
   'Pyro': {
     'Pyro Gateway': 'Pyro Gateway',
-    'Rat\'s Nest': 'Rats Nest',
-    'Ruin Station': 'Ruin Station',
+    'Rat\'s Nest': 'Pyro V',
+    'Ruin Station': 'Pyro I',
+    'Endgame': 'Pyro IV',
+    'Orbituary': 'Pyro III',
     'Pyro I': 'Pyro I',
     'Pyro II': 'Pyro II', 
     'Pyro III': 'Pyro III',
