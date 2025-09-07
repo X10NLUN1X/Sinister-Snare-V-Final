@@ -1507,6 +1507,7 @@ function App() {
   const [refreshModal, setRefreshModal] = useState({ open: false, logs: [], isRefreshing: false });
   const [snareModal, setSnareModal] = useState({ open: false, data: null });
   const [commoditySnareModal, setCommoditySnareModal] = useState(false);
+  const [routeDetailModal, setRouteDetailModal] = useState({ open: false, route: null });
   const [dbStats, setDbStats] = useState(null);
 
   const fetchApiStatus = useCallback(async () => {
