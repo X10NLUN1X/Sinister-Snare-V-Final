@@ -1,6 +1,6 @@
 {
   "name": "sinister-snare-frontend",
-  "version": "2.0.0",
+  "version": "5.0.0",
   "description": "Star Citizen Piracy Intelligence System",
   "private": true,
   "dependencies": {
