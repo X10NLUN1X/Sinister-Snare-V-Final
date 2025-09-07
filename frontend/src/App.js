@@ -2570,35 +2570,45 @@ function App() {
         });
       }
       
-      // EMERGENCY: Skip all API calls for now to test the bidirectional workflow
-      console.log('🚀 Sinister Snare starting in emergency mode (no API calls)');
-      
-      // Set minimal default data so the app can load
-      setApiStatus({ status: 'operational', database: 'connected' });
-      setRoutes([
-        {
-          id: 'test-route-1',
-          commodity_name: 'Aluminum',
-          origin_name: 'Pyro - Rat\'s Nest',
-          destination_name: 'Stanton - Everus Harbor',
-          route_code: 'RATSNE-ALUMINUM-EVERUSH',
-          profit: 101000,
-          piracy_rating: 71.5,
-          risk_level: 'HIGH',
-          buy_price: 2.21,
-          sell_price: 3.22,
-          buy_stock: 1000,
-          sell_stock: 500,
-          roi: 45.7,
-          distance: 115919,
-          score: 10,
-          investment: 221000,
-          interception_zones: []
+      // Load essential data with robust timeout handling
+      const fetchWithTimeout = async (fetchFunction, name, timeoutMs = 8000) => {
+        try {
+          console.log(`⏳ Loading ${name}...`);
+          
+          const timeoutPromise = new Promise((_, reject) => 
+            setTimeout(() => reject(new Error(`${name} timeout after ${timeoutMs}ms`)), timeoutMs)
+          );
+          
+          await Promise.race([fetchFunction(), timeoutPromise]);
+          console.log(`✅ ${name} loaded successfully`);
+        } catch (error) {
+          console.warn(`⚠️ ${name} failed to load:`, error.message);
+          // Continue loading - don't block the app for individual failures
         }
-      ]);
+      };
+
+      // Load essential data first, then optional data
+      try {
+        // Critical data - load with shorter timeout
+        await Promise.allSettled([
+          fetchWithTimeout(fetchApiStatus, 'API Status', 5000),
+          fetchWithTimeout(fetchRoutes, 'Routes', 10000)
+        ]);
+        
+        // Optional data - load with longer timeout  
+        await Promise.allSettled([
+          fetchWithTimeout(fetchTargets, 'Targets', 8000),
+          fetchWithTimeout(fetchHourlyData, 'Hourly Data', 8000),
+          fetchWithTimeout(fetchAlerts, 'Alerts', 6000),
+          fetchWithTimeout(fetchTrends, 'Trends', 10000),
+          fetchWithTimeout(fetchTrackingStatus, 'Tracking Status', 5000)
+        ]);
+      } catch (error) {
+        console.error('Error during app initialization:', error);
+      }
       
       setLoading(false);
-      console.log('🎉 Emergency mode loaded - ready to test bidirectional workflow!');
+      console.log('🎉 Sinister Snare initialization complete!');
     };
 
     initializeApp();
