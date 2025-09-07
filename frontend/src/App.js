@@ -938,23 +938,28 @@ const TERMINAL_TO_SNAREPLAN_MAPPING = {
   "GrimHEX": "Crusader",
   
   // === PYRO SYSTEM ===
-  // Major Stations -> Pyro (general system)
-  "Ruin Station": "Pyro I",
-  "Rat's Nest": "Pyro V", 
-  "Endgame": "Pyro IV",
-  "Orbituary": "Pyro III",
+  // Major Stations -> Correct Pyro Planets (Snareplan Compatible)
+  "Ruin Station": "Pyro I",           // Pyrotechnic Amalgamated, Pyro I orbit
+  "Stanton Gateway": "Pyro I",        // Pyro-Stanton Jump Point (Pyro side)
   
-  // Outlaw Stations -> Pyro planets
-  "Rod's Fuel 'N Supplies": "Pyro V",
-  "Starlight Service": "Pyro III",
-  "Dudley and Daughters": "Pyro IV",
-  "Gaslight": "Pyro V",
-  "Megumi Refueling": "Pyro IV",
-  "Patch City": "Pyro III",
+  // Rough & Ready Gang Controlled -> Pyro III (Bloom)
+  "Orbituary": "Pyro III",            // High orbit above Bloom (Pyro III)
+  "Patch City": "Pyro III",           // Bloom's L3 Lagrange point
+  "Starlight Service": "Pyro III",    // Bloom's L1 Lagrange point
   
-  // Trading Posts -> Pyro system
+  // Independent/Outlaw Stations -> Pyro IV (Terminus) 
+  "Endgame": "Pyro IV",               // Terminus L3 Lagrange point
+  "Dudley and Daughters": "Pyro IV",  // Terminus L4 Lagrange point
+  "Megumi Refueling": "Pyro IV",      // Terminus L5 Lagrange point
+  
+  // Pyro V (Gas Giant) Stations
+  "Rat's Nest": "Pyro V",             // Pyro V's L5 Lagrange point
+  "Rod's Fuel 'N Supplies": "Pyro V", // Pyro V's L4 Lagrange point
+  "Gaslight": "Pyro V",               // Pyro V's L2 Lagrange point
+  
+  // Trading Posts and Outposts -> General Pyro System
   "Canard View": "Pyro",
-  "Jackson's Swap": "Pyro", 
+  "Jackson's Swap": "Pyro",
   "The Golden Riviera": "Pyro",
   "Chawla's Beach": "Pyro",
   "Dunboro": "Pyro",
@@ -966,7 +971,13 @@ const TERMINAL_TO_SNAREPLAN_MAPPING = {
   "Slowburn Depot": "Pyro",
   "Watcher's Depot": "Pyro",
   "Dinger's Depot": "Pyro",
-  "Feo Canyon Depot": "Pyro"
+  "Feo Canyon Depot": "Pyro",
+  
+  // Checkmate (moved to Pyro system based on verification)
+  "Checkmate": "Pyro",
+  
+  // Platinum Operations in Pyro
+  "Platinum Bay Terra": "Pyro"
 };
 
 // Lagrange Points that should NOT be mapped (keep original names)
