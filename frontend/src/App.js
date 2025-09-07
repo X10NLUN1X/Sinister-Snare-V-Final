@@ -499,7 +499,7 @@ const RouteCard = ({ route, onSelect, onAlternativeRouteSelect }) => {
       {/* Alternative Routes Dropdown - Direct in Card */}
       <AlternativeRoutesDropdown 
         commodity={route.commodity_name} 
-        onRouteSelect={onSelect}
+        onRouteSelect={onAlternativeRouteSelect}
         currentRoute={route}
       />
     </div>
