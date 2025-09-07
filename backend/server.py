@@ -793,7 +793,7 @@ async def update_tracking_data():
     
     try:
         # Fetch latest routes from Star Profit API
-        routes_data = await star_profit_client.get_trading_routes()
+        routes_data = await star_profit_client.get_trading_routes_processed()
         if routes_data.get('status') == 'ok':
             routes = routes_data.get('data', [])
             
