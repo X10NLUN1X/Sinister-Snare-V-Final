@@ -1262,13 +1262,40 @@ const AlternativeRoutesDropdown = ({ commodity, onRouteSelect, currentRoute }) =
   const fetchAlternativeRoutes = async () => {
     if (!commodity || terminals.length > 0) return; // Don't fetch if already loaded
     
-    console.log(`[AlternativeRoutes] MOCK: Fetching data for commodity: ${commodity}`); // Debug log
+    console.log(`[AlternativeRoutes] REAL: Fetching data for commodity: ${commodity}`);
     setLoading(true);
     
     try {
-      // MOCK DATA for bidirectional workflow testing
-      console.log(`[AlternativeRoutes] MOCK: Using mock terminal data for ${commodity}`);
+      // Try real backend API first
+      const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
+      const url = `${backendUrl}/api/commodity/terminals?commodity_name=${encodeURIComponent(commodity)}&data_source=web`;
+      console.log(`[AlternativeRoutes] REAL: Request URL: ${url}`);
       
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        signal: AbortSignal.timeout(8000) // 8 second timeout
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        console.log(`[AlternativeRoutes] REAL: Response data:`, data);
+        
+        if (data.status === 'success') {
+          setTerminals(data.terminals || []);
+          setLastUpdated(new Date());
+          console.log(`[AlternativeRoutes] REAL: Set ${data.terminals?.length || 0} real terminals`);
+        } else {
+          throw new Error(data.message || 'API returned error status');
+        }
+      } else {
+        throw new Error(`HTTP ${response.status}`);
+      }
+      
+    } catch (error) {
+      console.warn(`[AlternativeRoutes] REAL API failed: ${error.message}, using fallback mock data`);
+      
+      // Fallback to mock data if real API fails
       const mockTerminals = [
         {
           terminal: 'Rat\'s Nest',
@@ -1319,11 +1346,8 @@ const AlternativeRoutesDropdown = ({ commodity, onRouteSelect, currentRoute }) =
       
       setTerminals(mockTerminals);
       setLastUpdated(new Date());
-      console.log(`[AlternativeRoutes] MOCK: Set ${mockTerminals.length} mock terminals`);
+      console.log(`[AlternativeRoutes] FALLBACK: Set ${mockTerminals.length} mock terminals`);
       
-    } catch (error) {
-      console.error('Error with mock alternative routes:', error);
-      setTerminals([]);
     } finally {
       setLoading(false);
     }
