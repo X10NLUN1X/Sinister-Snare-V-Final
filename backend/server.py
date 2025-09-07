@@ -1595,7 +1595,7 @@ async def startup_event():
     """Initialize tracking system on startup"""
     global tracking_state
     tracking_state['active'] = True
-    logger.info("Sinister Snare v2.0 - Advanced Piracy Intelligence System started")
+    logger.info("Sinister Snare v5.0 - Advanced Piracy Intelligence System started")
 
 @app.on_event("shutdown")
 async def shutdown_db_client():
