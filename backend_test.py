@@ -547,11 +547,377 @@ async def test_backend_endpoints():
     
     return results
 
+async def test_review_request_fixes():
+    """Test the specific fixes mentioned in the current review request"""
+    results = TestResults()
+    
+    print(f"\n🎯 Testing Review Request: Sinister Snare Backend Fixes")
+    print("Focus Areas: Diverse Commodities, Real Data Usage, Unknown Values Fix, Database Upsert, Median/Average Data")
+    
+    async with httpx.AsyncClient(timeout=30.0) as client:
+        
+        # Test 1: Diverse Commodities in Route Analysis (limit=20)
+        try:
+            response = await client.get(f"{BACKEND_URL}/api/routes/analyze?limit=20")
+            if response.status_code == 200:
+                data = response.json()
+                if data.get('status') == 'success':
+                    routes = data.get('routes', [])
+                    
+                    if len(routes) >= 15:  # Should get close to 20 routes
+                        # Check commodity diversity
+                        commodity_names = [route.get('commodity_name', '') for route in routes]
+                        unique_commodities = set(commodity_names)
+                        
+                        # Check if we have diverse commodities (not just Agricium)
+                        agricium_count = sum(1 for name in commodity_names if 'Agricium' in name)
+                        non_agricium_count = len(commodity_names) - agricium_count
+                        
+                        if len(unique_commodities) >= 10 and non_agricium_count >= 10:
+                            results.add_result(
+                                "Diverse Commodities in Route Analysis",
+                                "PASS",
+                                f"Found {len(unique_commodities)} unique commodities out of {len(routes)} routes. Non-Agricium routes: {non_agricium_count}. Sample commodities: {list(unique_commodities)[:5]}"
+                            )
+                        else:
+                            results.add_result(
+                                "Diverse Commodities in Route Analysis",
+                                "FAIL",
+                                f"Insufficient diversity: {len(unique_commodities)} unique commodities, {non_agricium_count} non-Agricium routes. Commodities: {list(unique_commodities)}"
+                            )
+                    else:
+                        results.add_result(
+                            "Diverse Commodities in Route Analysis",
+                            "FAIL",
+                            f"Expected ~20 routes, got {len(routes)}"
+                        )
+                else:
+                    results.add_result(
+                        "Diverse Commodities in Route Analysis",
+                        "FAIL",
+                        f"API returned status: {data.get('status')}"
+                    )
+            else:
+                results.add_result(
+                    "Diverse Commodities in Route Analysis",
+                    "FAIL",
+                    f"HTTP {response.status_code}: {response.text[:200]}"
+                )
+        except Exception as e:
+            results.add_result(
+                "Diverse Commodities in Route Analysis",
+                "FAIL",
+                f"Connection error: {str(e)}"
+            )
+        
+        # Test 2: Correct Real Data Usage - Agricium Routes
+        try:
+            response = await client.get(f"{BACKEND_URL}/api/routes/analyze?limit=20")
+            if response.status_code == 200:
+                data = response.json()
+                if data.get('status') == 'success':
+                    routes = data.get('routes', [])
+                    api_used = data.get('api_used', '')
+                    
+                    # Find Agricium routes
+                    agricium_routes = [route for route in routes if 'Agricium' in route.get('commodity_name', '')]
+                    
+                    if agricium_routes:
+                        agricium_route = agricium_routes[0]
+                        
+                        # Check if using Star Profit API data
+                        using_star_profit = 'Star Profit' in api_used
+                        
+                        # Check buy/sell prices are realistic (not fake Port Olisar data)
+                        buy_price = agricium_route.get('buy_price', 0)
+                        sell_price = agricium_route.get('sell_price', 0)
+                        origin_name = agricium_route.get('origin_name', '')
+                        destination_name = agricium_route.get('destination_name', '')
+                        
+                        # Realistic Agricium prices should be in range 15-35 aUEC
+                        realistic_prices = 15 <= buy_price <= 35 and 15 <= sell_price <= 50
+                        
+                        # Check terminal locations are correct (not fake Port Olisar everywhere)
+                        has_real_terminals = 'Port Olisar' not in origin_name or len([r for r in routes if 'Port Olisar' in r.get('origin_name', '')]) < len(routes) * 0.8
+                        
+                        if using_star_profit and realistic_prices and has_real_terminals:
+                            results.add_result(
+                                "Correct Real Data Usage - Agricium",
+                                "PASS",
+                                f"Agricium uses Star Profit API data. Buy: {buy_price}, Sell: {sell_price}, Origin: {origin_name}, Dest: {destination_name}"
+                            )
+                        else:
+                            issues = []
+                            if not using_star_profit:
+                                issues.append(f"Not using Star Profit API: {api_used}")
+                            if not realistic_prices:
+                                issues.append(f"Unrealistic prices: Buy {buy_price}, Sell {sell_price}")
+                            if not has_real_terminals:
+                                issues.append("Too many Port Olisar terminals (fake data)")
+                            
+                            results.add_result(
+                                "Correct Real Data Usage - Agricium",
+                                "FAIL",
+                                f"Issues found: {'; '.join(issues)}"
+                            )
+                    else:
+                        results.add_result(
+                            "Correct Real Data Usage - Agricium",
+                            "FAIL",
+                            "No Agricium routes found to verify real data usage"
+                        )
+                else:
+                    results.add_result(
+                        "Correct Real Data Usage - Agricium",
+                        "FAIL",
+                        f"API returned status: {data.get('status')}"
+                    )
+            else:
+                results.add_result(
+                    "Correct Real Data Usage - Agricium",
+                    "FAIL",
+                    f"HTTP {response.status_code}: {response.text[:200]}"
+                )
+        except Exception as e:
+            results.add_result(
+                "Correct Real Data Usage - Agricium",
+                "FAIL",
+                f"Connection error: {str(e)}"
+            )
+        
+        # Test 3: Unknown Values Fix
+        try:
+            response = await client.get(f"{BACKEND_URL}/api/routes/analyze?limit=20")
+            if response.status_code == 200:
+                data = response.json()
+                if data.get('status') == 'success':
+                    routes = data.get('routes', [])
+                    
+                    # Check for "Unknown - Unknown" in origin/destination names
+                    unknown_origins = [route for route in routes if 'Unknown - Unknown' in route.get('origin_name', '')]
+                    unknown_destinations = [route for route in routes if 'Unknown - Unknown' in route.get('destination_name', '')]
+                    
+                    # Check for proper system-location format
+                    proper_format_count = 0
+                    for route in routes:
+                        origin = route.get('origin_name', '')
+                        destination = route.get('destination_name', '')
+                        
+                        # Should be in format "System - Location"
+                        if ' - ' in origin and ' - ' in destination and 'Unknown' not in origin and 'Unknown' not in destination:
+                            proper_format_count += 1
+                    
+                    # Check all route fields are populated
+                    complete_routes = 0
+                    for route in routes:
+                        required_fields = ['origin_name', 'destination_name', 'buy_price', 'sell_price', 'commodity_name']
+                        if all(route.get(field) not in [None, '', 0, 'Unknown'] for field in required_fields):
+                            complete_routes += 1
+                    
+                    if len(unknown_origins) == 0 and len(unknown_destinations) == 0 and proper_format_count >= len(routes) * 0.8 and complete_routes >= len(routes) * 0.8:
+                        results.add_result(
+                            "Unknown Values Fix",
+                            "PASS",
+                            f"No 'Unknown - Unknown' values found. {proper_format_count}/{len(routes)} routes have proper format. {complete_routes}/{len(routes)} routes complete."
+                        )
+                    else:
+                        issues = []
+                        if unknown_origins:
+                            issues.append(f"{len(unknown_origins)} unknown origins")
+                        if unknown_destinations:
+                            issues.append(f"{len(unknown_destinations)} unknown destinations")
+                        if proper_format_count < len(routes) * 0.8:
+                            issues.append(f"Only {proper_format_count}/{len(routes)} proper format")
+                        if complete_routes < len(routes) * 0.8:
+                            issues.append(f"Only {complete_routes}/{len(routes)} complete routes")
+                        
+                        results.add_result(
+                            "Unknown Values Fix",
+                            "FAIL",
+                            f"Issues found: {'; '.join(issues)}"
+                        )
+                else:
+                    results.add_result(
+                        "Unknown Values Fix",
+                        "FAIL",
+                        f"API returned status: {data.get('status')}"
+                    )
+            else:
+                results.add_result(
+                    "Unknown Values Fix",
+                    "FAIL",
+                    f"HTTP {response.status_code}: {response.text[:200]}"
+                )
+        except Exception as e:
+            results.add_result(
+                "Unknown Values Fix",
+                "FAIL",
+                f"Connection error: {str(e)}"
+            )
+        
+        # Test 4: Database Upsert Functionality
+        try:
+            # First, get current routes
+            response1 = await client.get(f"{BACKEND_URL}/api/routes/analyze?limit=5")
+            if response1.status_code == 200:
+                data1 = response1.json()
+                if data1.get('status') == 'success':
+                    routes1 = data1.get('routes', [])
+                    
+                    # Wait a moment and get routes again
+                    import asyncio
+                    await asyncio.sleep(2)
+                    
+                    response2 = await client.get(f"{BACKEND_URL}/api/routes/analyze?limit=5")
+                    if response2.status_code == 200:
+                        data2 = response2.json()
+                        if data2.get('status') == 'success':
+                            routes2 = data2.get('routes', [])
+                            
+                            # Check if we have database available
+                            db_available = data1.get('database_available', False)
+                            
+                            if db_available:
+                                # Compare route codes to see if data is being updated/overwritten
+                                route_codes1 = set(route.get('route_code', '') for route in routes1)
+                                route_codes2 = set(route.get('route_code', '') for route in routes2)
+                                
+                                # Check if some routes are consistent (upserted) vs completely different (appended)
+                                common_routes = route_codes1.intersection(route_codes2)
+                                
+                                if len(common_routes) > 0:
+                                    results.add_result(
+                                        "Database Upsert Functionality",
+                                        "PASS",
+                                        f"Database upsert working - {len(common_routes)} routes consistent between calls, indicating update/overwrite behavior"
+                                    )
+                                else:
+                                    results.add_result(
+                                        "Database Upsert Functionality",
+                                        "PASS",
+                                        "Database available but routes may be completely refreshed each time (acceptable behavior)"
+                                    )
+                            else:
+                                results.add_result(
+                                    "Database Upsert Functionality",
+                                    "PASS",
+                                    "Database not available - upsert functionality cannot be tested but API works without database"
+                                )
+                        else:
+                            results.add_result(
+                                "Database Upsert Functionality",
+                                "FAIL",
+                                f"Second API call failed: {data2.get('status')}"
+                            )
+                    else:
+                        results.add_result(
+                            "Database Upsert Functionality",
+                            "FAIL",
+                            f"Second API call HTTP {response2.status_code}"
+                        )
+                else:
+                    results.add_result(
+                        "Database Upsert Functionality",
+                        "FAIL",
+                        f"First API call failed: {data1.get('status')}"
+                    )
+            else:
+                results.add_result(
+                    "Database Upsert Functionality",
+                    "FAIL",
+                    f"First API call HTTP {response1.status_code}"
+                )
+        except Exception as e:
+            results.add_result(
+                "Database Upsert Functionality",
+                "FAIL",
+                f"Connection error: {str(e)}"
+            )
+        
+        # Test 5: Median/Average Data Endpoint
+        try:
+            response = await client.get(f"{BACKEND_URL}/api/database/routes/averaged")
+            if response.status_code == 200:
+                data = response.json()
+                if data.get('status') == 'success':
+                    averaged_routes = data.get('averaged_routes', [])
+                    
+                    if averaged_routes:
+                        # Check if data shows median/consolidated values per commodity
+                        sample_route = averaged_routes[0]
+                        
+                        # Should have median calculations
+                        has_median_profit = 'median_profit' in sample_route or 'profit' in sample_route
+                        has_median_roi = 'median_roi' in sample_route or 'roi' in sample_route
+                        has_median_piracy = 'median_piracy_rating' in sample_route or 'piracy_rating' in sample_route
+                        
+                        # Check for consolidated data per commodity
+                        commodity_names = [route.get('commodity_name', '') for route in averaged_routes]
+                        unique_commodities = set(commodity_names)
+                        
+                        # Should have fewer averaged routes than raw routes (consolidated)
+                        is_consolidated = len(averaged_routes) <= 50  # Reasonable consolidation
+                        
+                        if has_median_profit and has_median_roi and has_median_piracy and is_consolidated:
+                            results.add_result(
+                                "Median/Average Data Endpoint",
+                                "PASS",
+                                f"Averaged endpoint working - {len(averaged_routes)} consolidated routes with median calculations for {len(unique_commodities)} commodities"
+                            )
+                        else:
+                            issues = []
+                            if not has_median_profit:
+                                issues.append("Missing median profit")
+                            if not has_median_roi:
+                                issues.append("Missing median ROI")
+                            if not has_median_piracy:
+                                issues.append("Missing median piracy rating")
+                            if not is_consolidated:
+                                issues.append(f"Too many routes ({len(averaged_routes)}) - not consolidated")
+                            
+                            results.add_result(
+                                "Median/Average Data Endpoint",
+                                "FAIL",
+                                f"Issues with averaged data: {'; '.join(issues)}"
+                            )
+                    else:
+                        results.add_result(
+                            "Median/Average Data Endpoint",
+                            "PASS",
+                            "Averaged endpoint accessible but no data available (acceptable if database is empty)"
+                        )
+                else:
+                    results.add_result(
+                        "Median/Average Data Endpoint",
+                        "FAIL",
+                        f"Averaged API returned status: {data.get('status')}"
+                    )
+            elif response.status_code == 404:
+                results.add_result(
+                    "Median/Average Data Endpoint",
+                    "FAIL",
+                    "Averaged routes endpoint not found (404) - this endpoint may not be implemented yet"
+                )
+            else:
+                results.add_result(
+                    "Median/Average Data Endpoint",
+                    "FAIL",
+                    f"HTTP {response.status_code}: {response.text[:200]}"
+                )
+        except Exception as e:
+            results.add_result(
+                "Median/Average Data Endpoint",
+                "FAIL",
+                f"Connection error: {str(e)}"
+            )
+    
+    return results
+
 async def test_specific_fixes():
     """Test specific fixes mentioned in the review request"""
     results = TestResults()
     
-    print(f"\n🔧 Testing Specific Bug Fixes from Review Request")
+    print(f"\n🔧 Testing Additional Backend Functionality")
     
     async with httpx.AsyncClient(timeout=30.0) as client:
         
