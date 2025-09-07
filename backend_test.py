@@ -2081,7 +2081,13 @@ async def main():
     
     all_results = TestResults()
     
-    # Test Web Crawling Implementation FIRST (current review request priority)
+    # Test NEW Bidirectional Alternative Routes functionality FIRST (current review request priority)
+    bidirectional_results = await test_bidirectional_alternative_routes()
+    all_results.results.extend(bidirectional_results.results)
+    all_results.passed += bidirectional_results.passed
+    all_results.failed += bidirectional_results.failed
+    
+    # Test Web Crawling Implementation (secondary priority)
     web_crawling_results = await test_web_crawling_implementation()
     all_results.results.extend(web_crawling_results.results)
     all_results.passed += web_crawling_results.passed
