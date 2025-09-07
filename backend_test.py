@@ -1734,6 +1734,346 @@ async def test_uex_api_direct():
     
     return results
 
+async def test_bidirectional_alternative_routes():
+    """Test the NEW bidirectional Alternative Routes functionality"""
+    results = TestResults()
+    
+    print(f"\n🔄 Testing NEW Bidirectional Alternative Routes Functionality")
+    print("Focus: Terminal Data Structure, Buy/Sell Separation, System Assignment, Multiple Commodities")
+    
+    async with httpx.AsyncClient(timeout=60.0) as client:
+        
+        # Test commodities to verify
+        test_commodities = ['Aluminum', 'Agricium', 'Altruciatoxin']
+        
+        for commodity in test_commodities:
+            # Test 1: Terminal Data Structure for each commodity
+            try:
+                response = await client.get(f"{BACKEND_URL}/api/commodity/terminals?commodity_name={commodity}&data_source=web")
+                if response.status_code == 200:
+                    data = response.json()
+                    if data.get('status') == 'success':
+                        terminals = data.get('terminals', [])
+                        
+                        if terminals:
+                            # Check required fields: terminal, buy_price, sell_price, stock, system
+                            sample_terminal = terminals[0]
+                            required_fields = ['terminal', 'buy_price', 'sell_price', 'stock', 'system']
+                            missing_fields = [field for field in required_fields if field not in sample_terminal]
+                            
+                            if not missing_fields:
+                                results.add_result(
+                                    f"Terminal Data Structure - {commodity}",
+                                    "PASS",
+                                    f"All required fields present: {required_fields}. Found {len(terminals)} terminals."
+                                )
+                            else:
+                                results.add_result(
+                                    f"Terminal Data Structure - {commodity}",
+                                    "FAIL",
+                                    f"Missing required fields: {missing_fields}"
+                                )
+                        else:
+                            results.add_result(
+                                f"Terminal Data Structure - {commodity}",
+                                "FAIL",
+                                f"No terminals returned for {commodity}"
+                            )
+                    else:
+                        results.add_result(
+                            f"Terminal Data Structure - {commodity}",
+                            "FAIL",
+                            f"API returned status: {data.get('status')}"
+                        )
+                elif response.status_code == 404:
+                    results.add_result(
+                        f"Terminal Data Structure - {commodity}",
+                        "FAIL",
+                        "Endpoint not found (404) - /api/commodity/terminals endpoint not implemented"
+                    )
+                else:
+                    results.add_result(
+                        f"Terminal Data Structure - {commodity}",
+                        "FAIL",
+                        f"HTTP {response.status_code}: {response.text[:200]}"
+                    )
+            except Exception as e:
+                results.add_result(
+                    f"Terminal Data Structure - {commodity}",
+                    "FAIL",
+                    f"Connection error: {str(e)}"
+                )
+            
+            # Test 2: Buy/Sell Separation for bidirectional workflow
+            try:
+                response = await client.get(f"{BACKEND_URL}/api/commodity/terminals?commodity_name={commodity}&data_source=web")
+                if response.status_code == 200:
+                    data = response.json()
+                    if data.get('status') == 'success':
+                        terminals = data.get('terminals', [])
+                        
+                        if terminals:
+                            # Count terminals with buy_price > 0 (buy locations)
+                            buy_terminals = [t for t in terminals if float(t.get('buy_price', 0)) > 0]
+                            # Count terminals with sell_price > 0 (sell locations)
+                            sell_terminals = [t for t in terminals if float(t.get('sell_price', 0)) > 0]
+                            
+                            # For bidirectional workflow, we need both buy and sell locations
+                            has_buy_locations = len(buy_terminals) > 0
+                            has_sell_locations = len(sell_terminals) > 0
+                            
+                            if has_buy_locations and has_sell_locations:
+                                results.add_result(
+                                    f"Buy/Sell Separation - {commodity}",
+                                    "PASS",
+                                    f"Bidirectional workflow supported: {len(buy_terminals)} buy locations, {len(sell_terminals)} sell locations"
+                                )
+                            else:
+                                issues = []
+                                if not has_buy_locations:
+                                    issues.append("No buy locations (buy_price > 0)")
+                                if not has_sell_locations:
+                                    issues.append("No sell locations (sell_price > 0)")
+                                
+                                results.add_result(
+                                    f"Buy/Sell Separation - {commodity}",
+                                    "FAIL",
+                                    f"Bidirectional workflow not supported: {'; '.join(issues)}"
+                                )
+                        else:
+                            results.add_result(
+                                f"Buy/Sell Separation - {commodity}",
+                                "FAIL",
+                                f"No terminals returned for {commodity}"
+                            )
+                    else:
+                        results.add_result(
+                            f"Buy/Sell Separation - {commodity}",
+                            "FAIL",
+                            f"API returned status: {data.get('status')}"
+                        )
+                else:
+                    results.add_result(
+                        f"Buy/Sell Separation - {commodity}",
+                        "FAIL",
+                        f"HTTP {response.status_code}: {response.text[:200]}"
+                    )
+            except Exception as e:
+                results.add_result(
+                    f"Buy/Sell Separation - {commodity}",
+                    "FAIL",
+                    f"Connection error: {str(e)}"
+                )
+            
+            # Test 3: System Assignment (Stanton vs Pyro)
+            try:
+                response = await client.get(f"{BACKEND_URL}/api/commodity/terminals?commodity_name={commodity}&data_source=web")
+                if response.status_code == 200:
+                    data = response.json()
+                    if data.get('status') == 'success':
+                        terminals = data.get('terminals', [])
+                        
+                        if terminals:
+                            # Check system assignments
+                            systems_found = set()
+                            stanton_terminals = []
+                            pyro_terminals = []
+                            
+                            for terminal in terminals:
+                                system = terminal.get('system', '')
+                                systems_found.add(system)
+                                
+                                if system == 'Stanton':
+                                    stanton_terminals.append(terminal.get('terminal', ''))
+                                elif system == 'Pyro':
+                                    pyro_terminals.append(terminal.get('terminal', ''))
+                            
+                            # Verify we have proper system assignments
+                            has_stanton = len(stanton_terminals) > 0
+                            has_pyro = len(pyro_terminals) > 0
+                            valid_systems = all(system in ['Stanton', 'Pyro'] for system in systems_found if system)
+                            
+                            if valid_systems and (has_stanton or has_pyro):
+                                results.add_result(
+                                    f"System Assignment - {commodity}",
+                                    "PASS",
+                                    f"Correct system assignment: Stanton ({len(stanton_terminals)} terminals), Pyro ({len(pyro_terminals)} terminals)"
+                                )
+                            else:
+                                issues = []
+                                if not valid_systems:
+                                    issues.append(f"Invalid systems found: {list(systems_found)}")
+                                if not (has_stanton or has_pyro):
+                                    issues.append("No Stanton or Pyro terminals found")
+                                
+                                results.add_result(
+                                    f"System Assignment - {commodity}",
+                                    "FAIL",
+                                    f"System assignment issues: {'; '.join(issues)}"
+                                )
+                        else:
+                            results.add_result(
+                                f"System Assignment - {commodity}",
+                                "FAIL",
+                                f"No terminals returned for {commodity}"
+                            )
+                    else:
+                        results.add_result(
+                            f"System Assignment - {commodity}",
+                            "FAIL",
+                            f"API returned status: {data.get('status')}"
+                        )
+                else:
+                    results.add_result(
+                        f"System Assignment - {commodity}",
+                        "FAIL",
+                        f"HTTP {response.status_code}: {response.text[:200]}"
+                    )
+            except Exception as e:
+                results.add_result(
+                    f"System Assignment - {commodity}",
+                    "FAIL",
+                    f"Connection error: {str(e)}"
+                )
+        
+        # Test 4: Data Completeness Across Multiple Commodities
+        try:
+            all_terminals_data = {}
+            
+            for commodity in test_commodities:
+                response = await client.get(f"{BACKEND_URL}/api/commodity/terminals?commodity_name={commodity}&data_source=web")
+                if response.status_code == 200:
+                    data = response.json()
+                    if data.get('status') == 'success':
+                        terminals = data.get('terminals', [])
+                        all_terminals_data[commodity] = terminals
+            
+            # Analyze consistency across commodities
+            if all_terminals_data:
+                total_terminals = sum(len(terminals) for terminals in all_terminals_data.values())
+                commodities_with_data = len([c for c, t in all_terminals_data.items() if len(t) > 0])
+                
+                # Check data structure consistency
+                consistent_structure = True
+                required_fields = ['terminal', 'buy_price', 'sell_price', 'stock', 'system']
+                
+                for commodity, terminals in all_terminals_data.items():
+                    for terminal in terminals:
+                        if not all(field in terminal for field in required_fields):
+                            consistent_structure = False
+                            break
+                    if not consistent_structure:
+                        break
+                
+                if commodities_with_data >= 2 and consistent_structure and total_terminals > 0:
+                    results.add_result(
+                        "Data Completeness - Multiple Commodities",
+                        "PASS",
+                        f"Consistent data structure across {commodities_with_data} commodities with {total_terminals} total terminals"
+                    )
+                else:
+                    issues = []
+                    if commodities_with_data < 2:
+                        issues.append(f"Only {commodities_with_data} commodities have data")
+                    if not consistent_structure:
+                        issues.append("Inconsistent data structure")
+                    if total_terminals == 0:
+                        issues.append("No terminals found")
+                    
+                    results.add_result(
+                        "Data Completeness - Multiple Commodities",
+                        "FAIL",
+                        f"Data completeness issues: {'; '.join(issues)}"
+                    )
+            else:
+                results.add_result(
+                    "Data Completeness - Multiple Commodities",
+                    "FAIL",
+                    "No terminal data retrieved for any commodity"
+                )
+        except Exception as e:
+            results.add_result(
+                "Data Completeness - Multiple Commodities",
+                "FAIL",
+                f"Connection error: {str(e)}"
+            )
+        
+        # Test 5: Bidirectional Workflow Simulation
+        try:
+            # Test with Aluminum as example
+            response = await client.get(f"{BACKEND_URL}/api/commodity/terminals?commodity_name=Aluminum&data_source=web")
+            if response.status_code == 200:
+                data = response.json()
+                if data.get('status') == 'success':
+                    terminals = data.get('terminals', [])
+                    
+                    if terminals:
+                        # Simulate bidirectional workflow
+                        buy_terminals = [t for t in terminals if float(t.get('buy_price', 0)) > 0]
+                        sell_terminals = [t for t in terminals if float(t.get('sell_price', 0)) > 0]
+                        
+                        # Check if user can select buy terminal first, then sell terminal
+                        buy_first_workflow = len(buy_terminals) > 0 and len(sell_terminals) > 0
+                        
+                        # Check if user can select sell terminal first, then buy terminal  
+                        sell_first_workflow = len(sell_terminals) > 0 and len(buy_terminals) > 0
+                        
+                        # Verify different terminals available for each direction
+                        different_terminals = True
+                        if buy_terminals and sell_terminals:
+                            buy_terminal_names = set(t.get('terminal', '') for t in buy_terminals)
+                            sell_terminal_names = set(t.get('terminal', '') for t in sell_terminals)
+                            # Some terminals might overlap, but there should be some variety
+                            total_unique = len(buy_terminal_names.union(sell_terminal_names))
+                            different_terminals = total_unique > 1
+                        
+                        if buy_first_workflow and sell_first_workflow and different_terminals:
+                            results.add_result(
+                                "Bidirectional Workflow Simulation",
+                                "PASS",
+                                f"Bidirectional workflow supported: Buy-first ({len(buy_terminals)} options) and Sell-first ({len(sell_terminals)} options) with {total_unique} unique terminals"
+                            )
+                        else:
+                            issues = []
+                            if not buy_first_workflow:
+                                issues.append("Buy-first workflow not supported")
+                            if not sell_first_workflow:
+                                issues.append("Sell-first workflow not supported")
+                            if not different_terminals:
+                                issues.append("Insufficient terminal variety")
+                            
+                            results.add_result(
+                                "Bidirectional Workflow Simulation",
+                                "FAIL",
+                                f"Workflow issues: {'; '.join(issues)}"
+                            )
+                    else:
+                        results.add_result(
+                            "Bidirectional Workflow Simulation",
+                            "FAIL",
+                            "No terminals available for workflow simulation"
+                        )
+                else:
+                    results.add_result(
+                        "Bidirectional Workflow Simulation",
+                        "FAIL",
+                        f"API returned status: {data.get('status')}"
+                    )
+            else:
+                results.add_result(
+                    "Bidirectional Workflow Simulation",
+                    "FAIL",
+                    f"HTTP {response.status_code}: {response.text[:200]}"
+                )
+        except Exception as e:
+            results.add_result(
+                "Bidirectional Workflow Simulation",
+                "FAIL",
+                f"Connection error: {str(e)}"
+            )
+    
+    return results
+
 async def main():
     """Run all tests"""
     print("🏴‍☠️ SINISTER SNARE BACKEND API TEST SUITE")
