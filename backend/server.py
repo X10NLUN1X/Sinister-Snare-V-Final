@@ -2079,10 +2079,13 @@ async def get_database_routes(data_type: str = "current"):
                 # Use the most recent route as template and update with median values
                 template_route = commodity_routes[-1]  # Most recent
                 
+                # Create averaged route with only JSON-serializable fields
                 averaged_route = {
-                    **template_route,
                     'id': str(uuid.uuid4()),
                     'route_code': f"MEDIAN-{commodity_name[:8].replace(' ', '').upper()}-AVG",
+                    'commodity_name': commodity_name,
+                    'origin_name': template_route.get('origin_name', 'Various Origins'),
+                    'destination_name': template_route.get('destination_name', 'Various Destinations'),
                     'profit': get_median(profits),
                     'roi': get_median(rois),
                     'piracy_rating': get_median(piracy_ratings),
@@ -2090,9 +2093,15 @@ async def get_database_routes(data_type: str = "current"):
                     'investment': get_median(investments),
                     'buy_price': get_median(buy_prices) if buy_prices else 0,
                     'sell_price': get_median(sell_prices) if sell_prices else 0,
+                    'buy_stock': template_route.get('buy_stock', 0),
+                    'sell_stock': template_route.get('sell_stock', 0),
+                    'risk_level': template_route.get('risk_level', 'MODERATE'),
+                    'frequency_score': template_route.get('frequency_score', 0),
+                    'score': int(get_median([r.get('score', 0) for r in commodity_routes])),
                     'data_points': len(commodity_routes),
                     'analysis_timestamp': datetime.now(timezone.utc).isoformat(),
-                    'data_type': 'median_averaged'
+                    'data_type': 'median_averaged',
+                    'last_seen': template_route.get('last_seen', datetime.now(timezone.utc).isoformat())
                 }
                 
                 averaged_routes.append(averaged_route)
