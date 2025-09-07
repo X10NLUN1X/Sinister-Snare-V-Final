@@ -961,7 +961,18 @@ const TERMINAL_TO_SNAREPLAN_MAPPING = {
   "Slowburn Depot": "Pyro",
   "Watcher's Depot": "Pyro",
   "Dinger's Depot": "Pyro",
-  "Feo Canyon Depot": "Pyro"
+  "Feo Canyon Depot": "Pyro",
+  
+  // === MISSING TDD (Trade & Development Division) TERMINALS ===
+  // TDD Terminals -> Planet Locations
+  "TDD Area 18": "ArcCorp",
+  "TDD New Babbage": "Microtech", 
+  "TDD Orison": "Crusader",
+  
+  // === MISSING DUMPER'S OPERATIONS TERMINALS ===
+  // Dumper's Operations -> Planet Locations  
+  "Dumper's Area 18": "ArcCorp",
+  "Dumper's GrimHEX": "Crusader"
 };
 
 // Lagrange Points that should NOT be mapped (keep original names)
