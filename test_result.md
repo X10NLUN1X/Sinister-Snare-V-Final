@@ -300,6 +300,66 @@ backend:
         - agent: "testing"
         - comment: "FIXED: Database connectivity fully restored. MongoDB shows 'connected' status in /api/status endpoint. All database-dependent features now working: export functionality, alerts system, historical trends, and route analysis storage. Database boolean errors resolved."
 
+  - task: "Manual Refresh Data Source Fix"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+        - agent: "testing"
+        - comment: "FIXED: Manual refresh endpoint now correctly respects data_source parameter. POST /api/refresh/manual?data_source=api and data_source=web both work correctly and return proper data_source_used confirmation. Fixed method name conflict in StarProfitClient class."
+
+  - task: "Commodity Snare Endpoint Fix"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+        - agent: "testing"
+        - comment: "VERIFIED: GET /api/snare/commodity?commodity_name=Agricium working perfectly. Returns proper analysis with route data instead of 404 error. Found 7 total routes and 7 profitable routes for Agricium commodity."
+
+  - task: "Route Data Structure Enhancement"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+        - agent: "testing"
+        - comment: "VERIFIED: GET /api/routes/analyze contains all required fields (origin_name, destination_name, buy_price, sell_price, buy_stock, sell_stock) with real data values. No missing fields detected in route structure."
+
+  - task: "Route Origin/Destination Unknown Values Fix"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+        - agent: "testing"
+        - comment: "VERIFIED: No 'Unknown' values found in route origins or destinations. All routes show proper system-location format like 'Stanton - Port Olisar', 'Pyro - Rat's Nest', etc. Origin/destination mapping working correctly."
+
+  - task: "Routes Analysis Data Source Parameter Fix"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+        - agent: "testing"
+        - comment: "FIXED: GET /api/routes/analyze?data_source=api and data_source=web now correctly return the actual data source used in response. API returns 'api' with 'Star Profit API' and web returns 'web' with 'Star Profit WEB'."
+
 frontend:
   - task: "Frontend Startup Issue"
     implemented: true
