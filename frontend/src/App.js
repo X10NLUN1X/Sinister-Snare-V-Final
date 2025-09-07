@@ -908,7 +908,7 @@ const TERMINAL_TO_SNAREPLAN_MAPPING = {
   "Shubin SMCa-8": "Hurston", // Arial moon
   
   // Rayari Research -> Microtech
-  "Rayari Anvik": "microTech",
+  "Rayari Anvik": "Microtech",
   "Rayari Cantwell": "microTech",
   "Rayari Deltana": "microTech", 
   "Rayari Kaltag": "microTech",
