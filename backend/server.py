@@ -1486,8 +1486,8 @@ async def manual_refresh(data_source: str = Query(default="api", description="Da
         await db.route_analyses.delete_many({})
         refresh_logs.append({"timestamp": datetime.now(timezone.utc).isoformat(), "message": "🗑️ Cleared existing route analyses", "type": "info"})
         
-        # Generate fresh routes
-        routes_data = await star_profit_client.get_trading_routes()
+        # Generate fresh routes using specified data source
+        routes_data = await star_profit_client.get_trading_routes(data_source)
         
         if routes_data.get('status') == 'ok':
             routes = routes_data.get('data', [])
