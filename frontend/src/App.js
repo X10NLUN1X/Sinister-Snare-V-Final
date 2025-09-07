@@ -963,15 +963,14 @@ const SnareModal = ({ isOpen, onClose, snareData }) => {
 const RouteDetailModal = ({ isOpen, onClose, route }) => {
   if (!isOpen || !route) return null;
 
-  // SnarePlan Integration Function
+  // SnarePlan Integration Function with correct URL structure
   const openInSnarePlan = () => {
-    const origin = encodeURIComponent(route.origin_name || '');
-    const destination = encodeURIComponent(route.destination_name || '');
-    const commodity = encodeURIComponent(route.commodity_name || '');
-    
-    const snarePlanUrl = `https://snareplan.dolus.eu/?origin=${origin}&destination=${destination}&commodity=${commodity}&profit=${route.profit}&route=${encodeURIComponent(route.route_code)}`;
-    
-    window.open(snarePlanUrl, '_blank', 'noopener,noreferrer');
+    const snarePlanUrl = generateSnarePlanUrl(route);
+    if (snarePlanUrl) {
+      window.open(snarePlanUrl, '_blank', 'noopener,noreferrer');
+    } else {
+      console.error('Could not generate SnarePlan URL for route data:', route);
+    }
   };
 
   return (
