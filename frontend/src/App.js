@@ -912,7 +912,7 @@ const TERMINAL_TO_SNAREPLAN_MAPPING = {
   "Rayari Cantwell": "Microtech",
   "Rayari Deltana": "Microtech", 
   "Rayari Kaltag": "Microtech",
-  "Rayari McGrath": "microTech",
+  "Rayari McGrath": "Microtech",
   
   // Salvage Operations -> Hurston system
   "Brio's Breaker": "Hurston", // Lyria moon
