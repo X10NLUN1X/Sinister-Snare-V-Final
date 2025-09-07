@@ -1032,7 +1032,13 @@ async def main():
     
     all_results = TestResults()
     
-    # Test Star Profit API integration first (primary API)
+    # Test specific fixes from review request first
+    specific_results = await test_specific_fixes()
+    all_results.results.extend(specific_results.results)
+    all_results.passed += specific_results.passed
+    all_results.failed += specific_results.failed
+    
+    # Test Star Profit API integration (primary API)
     star_profit_results = await test_star_profit_api()
     all_results.results.extend(star_profit_results.results)
     all_results.passed += star_profit_results.passed
