@@ -1,0 +1,162 @@
+[
+  {
+    "test": "Real Commodity Names (No Grade X)",
+    "status": "PASS",
+    "message": "All 10 routes use real commodity names. Sample: ['Altruciatoxin', 'Astatine', 'Aluminum']",
+    "details": null,
+    "timestamp": "2025-09-07T09:46:09.437760"
+  },
+  {
+    "test": "Real Terminal Names (No Fake Outposts)",
+    "status": "PASS",
+    "message": "All terminals use real Star Citizen names. Sample: ['Reclamation Orinth', 'Everus Harbor', \"Seer's Canyon\"]",
+    "details": null,
+    "timestamp": "2025-09-07T09:46:09.437833"
+  },
+  {
+    "test": "Star Profit API Field Names",
+    "status": "PASS",
+    "message": "All required Star Profit API fields present: {'buy_price': 3252.0, 'sell_price': 4460.0, 'buy_stock': 600, 'sell_stock': 1}",
+    "details": null,
+    "timestamp": "2025-09-07T09:46:09.437851"
+  },
+  {
+    "test": "Real Location Names in Routes",
+    "status": "PASS",
+    "message": "10/10 routes have real location names",
+    "details": null,
+    "timestamp": "2025-09-07T09:46:09.437867"
+  },
+  {
+    "test": "Star Profit API Integration",
+    "status": "PASS",
+    "message": "Backend correctly using Star Profit API: Star Profit API",
+    "details": null,
+    "timestamp": "2025-09-07T09:46:09.437873"
+  },
+  {
+    "test": "No Unknown-Unknown Entries",
+    "status": "PASS",
+    "message": "No 'Unknown - Unknown' entries found in Agricium commodity snare data",
+    "details": null,
+    "timestamp": "2025-09-07T09:46:09.748727"
+  },
+  {
+    "test": "Real Star Citizen Terminal Names",
+    "status": "PASS",
+    "message": "No terminal data to verify (acceptable if no routes found)",
+    "details": null,
+    "timestamp": "2025-09-07T09:46:09.748783"
+  },
+  {
+    "test": "Exact Commodity Name Match",
+    "status": "FAIL",
+    "message": "Expected 'Agricium', got: ",
+    "details": null,
+    "timestamp": "2025-09-07T09:46:09.748792"
+  },
+  {
+    "test": "System Classification",
+    "status": "PASS",
+    "message": "No route data available for system classification (acceptable)",
+    "details": null,
+    "timestamp": "2025-09-07T09:46:09.748799"
+  },
+  {
+    "test": "Commodity Snare Functionality",
+    "status": "PASS",
+    "message": "Agricium commodity snare working - found 20 routes/points",
+    "details": null,
+    "timestamp": "2025-09-07T09:46:09.748806"
+  },
+  {
+    "test": "No Fake Commodity Grades",
+    "status": "PASS",
+    "message": "No fake commodity grade names found in 20 routes",
+    "details": null,
+    "timestamp": "2025-09-07T09:46:10.096766"
+  },
+  {
+    "test": "No Fake Terminal Names",
+    "status": "PASS",
+    "message": "No fake terminal names found in 20 routes",
+    "details": null,
+    "timestamp": "2025-09-07T09:46:10.096817"
+  },
+  {
+    "test": "Real Star Citizen Terminal Names",
+    "status": "PASS",
+    "message": "All terminal names appear authentic. Sample: ['Gaslight', \"Seer's Canyon\", 'Ashland', \"Chawla's Beach\", 'Platinum Everus']",
+    "details": null,
+    "timestamp": "2025-09-07T09:46:10.096877"
+  },
+  {
+    "test": "Correct System Mappings",
+    "status": "PASS",
+    "message": "No incorrect system-terminal mappings detected",
+    "details": null,
+    "timestamp": "2025-09-07T09:46:10.096916"
+  },
+  {
+    "test": "API Status Operational",
+    "status": "PASS",
+    "message": "API status is operational",
+    "details": null,
+    "timestamp": "2025-09-07T09:46:10.411218"
+  },
+  {
+    "test": "Star Profit API Integration",
+    "status": "FAIL",
+    "message": "Star Profit API status: unknown",
+    "details": null,
+    "timestamp": "2025-09-07T09:46:10.411254"
+  },
+  {
+    "test": "Database Status",
+    "status": "PASS",
+    "message": "Database status: connected",
+    "details": null,
+    "timestamp": "2025-09-07T09:46:10.411262"
+  },
+  {
+    "test": "Live Data Available",
+    "status": "PASS",
+    "message": "No live data records reported (may be acceptable depending on system state)",
+    "details": null,
+    "timestamp": "2025-09-07T09:46:10.411268"
+  },
+  {
+    "test": "Overall System Health",
+    "status": "PASS",
+    "message": "Status endpoint accessible with comprehensive system information",
+    "details": {
+      "status": "operational",
+      "version": "5.0.0",
+      "primary_data_source": "real",
+      "data_sources": {
+        "star_profit_api": {
+          "status": "connected",
+          "records_available": 2261,
+          "description": "Real Star Citizen commodity data (primary)"
+        }
+      },
+      "database": "connected",
+      "api_configured": true,
+      "statistics": {
+        "total_routes_analyzed": 125,
+        "active_alerts": 3,
+        "historical_data_points": 6,
+        "tracking_active": true
+      },
+      "features": {
+        "real_time_data": true,
+        "interception_mapping": true,
+        "historical_analysis": true,
+        "alert_system": true,
+        "export_functionality": true
+      },
+      "timestamp": "2025-09-07T09:46:10.406687+00:00"
+    },
+    "timestamp": "2025-09-07T09:46:10.411273"
+  }
+]
