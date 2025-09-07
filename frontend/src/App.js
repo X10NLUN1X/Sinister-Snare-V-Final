@@ -2598,22 +2598,35 @@ function App() {
         });
       }
       
-      // Load other data
-      try {
-        await Promise.all([
-          fetchApiStatus(),
-          fetchRoutes(),
-          fetchTargets(),
-          fetchHourlyData(),
-          fetchAlerts(),
-          fetchTrends(),
-          fetchTrackingStatus()
-        ]);
-      } catch (error) {
-        console.error('Error loading app data:', error);
-      }
+      // Load other data with individual error handling and timeouts
+      const fetchWithTimeout = async (fetchFunction, name, timeoutMs = 10000) => {
+        try {
+          console.log(`⏳ Loading ${name}...`);
+          const timeoutPromise = new Promise((_, reject) => 
+            setTimeout(() => reject(new Error(`${name} timeout after ${timeoutMs}ms`)), timeoutMs)
+          );
+          
+          await Promise.race([fetchFunction(), timeoutPromise]);
+          console.log(`✅ ${name} loaded successfully`);
+        } catch (error) {
+          console.warn(`⚠️ ${name} failed to load:`, error.message);
+          // Continue loading other components even if this one fails
+        }
+      };
+
+      // Load all data independently - failures don't block the app
+      await Promise.allSettled([
+        fetchWithTimeout(fetchApiStatus, 'API Status', 5000),
+        fetchWithTimeout(fetchRoutes, 'Routes', 15000),
+        fetchWithTimeout(fetchTargets, 'Targets', 10000),
+        fetchWithTimeout(fetchHourlyData, 'Hourly Data', 10000),
+        fetchWithTimeout(fetchAlerts, 'Alerts', 8000),
+        fetchWithTimeout(fetchTrends, 'Trends', 12000),
+        fetchWithTimeout(fetchTrackingStatus, 'Tracking Status', 5000)
+      ]);
       
       setLoading(false);
+      console.log('🎉 Sinister Snare initialization complete!');
     };
 
     initializeApp();
