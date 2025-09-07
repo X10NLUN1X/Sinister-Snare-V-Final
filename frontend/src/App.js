@@ -2313,7 +2313,7 @@ function App() {
               onChange={(e) => setAutoRefresh(e.target.checked)}
               className="rounded"
             />
-            <span>Auto-refresh (30s)</span>
+            <span>Auto-refresh (60 min)</span>
           </label>
         </div>
       </div>
