@@ -1741,7 +1741,13 @@ async def main():
     
     all_results = TestResults()
     
-    # Test review request fixes FIRST (highest priority)
+    # Test Web Crawling Implementation FIRST (current review request priority)
+    web_crawling_results = await test_web_crawling_implementation()
+    all_results.results.extend(web_crawling_results.results)
+    all_results.passed += web_crawling_results.passed
+    all_results.failed += web_crawling_results.failed
+    
+    # Test review request fixes (secondary priority)
     review_results = await test_review_request_fixes()
     all_results.results.extend(review_results.results)
     all_results.passed += review_results.passed
