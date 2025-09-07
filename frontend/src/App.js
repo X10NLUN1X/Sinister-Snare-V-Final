@@ -1708,7 +1708,7 @@ function App() {
     } catch (error) {
       console.error('Error fetching routes:', error);
     }
-  }, [dataSource, showAverageData]);
+  }, [dataSource, showAverageData, fetchDbStats]);
 
   const fetchTargets = useCallback(async () => {
     try {
