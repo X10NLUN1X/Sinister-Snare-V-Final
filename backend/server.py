@@ -636,7 +636,7 @@ async def update_tracking_data():
 # API Endpoints
 @api_router.get("/")
 async def root():
-    return {"message": "Sinister Snare v2.0 - Advanced Star Citizen Piracy Intelligence System"}
+    return {"message": "Sinister Snare v5.0 - Advanced Star Citizen Piracy Intelligence System"}
 
 # Database fallback functions
 async def safe_db_operation(operation, fallback_result=None):
