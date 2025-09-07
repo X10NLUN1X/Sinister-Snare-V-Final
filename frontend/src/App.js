@@ -2140,6 +2140,56 @@ function App() {
   // Route Detail Modal Handler
   const handleRouteClick = (route) => {
     setRouteDetailModal({ open: true, route });
+    fetchApiStatus();
+    console.log(`Opened route details for: ${route.route_code}`);
+  };
+
+  // Alternative Route Selection Handler (NEW)
+  const handleAlternativeRouteSelect = (newRoute) => {
+    // Update the routes array with the new route
+    setRoutes(prevRoutes => {
+      const updatedRoutes = [...prevRoutes];
+      // Find the index of the current route and replace it, or add to the beginning
+      const existingIndex = updatedRoutes.findIndex(r => r.commodity_name === newRoute.commodity_name);
+      
+      if (existingIndex >= 0) {
+        // Replace existing route
+        updatedRoutes[existingIndex] = {
+          ...updatedRoutes[existingIndex],
+          ...newRoute,
+          id: updatedRoutes[existingIndex].id || generateRouteId(),
+          last_updated: new Date().toISOString()
+        };
+      } else {
+        // Add new route to the beginning
+        updatedRoutes.unshift({
+          ...newRoute,
+          id: generateRouteId(),
+          last_updated: new Date().toISOString()
+        });
+      }
+      
+      return updatedRoutes;
+    });
+    
+    // Update RouteDetailModal if it's open with the same commodity
+    if (routeDetailModal.open && routeDetailModal.route?.commodity_name === newRoute.commodity_name) {
+      setRouteDetailModal(prev => ({
+        ...prev,
+        route: {
+          ...prev.route,
+          ...newRoute,
+          last_updated: new Date().toISOString()
+        }
+      }));
+    }
+    
+    console.log(`Alternative route selected: ${newRoute.commodity_name} via ${newRoute.terminal_name}`);
+  };
+
+  // Helper function to generate unique route IDs
+  const generateRouteId = () => {
+    return `route_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
   };
 
   const handleClearAllData = async () => {
