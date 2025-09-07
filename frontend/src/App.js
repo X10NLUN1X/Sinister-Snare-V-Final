@@ -793,36 +793,128 @@ const RefreshModal = ({ isOpen, onClose, logs, isRefreshing }) => {
   );
 };
 
-// SnarePlan URL Generator Helper Function
+// SnarePlan Location Mapping Database (synced with snareplan.dolus.eu)
+const SNAREPLAN_LOCATIONS = {
+  // STANTON SYSTEM
+  'Stanton': {
+    // Lagrange Points
+    'ARC-L1 Wide Forest Station': 'Wide Forest Station',
+    'ARC-L2 Lucky Pathway Station': 'Lucky Pathway Station', 
+    'ARC-L3 Modern Express Station': 'Modern Express Station',
+    'ARC-L4 Faint Glen Station': 'Faint Glen Station',
+    'ARC-L5 Yellow Cave Station': 'Yellow Cave Station',
+    'ARC-L5 Beautiful Glen Station': 'Beautiful Glen Station',
+    
+    'CRU-L2 Centipede Dream Station': 'Centipede Dream Station',
+    'CRU-L4 Shallow Fields Station': 'Shallow Fields Station',
+    
+    'HUR-L1': 'HUR-L1',
+    'HUR-L2': 'HUR-L2', 
+    'HUR-L3': 'HUR-L3',
+    'HUR-L4 Melodic Fields Station': 'Melodic Fields Station',
+    'HUR-L5 High Course Station': 'High Course Station',
+    'HUR-L5 Thundering Express Station': 'Thundering Express Station',
+    
+    'MIC-L1 Shallow Frontier Station': 'Shallow Frontier Station',
+    'MIC-L2 Long Forest Station': 'Long Forest Station',
+    'MIC-L3 Endless Odyssey Station': 'Endless Odyssey Station',
+    'MIC-L4 Red Crossroads Station': 'Red Crossroads Station', 
+    'MIC-L5 Modern Icarus Station': 'Modern Icarus Station',
+    
+    // Major Locations
+    'Stanton': 'Stanton',
+    'Terra Gateway': 'Terra Gateway',
+    'Pyro Gateway': 'Pyro Gateway',
+    'Whala Emergency Station': 'Whala Emergency Station',
+    'Whala Emergency': 'Whala Emergency',
+    
+    // Planets and Moons (common variations)
+    'MicroTech': 'MicroTech',
+    'ArcCorp': 'ArcCorp', 
+    'Hurston': 'Hurston',
+    'Crusader': 'Crusader',
+    'Area18': 'Area18',
+    'Lorville': 'Lorville',
+    'New Babbage': 'New Babbage',
+    'Orison': 'Orison',
+    
+    // Common Station Names 
+    'Port Olisar': 'Port Olisar',
+    'Port Tressler': 'Port Tressler',
+    'Everus Harbor': 'Everus Harbor',
+    'Baijini Point': 'Baijini Point'
+  },
+  
+  // PYRO SYSTEM  
+  'Pyro': {
+    'Pyro Gateway': 'Pyro Gateway',
+    'Rat\'s Nest': 'Rats Nest',
+    'Ruin Station': 'Ruin Station',
+    'Pyro I': 'Pyro I',
+    'Pyro II': 'Pyro II', 
+    'Pyro III': 'Pyro III',
+    'Pyro IV': 'Pyro IV',
+    'Pyro V': 'Pyro V',
+    'Pyro VI': 'Pyro VI'
+  },
+  
+  // NYX SYSTEM
+  'Nyx': {
+    'Levski': 'Levski',
+    'Delamar': 'Delamar'
+  }
+};
+
+// SnarePlan URL Generator Helper Function (Updated with exact terminology)
 const generateSnarePlanUrl = (routeData) => {
   if (!routeData) return null;
   
   // Extract system information from origin/destination names
   const extractSystemAndLocation = (locationName) => {
-    if (!locationName) return { system: 'Unknown', location: 'Unknown' };
+    if (!locationName) return { system: 'Stanton', location: 'Unknown' };
     
     // Parse "System - Location" format
     const parts = locationName.split(' - ');
+    let system = 'Stanton'; // Default system
+    let location = locationName;
+    
     if (parts.length >= 2) {
-      return {
-        system: parts[0].trim(),
-        location: parts[1].trim()
-      };
+      const potentialSystem = parts[0].trim();
+      const potentialLocation = parts[1].trim();
+      
+      // Determine system
+      if (potentialSystem.toLowerCase().includes('pyro')) {
+        system = 'Pyro';
+      } else if (potentialSystem.toLowerCase().includes('nyx')) {
+        system = 'Nyx';
+      } else if (potentialSystem.toLowerCase().includes('stanton')) {
+        system = 'Stanton';
+      }
+      
+      location = potentialLocation;
     }
     
-    // Fallback for different formats
-    return {
-      system: locationName.includes('Stanton') ? 'Stanton' : 
-              locationName.includes('Pyro') ? 'Pyro' :
-              locationName.includes('Nyx') ? 'Nyx' : 'Stanton',
-      location: locationName
-    };
+    // Map location name to SnarePlan exact terminology
+    let mappedLocation = location;
+    if (SNAREPLAN_LOCATIONS[system] && SNAREPLAN_LOCATIONS[system][location]) {
+      mappedLocation = SNAREPLAN_LOCATIONS[system][location];
+    } else {
+      // Try to find partial matches for complex names
+      for (const [key, value] of Object.entries(SNAREPLAN_LOCATIONS[system] || {})) {
+        if (location.includes(key) || key.includes(location)) {
+          mappedLocation = value;
+          break;
+        }
+      }
+    }
+    
+    return { system, location: mappedLocation };
   };
   
   const origin = extractSystemAndLocation(routeData.origin_name);
   const destination = extractSystemAndLocation(routeData.destination_name);
   
-  // Build SnarePlan URL with correct parameter structure
+  // Build SnarePlan URL with correct parameter structure and exact terminology
   const params = new URLSearchParams({
     'version': '4.3 LIVE',
     'system': origin.system,
