@@ -149,7 +149,7 @@ class StarProfitClient:
             
         except Exception as e:
             logging.error(f"Web parsing error: {e}")
-            return self._generate_enhanced_commodity_data()
+            return []  # Return empty instead of fake data
     
     def _generate_fallback_commodity_data(self) -> List[Dict[str, Any]]:
         """Generate minimal fallback data only when API is completely unavailable"""
