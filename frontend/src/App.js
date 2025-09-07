@@ -910,7 +910,7 @@ const TERMINAL_TO_SNAREPLAN_MAPPING = {
   // Rayari Research -> Microtech
   "Rayari Anvik": "Microtech",
   "Rayari Cantwell": "Microtech",
-  "Rayari Deltana": "microTech", 
+  "Rayari Deltana": "Microtech", 
   "Rayari Kaltag": "microTech",
   "Rayari McGrath": "microTech",
   
