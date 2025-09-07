@@ -317,7 +317,7 @@ const Header = () => (
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-5xl font-bold mb-2 gradient-text">⚔️ Sinister Snare</h1>
-          <p className="text-xl opacity-90">Advanced Star Citizen Piracy Intelligence System v2.0</p>
+          <p className="text-xl opacity-90">Advanced Star Citizen Piracy Intelligence System v5.0</p>
           <p className="text-sm opacity-75 mt-1">Real-time tracking • Interception mapping • Historical analysis • Alert system</p>
         </div>
         <div className="text-right">
