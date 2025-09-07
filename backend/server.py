@@ -1107,7 +1107,7 @@ async def analyze_routes(
         
         # Determine actual data source used
         actual_data_source = routes_data.get('source', data_source)
-        api_description = f"Star Profit {actual_data_source.upper()}" if actual_data_source in ['api', 'web'] else "Star Profit API"
+        api_description = f"UEXCorp" if actual_data_source in ['api', 'web'] else "UEXCorp API"
         
         return {
             "status": "success",
