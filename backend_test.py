@@ -547,6 +547,295 @@ async def test_backend_endpoints():
     
     return results
 
+async def test_specific_fixes():
+    """Test specific fixes mentioned in the review request"""
+    results = TestResults()
+    
+    print(f"\n🔧 Testing Specific Bug Fixes from Review Request")
+    
+    async with httpx.AsyncClient(timeout=30.0) as client:
+        
+        # Test 1: Manual Refresh with Data Source API
+        try:
+            response = await client.post(f"{BACKEND_URL}/api/refresh/manual", json={"data_source": "api"})
+            if response.status_code == 200:
+                data = response.json()
+                if data.get('status') == 'success':
+                    data_source_used = data.get('data_source_used', 'unknown')
+                    if data_source_used == 'api':
+                        results.add_result(
+                            "Manual Refresh with API Data Source",
+                            "PASS",
+                            f"Manual refresh correctly used API data source: {data_source_used}"
+                        )
+                    else:
+                        results.add_result(
+                            "Manual Refresh with API Data Source",
+                            "FAIL",
+                            f"Expected 'api' data source, got: {data_source_used}"
+                        )
+                else:
+                    results.add_result(
+                        "Manual Refresh with API Data Source",
+                        "FAIL",
+                        f"Manual refresh returned status: {data.get('status')}"
+                    )
+            else:
+                results.add_result(
+                    "Manual Refresh with API Data Source",
+                    "FAIL",
+                    f"HTTP {response.status_code}: {response.text[:200]}"
+                )
+        except Exception as e:
+            results.add_result(
+                "Manual Refresh with API Data Source",
+                "FAIL",
+                f"Connection error: {str(e)}"
+            )
+        
+        # Test 2: Manual Refresh with Data Source Web
+        try:
+            response = await client.post(f"{BACKEND_URL}/api/refresh/manual", json={"data_source": "web"})
+            if response.status_code == 200:
+                data = response.json()
+                if data.get('status') == 'success':
+                    data_source_used = data.get('data_source_used', 'unknown')
+                    if data_source_used == 'web':
+                        results.add_result(
+                            "Manual Refresh with Web Data Source",
+                            "PASS",
+                            f"Manual refresh correctly used web data source: {data_source_used}"
+                        )
+                    else:
+                        results.add_result(
+                            "Manual Refresh with Web Data Source",
+                            "FAIL",
+                            f"Expected 'web' data source, got: {data_source_used}"
+                        )
+                else:
+                    results.add_result(
+                        "Manual Refresh with Web Data Source",
+                        "FAIL",
+                        f"Manual refresh returned status: {data.get('status')}"
+                    )
+            else:
+                results.add_result(
+                    "Manual Refresh with Web Data Source",
+                    "FAIL",
+                    f"HTTP {response.status_code}: {response.text[:200]}"
+                )
+        except Exception as e:
+            results.add_result(
+                "Manual Refresh with Web Data Source",
+                "FAIL",
+                f"Connection error: {str(e)}"
+            )
+        
+        # Test 3: Route Data Structure Verification
+        try:
+            response = await client.get(f"{BACKEND_URL}/api/routes/analyze?limit=5")
+            if response.status_code == 200:
+                data = response.json()
+                if data.get('status') == 'success':
+                    routes = data.get('routes', [])
+                    if routes:
+                        sample_route = routes[0]
+                        
+                        # Check for required fields from review request
+                        required_fields = ['origin_name', 'destination_name', 'buy_price', 'sell_price', 'buy_stock', 'sell_stock']
+                        missing_fields = []
+                        field_values = {}
+                        
+                        for field in required_fields:
+                            if field not in sample_route:
+                                missing_fields.append(field)
+                            else:
+                                field_values[field] = sample_route[field]
+                        
+                        # Check for "Unknown" values in origin/destination
+                        unknown_origins = any("Unknown" in str(route.get('origin_name', '')) for route in routes)
+                        unknown_destinations = any("Unknown" in str(route.get('destination_name', '')) for route in routes)
+                        
+                        if not missing_fields and not unknown_origins and not unknown_destinations:
+                            results.add_result(
+                                "Route Data Structure Fix",
+                                "PASS",
+                                f"All required fields present with real data. Sample: {field_values}"
+                            )
+                        elif missing_fields:
+                            results.add_result(
+                                "Route Data Structure Fix",
+                                "FAIL",
+                                f"Missing required fields: {missing_fields}"
+                            )
+                        else:
+                            results.add_result(
+                                "Route Data Structure Fix",
+                                "FAIL",
+                                f"Found 'Unknown' values - Origins: {unknown_origins}, Destinations: {unknown_destinations}"
+                            )
+                    else:
+                        results.add_result(
+                            "Route Data Structure Fix",
+                            "FAIL",
+                            "No routes returned to verify structure"
+                        )
+                else:
+                    results.add_result(
+                        "Route Data Structure Fix",
+                        "FAIL",
+                        f"Routes API returned status: {data.get('status')}"
+                    )
+            else:
+                results.add_result(
+                    "Route Data Structure Fix",
+                    "FAIL",
+                    f"HTTP {response.status_code}: {response.text[:200]}"
+                )
+        except Exception as e:
+            results.add_result(
+                "Route Data Structure Fix",
+                "FAIL",
+                f"Connection error: {str(e)}"
+            )
+        
+        # Test 4: Commodity Snare Endpoint with Agricium (as requested)
+        try:
+            response = await client.get(f"{BACKEND_URL}/api/snare/commodity?commodity_name=Agricium")
+            if response.status_code == 200:
+                data = response.json()
+                if data.get('status') == 'success':
+                    analysis_results = data.get('analysis', {})
+                    profitable_routes = analysis_results.get('profitable_routes', 0)
+                    commodity_found = analysis_results.get('commodity_found', False)
+                    
+                    if commodity_found and profitable_routes > 0:
+                        results.add_result(
+                            "Commodity Snare Agricium Analysis",
+                            "PASS",
+                            f"Agricium analysis successful - Found {profitable_routes} profitable routes"
+                        )
+                    elif commodity_found:
+                        results.add_result(
+                            "Commodity Snare Agricium Analysis",
+                            "PASS",
+                            f"Agricium found but no profitable routes (acceptable)"
+                        )
+                    else:
+                        results.add_result(
+                            "Commodity Snare Agricium Analysis",
+                            "FAIL",
+                            f"Agricium commodity not found in analysis"
+                        )
+                else:
+                    results.add_result(
+                        "Commodity Snare Agricium Analysis",
+                        "FAIL",
+                        f"Commodity snare returned status: {data.get('status')}"
+                    )
+            elif response.status_code == 404:
+                results.add_result(
+                    "Commodity Snare Agricium Analysis",
+                    "FAIL",
+                    "Endpoint returns 404 - this was the reported issue that should be fixed"
+                )
+            else:
+                results.add_result(
+                    "Commodity Snare Agricium Analysis",
+                    "FAIL",
+                    f"HTTP {response.status_code}: {response.text[:200]}"
+                )
+        except Exception as e:
+            results.add_result(
+                "Commodity Snare Agricium Analysis",
+                "FAIL",
+                f"Connection error: {str(e)}"
+            )
+        
+        # Test 5: Verify Routes Analysis with Data Source Parameter
+        try:
+            # Test with API data source
+            response = await client.get(f"{BACKEND_URL}/api/routes/analyze?data_source=api&limit=3")
+            if response.status_code == 200:
+                data = response.json()
+                if data.get('status') == 'success':
+                    data_source = data.get('data_source', 'unknown')
+                    api_used = data.get('api_used', 'unknown')
+                    
+                    if 'api' in data_source.lower() or 'api' in api_used.lower():
+                        results.add_result(
+                            "Routes Analysis API Data Source",
+                            "PASS",
+                            f"Routes analysis correctly uses API data source: {data_source}, API: {api_used}"
+                        )
+                    else:
+                        results.add_result(
+                            "Routes Analysis API Data Source",
+                            "FAIL",
+                            f"Expected API data source, got: {data_source}, API: {api_used}"
+                        )
+                else:
+                    results.add_result(
+                        "Routes Analysis API Data Source",
+                        "FAIL",
+                        f"Routes analysis returned status: {data.get('status')}"
+                    )
+            else:
+                results.add_result(
+                    "Routes Analysis API Data Source",
+                    "FAIL",
+                    f"HTTP {response.status_code}: {response.text[:200]}"
+                )
+        except Exception as e:
+            results.add_result(
+                "Routes Analysis API Data Source",
+                "FAIL",
+                f"Connection error: {str(e)}"
+            )
+        
+        # Test 6: Verify Routes Analysis with Web Data Source
+        try:
+            # Test with web data source
+            response = await client.get(f"{BACKEND_URL}/api/routes/analyze?data_source=web&limit=3")
+            if response.status_code == 200:
+                data = response.json()
+                if data.get('status') == 'success':
+                    data_source = data.get('data_source', 'unknown')
+                    api_used = data.get('api_used', 'unknown')
+                    
+                    if 'web' in data_source.lower() or 'web' in api_used.lower():
+                        results.add_result(
+                            "Routes Analysis Web Data Source",
+                            "PASS",
+                            f"Routes analysis correctly uses web data source: {data_source}, API: {api_used}"
+                        )
+                    else:
+                        results.add_result(
+                            "Routes Analysis Web Data Source",
+                            "FAIL",
+                            f"Expected web data source, got: {data_source}, API: {api_used}"
+                        )
+                else:
+                    results.add_result(
+                        "Routes Analysis Web Data Source",
+                        "FAIL",
+                        f"Routes analysis returned status: {data.get('status')}"
+                    )
+            else:
+                results.add_result(
+                    "Routes Analysis Web Data Source",
+                    "FAIL",
+                    f"HTTP {response.status_code}: {response.text[:200]}"
+                )
+        except Exception as e:
+            results.add_result(
+                "Routes Analysis Web Data Source",
+                "FAIL",
+                f"Connection error: {str(e)}"
+            )
+    
+    return results
+
 async def test_rate_limiting():
     """Test rate limiting behavior"""
     results = TestResults()
