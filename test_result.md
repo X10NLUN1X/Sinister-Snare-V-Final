@@ -411,10 +411,10 @@ metadata:
 
 test_plan:
   current_focus:
-    - "SnarePlan Terminologie-Synchronisation Complete"
+    - "Comprehensive Bug-Fix Verification Complete"
   stuck_tasks: []
   test_all: false
-  test_priority: "terminologie_synchronisation_verified"
+  test_priority: "bug_fixes_verified_production_ready"
 
 agent_communication:
     - agent: "main"
