@@ -1676,6 +1676,24 @@ function App() {
     }
   }, []);
 
+  const fetchDbStats = useCallback(async () => {
+    try {
+      const stats = await sinisterDB.getStats();
+      setDbStats(stats);
+    } catch (error) {
+      console.error('Error fetching database stats:', error);
+      setDbStats({
+        routes: 0,
+        commodities: 0,
+        interceptions: 0,
+        totalRecords: 0,
+        sizeBytes: 0,
+        sizeFormatted: '0 B',
+        lastUpdate: null
+      });
+    }
+  }, []);
+
   const fetchRoutes = useCallback(async () => {
     try {
       const dataTypeParam = showAverageData ? 'averaged' : 'current';
@@ -1716,24 +1734,6 @@ function App() {
       setTargets(response.data.targets || []);
     } catch (error) {
       console.error('Error fetching targets:', error);
-    }
-  }, []);
-
-  const fetchDbStats = useCallback(async () => {
-    try {
-      const stats = await sinisterDB.getStats();
-      setDbStats(stats);
-    } catch (error) {
-      console.error('Error fetching database stats:', error);
-      setDbStats({
-        routes: 0,
-        commodities: 0,
-        interceptions: 0,
-        totalRecords: 0,
-        sizeBytes: 0,
-        sizeFormatted: '0 B',
-        lastUpdate: null
-      });
     }
   }, []);
 
