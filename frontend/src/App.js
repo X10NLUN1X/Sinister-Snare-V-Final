@@ -924,7 +924,7 @@ const TERMINAL_TO_SNAREPLAN_MAPPING = {
   "Ashland": "Hurston",
   "Checkmate": "Hurston", 
   "Deakins Research": "Microtech",
-  "Hickes Research": "microTech",
+  "Hickes Research": "Microtech",
   "Maker's Point": "ArcCorp",
   "Pickers Field": "Hurston",
   "Prospect Depot": "Hurston",
