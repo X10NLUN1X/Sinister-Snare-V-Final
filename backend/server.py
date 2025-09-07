@@ -1011,6 +1011,8 @@ async def analyze_routes(
                     commodity_name=route.get('commodity_name', 'Unknown'),
                     origin_name=f"{route.get('origin_star_system_name', 'Unknown')} - {route.get('origin_terminal_name', 'Unknown')}",
                     destination_name=f"{route.get('destination_star_system_name', 'Unknown')} - {route.get('destination_terminal_name', 'Unknown')}",
+                    origin_terminal_name=route.get('origin_terminal_name', 'Unknown'),
+                    destination_terminal_name=route.get('destination_terminal_name', 'Unknown'),
                     profit=float(route.get('profit', 0)),
                     roi=float(route.get('price_roi', 0)),
                     distance=float(route.get('distance', 0)),
