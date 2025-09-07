@@ -2147,6 +2147,12 @@ function App() {
         snareData={snareModal.data}
       />
       
+      <RouteDetailModal 
+        isOpen={routeDetailModal.open}
+        onClose={() => setRouteDetailModal({ open: false, route: null })}
+        route={routeDetailModal.route}
+      />
+      
       <CommoditySnareModal 
         isOpen={commoditySnareModal}
         onClose={() => setCommoditySnareModal(false)}
