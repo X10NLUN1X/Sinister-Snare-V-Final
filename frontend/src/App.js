@@ -793,18 +793,65 @@ const RefreshModal = ({ isOpen, onClose, logs, isRefreshing }) => {
   );
 };
 
+// SnarePlan URL Generator Helper Function
+const generateSnarePlanUrl = (routeData) => {
+  if (!routeData) return null;
+  
+  // Extract system information from origin/destination names
+  const extractSystemAndLocation = (locationName) => {
+    if (!locationName) return { system: 'Unknown', location: 'Unknown' };
+    
+    // Parse "System - Location" format
+    const parts = locationName.split(' - ');
+    if (parts.length >= 2) {
+      return {
+        system: parts[0].trim(),
+        location: parts[1].trim()
+      };
+    }
+    
+    // Fallback for different formats
+    return {
+      system: locationName.includes('Stanton') ? 'Stanton' : 
+              locationName.includes('Pyro') ? 'Pyro' :
+              locationName.includes('Nyx') ? 'Nyx' : 'Stanton',
+      location: locationName
+    };
+  };
+  
+  const origin = extractSystemAndLocation(routeData.origin_name);
+  const destination = extractSystemAndLocation(routeData.destination_name);
+  
+  // Build SnarePlan URL with correct parameter structure
+  const params = new URLSearchParams({
+    'version': '4.3 LIVE',
+    'system': origin.system,
+    'origins': `${origin.location}:g`,
+    'qedOrigin': 'c',
+    'destinations': destination.location,
+    'dd': '24',
+    'edd': '24', 
+    'dr': '60',
+    'min': '0',
+    'max': '100',
+    'br': '2079',
+    'calc': 'yes'
+  });
+  
+  return `https://snareplan.dolus.eu/?${params.toString()}`;
+};
+
 const SnareModal = ({ isOpen, onClose, snareData }) => {
   if (!isOpen || !snareData) return null;
 
-  // SnarePlan Integration Function
+  // SnarePlan Integration Function with correct URL structure
   const openInSnarePlan = () => {
-    const origin = encodeURIComponent(snareData.origin_name || '');
-    const destination = encodeURIComponent(snareData.destination_name || '');
-    const commodity = encodeURIComponent(snareData.commodity_name || '');
-    
-    const snarePlanUrl = `https://snareplan.dolus.eu/?origin=${origin}&destination=${destination}&commodity=${commodity}&profit=${snareData.profit}&route=${encodeURIComponent(snareData.route_code)}`;
-    
-    window.open(snarePlanUrl, '_blank', 'noopener,noreferrer');
+    const snarePlanUrl = generateSnarePlanUrl(snareData);
+    if (snarePlanUrl) {
+      window.open(snarePlanUrl, '_blank', 'noopener,noreferrer');
+    } else {
+      console.error('Could not generate SnarePlan URL for route data:', snareData);
+    }
   };
 
   return (
