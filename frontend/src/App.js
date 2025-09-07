@@ -911,7 +911,7 @@ const TERMINAL_TO_SNAREPLAN_MAPPING = {
   "Rayari Anvik": "Microtech",
   "Rayari Cantwell": "Microtech",
   "Rayari Deltana": "Microtech", 
-  "Rayari Kaltag": "microTech",
+  "Rayari Kaltag": "Microtech",
   "Rayari McGrath": "microTech",
   
   // Salvage Operations -> Hurston system
