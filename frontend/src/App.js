@@ -932,6 +932,31 @@ const TERMINAL_TO_SNAREPLAN_MAPPING = {
   // GrimHEX -> Crusader (Yela moon)
   "GrimHEX": "Crusader",
   
+  // === LAGRANGE POINT STATIONS ===
+  // ARC-L* stations -> Arccorp
+  "ARC-L1 Wide Forest Station": "Arccorp",
+  "ARC-L2 Lucky Pathway Station": "Arccorp",
+  "ARC-L3 Modern Express Station": "Arccorp",
+  "ARC-L4 Faint Glen Station": "Arccorp",
+  "ARC-L5 Yellow Cave Station": "Arccorp",
+  "ARC-L5 Beautiful Glen Station": "Arccorp",
+  
+  // CRU-L* stations -> Crusader
+  "CRU-L2 Centipede Dream Station": "Crusader",
+  "CRU-L4 Shallow Fields Station": "Crusader",
+  
+  // HUR-L* stations -> Hurston
+  "HUR-L4 Melodic Fields Station": "Hurston",
+  "HUR-L5 High Course Station": "Hurston",
+  "HUR-L5 Thundering Express Station": "Hurston",
+  
+  // MIC-L* stations -> Microtech
+  "MIC-L1 Shallow Frontier Station": "Microtech",
+  "MIC-L2 Long Forest Station": "Microtech",
+  "MIC-L3 Endless Odyssey Station": "Microtech",
+  "MIC-L4 Red Crossroads Station": "Microtech",
+  "MIC-L5 Modern Icarus Station": "Microtech",
+  
   // === PYRO SYSTEM ===
   // Major Stations -> Pyro (general system)
   "Ruin Station": "Pyro I",
