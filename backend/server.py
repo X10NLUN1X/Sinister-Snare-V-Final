@@ -574,6 +574,8 @@ class RouteAnalysis(BaseModel):
     commodity_name: str
     origin_name: str
     destination_name: str
+    origin_terminal_name: Optional[str] = None
+    destination_terminal_name: Optional[str] = None
     profit: float
     roi: float
     distance: float
