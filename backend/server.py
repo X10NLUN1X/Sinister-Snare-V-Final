@@ -1575,93 +1575,145 @@ async def snare_now():
         logging.error(f"Error in snare_now: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@api_router.get("/snare/commodity")
-async def commodity_snare(commodity_name: str = Query(...)):
-    """Set up commodity-specific snare for targeted interception"""
+@api_router.post("/database/merge")
+async def merge_duplicate_routes():
+    """
+    MERGE Button: Zusammenfassen von doppelten Einträgen und Berechnung von Durchschnittswerten
+    """
     try:
-        # Find routes for the specific commodity
-        routes = await db.route_analyses.find({
-            "commodity_name": {"$regex": commodity_name, "$options": "i"},
-            "profit": {"$gte": 100000}  # Minimum 100k profit
-        }).sort("piracy_rating", -1).limit(20).to_list(20)
+        if db is None:
+            return {"status": "error", "message": "Database not available"}
         
-        if not routes:
-            return {
-                "status": "error",
-                "message": f"No profitable routes found for commodity: {commodity_name}"
-            }
+        # Alle Route-Analysen abrufen
+        all_routes = await db.route_analyses.find({}).to_list(None)
+        logging.info(f"Processing {len(all_routes)} routes for merging")
         
-        # Analyze the best routes for this commodity
-        snare_opportunities = []
+        # Gruppieren nach route_code
+        route_groups = {}
+        for route in all_routes:
+            route_code = route.get('route_code')
+            if route_code:
+                if route_code not in route_groups:
+                    route_groups[route_code] = []
+                route_groups[route_code].append(route)
         
-        for route in routes[:10]:  # Top 10 routes
-            origin_parts = route.get('origin_name', '').split(' - ')
-            dest_parts = route.get('destination_name', '').split(' - ')
-            
-            origin_system = origin_parts[0] if len(origin_parts) > 0 else 'Unknown'
-            dest_system = dest_parts[0] if len(dest_parts) > 0 else 'Unknown'
-            origin_terminal = origin_parts[1] if len(origin_parts) > 1 else 'Unknown'
-            dest_terminal = dest_parts[1] if len(dest_parts) > 1 else 'Unknown'
-            
-            is_inter_system = origin_system != dest_system
-            
-            # Determine interception strategy
-            if is_inter_system:
-                if 'Pyro' in origin_system and 'Stanton' in dest_system:
-                    interception_location = "Pyro Gateway"
-                    strategy = f"Interdict between {origin_terminal} and Pyro Gateway"
-                    warning = "⚠️ Inter-system route - Use Pyro Gateway as interception point"
-                elif 'Stanton' in origin_system and 'Pyro' in dest_system:
-                    interception_location = "Stanton-Pyro Jump Point"
-                    strategy = f"Interdict between {origin_terminal} and Stanton-Pyro Jump Point"
-                    warning = "⚠️ Inter-system route - Use Jump Point as interception point"
-                else:
-                    interception_location = f"{origin_system}-{dest_system} Gateway"
-                    strategy = f"Interdict at gateway between {origin_system} and {dest_system}"
-                    warning = f"⚠️ Inter-system route - Use gateway for interception"
+        merged_routes = []
+        statistics = {
+            "total_original_routes": len(all_routes),
+            "unique_routes": len(route_groups),
+            "merged_routes": 0,
+            "duplicates_removed": 0
+        }
+        
+        # Für jede Routengruppe Durchschnittswerte berechnen
+        for route_code, routes in route_groups.items():
+            if len(routes) > 1:
+                statistics["merged_routes"] += 1
+                statistics["duplicates_removed"] += len(routes) - 1
+                
+                # Durchschnittswerte berechnen
+                avg_route = calculate_average_route(routes)
+                avg_route["is_averaged"] = True
+                avg_route["original_count"] = len(routes)
+                avg_route["merge_timestamp"] = datetime.now(timezone.utc)
+                
+                merged_routes.append(avg_route)
             else:
-                interception_location = f"Between {origin_terminal} and {dest_terminal}"
-                strategy = f"Interdict between {origin_terminal} and {dest_terminal}"
-                warning = f"🎯 Same system route - Position between terminals in {origin_system}"
-            
-            snare_opportunities.append({
-                "route_code": route.get('route_code'),
-                "buying_point": f"{origin_system} - {origin_terminal}",
-                "selling_point": f"{dest_system} - {dest_terminal}",
-                "interception_location": interception_location,
-                "strategy": strategy,
-                "warning": warning,
-                "profit": route.get('profit'),
-                "piracy_rating": route.get('piracy_rating'),
-                "frequency_score": route.get('frequency_score'),
-                "is_inter_system": is_inter_system,
-                "risk_level": route.get('risk_level'),
-                "estimated_traders": max(1, int(route.get('score', 0) / 10))
-            })
+                # Einzelne Route beibehalten
+                route = routes[0]
+                route["is_averaged"] = False
+                route["original_count"] = 1
+                merged_routes.append(route)
         
-        # Calculate commodity summary
-        total_routes = len(routes)
-        avg_profit = sum(route.get('profit', 0) for route in routes) / len(routes) if routes else 0
-        max_piracy_rating = max(route.get('piracy_rating', 0) for route in routes) if routes else 0
-        inter_system_count = sum(1 for opp in snare_opportunities if opp['is_inter_system'])
+        # Neue Collection für gemergerte Daten erstellen
+        await db.route_analyses_merged.delete_many({})  # Alte gemergerte Daten löschen
+        
+        for route in merged_routes:
+            # MongoDB ObjectId entfernen für clean insert
+            if '_id' in route:
+                del route['_id']
+            await db.route_analyses_merged.insert_one(route)
+        
+        logging.info(f"Merge completed: {statistics['merged_routes']} routes merged, {statistics['duplicates_removed']} duplicates removed")
         
         return {
             "status": "success",
-            "commodity": commodity_name,
-            "summary": {
-                "total_routes_found": total_routes,
-                "profitable_routes": len(snare_opportunities),
-                "inter_system_routes": inter_system_count,
-                "same_system_routes": len(snare_opportunities) - inter_system_count,
-                "average_profit": avg_profit,
-                "max_piracy_rating": max_piracy_rating,
-                "recommended_strategy": "Focus on inter-system routes for higher profits" if inter_system_count > 0 else "Target same-system routes for easier interception"
-            },
-            "snare_opportunities": snare_opportunities
+            "message": "Route merging completed successfully",
+            "statistics": statistics,
+            "merged_routes_count": len(merged_routes)
         }
         
     except Exception as e:
-        logging.error(f"Error in commodity_snare: {e}")
+        logging.error(f"Error in merge_duplicate_routes: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+def calculate_average_route(routes: List[Dict]) -> Dict:
+    """Berechnet Durchschnittswerte für eine Gruppe von Routen"""
+    if not routes:
+        return {}
+    
+    # Basis-Route als Template nehmen
+    avg_route = routes[0].copy()
+    
+    # Numerische Felder für Durchschnittsberechnung
+    numeric_fields = [
+        'profit', 'investment', 'roi', 'distance', 'score', 
+        'piracy_rating', 'risk_score', 'traffic_score'
+    ]
+    
+    # Durchschnittswerte berechnen
+    for field in numeric_fields:
+        if field in avg_route:
+            values = []
+            for route in routes:
+                if field in route and route[field] is not None:
+                    try:
+                        values.append(float(route[field]))
+                    except (ValueError, TypeError):
+                        continue
+            
+            if values:
+                avg_route[field] = round(sum(values) / len(values), 2)
+    
+    # Zeitstempel aktualisieren
+    avg_route['last_seen'] = datetime.now(timezone.utc).isoformat()
+    avg_route['analysis_timestamp'] = datetime.now(timezone.utc).isoformat()
+    
+    return avg_route
+
+@api_router.get("/database/routes/{data_type}")
+async def get_routes_by_type(data_type: str = "current"):
+    """
+    Abrufen von Routen basierend auf Datentyp
+    data_type: 'current' für aktuelle Daten, 'averaged' für Durchschnittsdaten
+    """
+    try:
+        if db is None:
+            return {"status": "error", "message": "Database not available"}
+        
+        if data_type == "averaged":
+            # Durchschnittsdaten aus merged collection
+            routes = await db.route_analyses_merged.find({"is_averaged": True}).sort("piracy_rating", -1).to_list(100)
+        else:
+            # Aktuelle Daten aus original collection
+            routes = await db.route_analyses.find({}).sort("analysis_timestamp", -1).limit(100).to_list(100)
+        
+        # ObjectId fields entfernen für JSON serialization
+        clean_routes = []
+        for route in routes:
+            if '_id' in route:
+                del route['_id']
+            clean_routes.append(route)
+        
+        return {
+            "status": "success",
+            "data_type": data_type,
+            "routes": clean_routes,
+            "count": len(clean_routes)
+        }
+        
+    except Exception as e:
+        logging.error(f"Error getting routes by type: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @api_router.get("/status")
