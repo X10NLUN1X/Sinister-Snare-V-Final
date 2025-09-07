@@ -1461,16 +1461,16 @@ async def get_hourly_analysis():
         raise HTTPException(status_code=500, detail=str(e))
 
 @api_router.post("/refresh/manual")
-async def manual_refresh():
-    """Manual refresh with live update logs"""
+async def manual_refresh(data_source: str = Query(default="api", description="Data source: 'api' or 'web'")):
+    """Manual refresh with live update logs and configurable data source"""
     try:
         refresh_logs = []
         
-        refresh_logs.append({"timestamp": datetime.now(timezone.utc).isoformat(), "message": "🔄 Starting manual refresh...", "type": "info"})
+        refresh_logs.append({"timestamp": datetime.now(timezone.utc).isoformat(), "message": f"🔄 Starting manual refresh using {data_source.upper()} data source...", "type": "info"})
         
-        # Fetch fresh commodity data
-        refresh_logs.append({"timestamp": datetime.now(timezone.utc).isoformat(), "message": "📡 Connecting to Star Profit API...", "type": "info"})
-        commodities_data = await star_profit_client.get_commodities()
+        # Fetch fresh commodity data using specified source
+        refresh_logs.append({"timestamp": datetime.now(timezone.utc).isoformat(), "message": f"📡 Connecting to Star Profit {data_source.upper()}...", "type": "info"})
+        commodities_data = await star_profit_client.get_commodities(data_source)
         
         if not commodities_data.get('commodities'):
             refresh_logs.append({"timestamp": datetime.now(timezone.utc).isoformat(), "message": "❌ Failed to fetch commodity data", "type": "error"})
