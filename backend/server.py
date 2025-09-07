@@ -1538,7 +1538,7 @@ async def get_api_status():
         
         return {
             "status": "operational",
-            "version": "2.0.0",
+            "version": "5.0.0",
             "primary_data_source": primary_data_source,
             "data_sources": {
                 "star_profit_api": {
