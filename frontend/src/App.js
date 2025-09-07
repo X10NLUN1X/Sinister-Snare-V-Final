@@ -2571,30 +2571,47 @@ function App() {
         });
       }
       
-      // ISOLATED TESTING: Test fetchRoutes independently
-      console.log('🔧 DEBUGGING: Starting isolated fetchRoutes test...');
+      // FETCH TEST: Use native fetch instead of axios  
+      console.log('🔧 DEBUGGING: Testing with native fetch...');
       
       try {
         console.log('Step 1: Setting API status...');
         setApiStatus({ status: 'operational', database: 'connected' });
         
-        console.log('Step 2: Direct axios call to routes endpoint...');
+        console.log('Step 2: Native fetch call to routes endpoint...');
         const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
         const testUrl = `${backendUrl}/api/routes/analyze?limit=5&min_score=10&include_coordinates=true&data_source=web`;
         console.log('Test URL:', testUrl);
         
-        const response = await axios.get(testUrl, { timeout: 10000 });
-        console.log('✅ Direct axios response received:', response.data.routes?.length, 'routes');
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 second timeout
         
-        const routes = response.data.routes || [];
+        const response = await fetch(testUrl, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          signal: controller.signal
+        });
+        
+        clearTimeout(timeoutId);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        console.log('✅ Native fetch response received:', data.routes?.length, 'routes');
+        
+        const routes = data.routes || [];
         setRoutes(routes);
         
         console.log('Step 3: Setting loading to false...');
         setLoading(false);
         
-        console.log('✅ ISOLATED TEST COMPLETE!');
+        console.log('✅ FETCH TEST COMPLETE!');
       } catch (error) {
-        console.error('❌ ISOLATED TEST ERROR:', error);
+        console.error('❌ FETCH TEST ERROR:', error.name, error.message);
         setApiStatus({ status: 'operational', database: 'connected' });
         setRoutes([]);
         setLoading(false);
