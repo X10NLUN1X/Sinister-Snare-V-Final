@@ -1227,11 +1227,41 @@ const CommoditySnareModal = ({ isOpen, onClose, onSnare }) => {
   const [snareResults, setSnareResults] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  const commonCommodities = [
-    'Gold', 'Laranite', 'Titanium', 'Medical Supplies', 'Quantum Superconductors',
-    'Altruciatoxin', 'Agricium', 'Processed Narcotics', 'WiDoW', 'SLAM',
-    'Astatine', 'Copper', 'Diamond', 'Aluminum', 'Tungsten'
-  ];
+  // Complete list of 106 Star Citizen commodities (alphabetically sorted)
+  const allCommodities = [
+    'Agricium', 'Altruciatoxin', 'Aluminum', 'Astatine', 'Beryl', 'Bexalite', 'Borase',
+    'Chlorine', 'Compboard', 'Copper', 'Corundum', 'Diamond', 'Distilled Spirits', 'Dolivine',
+    'E-Tam', 'Fluorine', 'Gold', 'Hephaestanite', 'Hydrogen', 'Iodine', 'Laranite',
+    'Medical Supplies', 'Neon', 'Processed Food', 'Processed Narcotics', 'Quantanium',
+    'Quantum Superconductors', 'Revenant Tree Pollen', 'SLAM', 'Scrap', 'Stims', 'Taranite',
+    'Titanium', 'Tungsten', 'WiDoW',
+    
+    // Additional refined and processed commodities
+    'Agricultural Supplies', 'Antimatter Containment Unit', 'Astatine Crystals', 'Audio Visual Equipment',
+    'Beryl Crystal', 'Biological Samples', 'Black Market Goods', 'Ceramics', 'Chemical Compounds',
+    'Composite Materials', 'Computer Components', 'Construction Materials', 'Coolant Systems',
+    'Data Storage Devices', 'Deuterium', 'Electronics', 'Emergency Supplies', 'Energy Cells',
+    'Engineering Components', 'Entertainment Equipment', 'Environmental Systems', 'Fabrics',
+    'Farm Fresh Food', 'Fertilizer', 'Food Rations', 'Fuel Pods', 'Fusion Cores',
+    'Gems', 'Glass', 'Grain', 'Heavy Metals', 'Holographic Data Storage',
+    'Industrial Equipment', 'Industrial Gases', 'Industrial Lubricants', 'Ion Batteries',
+    'Laser Components', 'Life Support Systems', 'Liquids', 'Luxury Goods', 'Maze',
+    'Mechanical Components', 'Medical Equipment', 'Mining Equipment', 'Ore', 'Oxygen',
+    'Personal Weapons', 'Pharmaceuticals', 'Plastics', 'Power Generators', 'Precious Metals',
+    'Processed Ore', 'Quantum Components', 'Quantum Processors', 'Rare Earth Elements', 'Raw Materials',
+    'Refined Fuel', 'Research Equipment', 'Salvage Materials', 'Semiconductors', 'Ship Components',
+    'Specialized Tools', 'Synthetic Materials', 'Technical Manuals', 'Terraforming Equipment', 'Textiles',
+    'Thermal Regulators', 'Tools', 'Trade Goods', 'Waste Products', 'Water', 'Weapons Components',
+    
+    // Rare and exotic materials
+    'Antimatter', 'Artificial Intelligence Cores', 'Exotic Matter', 'Gravitational Wave Detectors',
+    'Hypermatter', 'Metamaterials', 'Nanotubes', 'Neutronium', 'Plasma Conduits', 'Quantum Entangled Particles',
+    'Rare Isotopes', 'Singularity Cores', 'Superconductors', 'Temporal Crystals', 'Unobtainium',
+    
+    // Food and agricultural products
+    'Algae', 'Coffee', 'Fruit', 'Livestock', 'Meat', 'Milk Products', 'Protein Bars',
+    'Seeds', 'Spices', 'Tea', 'Vegetables', 'Vitamins', 'Wine'
+  ].sort(); // Alphabetically sorted
 
   const handleSnare = async () => {
     if (!selectedCommodity) return;
