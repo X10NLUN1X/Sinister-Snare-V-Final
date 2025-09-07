@@ -4,21 +4,21 @@
     "status": "PASS",
     "message": "Successfully connected to Star Profit API, received 2261 commodities",
     "details": null,
-    "timestamp": "2025-09-06T17:21:03.808886"
+    "timestamp": "2025-09-07T00:23:19.222015"
   },
   {
     "test": "Backend Star Profit Integration",
     "status": "PASS",
     "message": "Backend successfully using Star Profit API - Source: real, API: Star Profit API",
     "details": null,
-    "timestamp": "2025-09-06T17:21:04.147293"
+    "timestamp": "2025-09-07T00:23:19.572330"
   },
   {
     "test": "UEX API Connection",
     "status": "FAIL",
     "message": "HTTP 403: <!DOCTYPE html><html lang=\"en-US\"><head><title>Just a moment...</title><meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\"><meta http-equiv=\"X-UA-Compatible\" content=\"IE=Edge\"><meta nam",
     "details": null,
-    "timestamp": "2025-09-06T17:21:04.330918"
+    "timestamp": "2025-09-07T00:23:19.774324"
   },
   {
     "test": "API Status Endpoint",
@@ -38,8 +38,8 @@
       "database": "connected",
       "api_configured": true,
       "statistics": {
-        "total_routes_analyzed": 56,
-        "active_alerts": 4,
+        "total_routes_analyzed": 475,
+        "active_alerts": 3,
         "historical_data_points": 6,
         "tracking_active": true
       },
@@ -50,85 +50,85 @@
         "alert_system": true,
         "export_functionality": true
       },
-      "timestamp": "2025-09-06T17:21:04.621417+00:00"
+      "timestamp": "2025-09-07T00:23:20.061999+00:00"
     },
-    "timestamp": "2025-09-06T17:21:04.626073"
+    "timestamp": "2025-09-07T00:23:20.066091"
   },
   {
     "test": "Routes Analysis Endpoint",
     "status": "PASS",
     "message": "Successfully analyzed 10 routes with proper structure",
     "details": null,
-    "timestamp": "2025-09-06T17:21:04.917792"
+    "timestamp": "2025-09-07T00:23:20.312727"
   },
   {
     "test": "Priority Targets Endpoint",
     "status": "PASS",
-    "message": "Successfully retrieved 5 priority targets",
+    "message": "No priority targets available (acceptable if no routes analyzed yet)",
     "details": null,
-    "timestamp": "2025-09-06T17:21:04.930845"
+    "timestamp": "2025-09-07T00:23:20.325246"
   },
   {
     "test": "Hourly Analysis Endpoint",
     "status": "PASS",
     "message": "Successfully retrieved 24-hour analysis with recommendations",
     "details": null,
-    "timestamp": "2025-09-06T17:21:04.956101"
+    "timestamp": "2025-09-07T00:23:20.353411"
   },
   {
     "test": "Export Routes Endpoint",
     "status": "PASS",
-    "message": "Export endpoint working correctly - 56 records",
+    "message": "Export endpoint working correctly - 485 records",
     "details": null,
-    "timestamp": "2025-09-06T17:21:04.983695"
+    "timestamp": "2025-09-07T00:23:20.508402"
   },
   {
     "test": "Alerts Endpoint",
     "status": "PASS",
-    "message": "Alerts endpoint working - 4 alerts retrieved",
+    "message": "Alerts endpoint working - 3 alerts retrieved",
     "details": null,
-    "timestamp": "2025-09-06T17:21:05.034932"
+    "timestamp": "2025-09-07T00:23:20.519482"
   },
   {
     "test": "Historical Trends Endpoint",
     "status": "PASS",
     "message": "Trends endpoint working - 6 routes over 24 hours",
     "details": null,
-    "timestamp": "2025-09-06T17:21:05.043896"
+    "timestamp": "2025-09-07T00:23:20.529075"
   },
   {
     "test": "Snare Now Endpoint",
     "status": "PASS",
     "message": "Snare Now endpoint working - 0 active snares",
     "details": null,
-    "timestamp": "2025-09-06T17:21:05.054070"
+    "timestamp": "2025-09-07T00:23:20.582981"
   },
   {
     "test": "Snare Commodity Endpoint",
-    "status": "PASS",
-    "message": "Snare Commodity endpoint working - 0 snare points for Laranite",
+    "status": "FAIL",
+    "message": "Snare Commodity API returned status: error",
     "details": null,
-    "timestamp": "2025-09-06T17:21:05.106764"
+    "timestamp": "2025-09-07T00:23:20.604632"
   },
   {
     "test": "Tracking Status Endpoint",
     "status": "PASS",
     "message": "Tracking status endpoint working - Active: True, Routes: 0",
     "details": null,
-    "timestamp": "2025-09-06T17:21:05.115993"
+    "timestamp": "2025-09-07T00:23:20.654535"
   },
   {
     "test": "Interception Points Endpoint",
     "status": "PASS",
-    "message": "Interception Points endpoint working - 3 strategic points",
+    "message": "Interception Points endpoint working - 0 strategic points",
     "details": null,
-    "timestamp": "2025-09-06T17:21:05.166917"
+    "timestamp": "2025-09-07T00:23:20.708849"
   },
   {
     "test": "Rate Limiting",
     "status": "PASS",
     "message": "All 12/12 requests succeeded (rate limiting may not be implemented)",
     "details": null,
-    "timestamp": "2025-09-06T17:21:08.342791"
+    "timestamp": "2025-09-07T00:23:23.845480"
   }
 ]
