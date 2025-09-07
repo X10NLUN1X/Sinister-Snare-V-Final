@@ -2033,7 +2033,12 @@ function App() {
 
   return (
     <div className="min-h-screen bg-black text-white">
-      <Header />
+      <Header 
+        dataSource={dataSource}
+        setDataSource={setDataSource}
+        showAverageData={showAverageData}
+        setShowAverageData={setShowAverageData}
+      />
       
       {/* Enhanced Status Bar */}
       <div className="container mx-auto px-6 py-4">
