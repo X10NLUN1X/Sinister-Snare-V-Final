@@ -2188,7 +2188,6 @@ function App() {
   const [apiStatus, setApiStatus] = useState(null);
   const [activeTab, setActiveTab] = useState('dashboard');
   const [trackingStatus, setTrackingStatus] = useState(null);
-  const [selectedRoute, setSelectedRoute] = useState(null);
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [exportLoading, setExportLoading] = useState(false);
   
