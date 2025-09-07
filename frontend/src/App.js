@@ -1155,6 +1155,20 @@ const AlternativeRoutesDropdown = ({ commodity }) => {
 
   const formatPrice = (price) => price > 0 ? price.toLocaleString('de-DE') : '-';
   const formatStock = (stock) => stock > 0 ? stock.toLocaleString('de-DE') : '-';
+  
+  // Format timestamp as DD.MM.YY HH:mm'h'
+  const formatUpdateTimestamp = (timestamp) => {
+    if (!timestamp) return 'No update time';
+    
+    const date = new Date(timestamp);
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = String(date.getFullYear()).slice(-2);
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    
+    return `Updated: ${day}.${month}.${year} ${hours}:${minutes}h`;
+  };
 
   return (
     <div className="mt-4 border-t border-gray-600 pt-4">
