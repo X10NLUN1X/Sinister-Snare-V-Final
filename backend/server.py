@@ -70,10 +70,10 @@ class StarProfitClient:
             "User-Agent": "Sinister-Snare-Piracy-Intelligence/5.0"
         }
     
-    async def get_commodities(self, source_type: str = "api") -> Dict[str, Any]:
+    async def get_commodities(self, source_type: str = "web") -> Dict[str, Any]:  # Changed default to "web"
         """
         Fetch commodities data from Star Profit API or Web Crawling
-        source_type: 'api' or 'web'
+        source_type: 'web' (default) or 'api'
         """
         async with httpx.AsyncClient(
             timeout=60.0,  # Increased timeout for web crawling
@@ -82,21 +82,23 @@ class StarProfitClient:
         ) as client:
             try:
                 if source_type == "web":
-                    # Web crawling approach
+                    # Web crawling approach - Extract real data from Star Profit website
+                    logging.info("Using Web Crawling as primary data source...")
                     response = await client.get(
                         "https://star-profit.mathioussee.com/commodities",
                         headers=self.headers
                     )
                     response.raise_for_status()
                     
-                    # Parse HTML content to extract commodity data
+                    # Try to extract JSON data embedded in the page
                     html_content = response.text
-                    commodities = await self._parse_commodities_from_web(html_content)
+                    commodities = await self._parse_commodities_from_web(html_content, client)
                     
                     logging.info(f"Star Profit Web Crawling: Extracted {len(commodities)} commodity records")
                     return {"commodities": commodities, "source": "web_crawling"}
                 else:
-                    # API approach (default)
+                    # API approach (backup - kept for future use)
+                    logging.info("Using API as data source (backup mode)...")
                     response = await client.get(
                         f"{self.base_url}/commodities",
                         headers=self.headers
@@ -109,6 +111,19 @@ class StarProfitClient:
                     
             except Exception as e:
                 logging.error(f"Star Profit {'Web' if source_type == 'web' else 'API'} Error: {e}")
+                # Fallback: if web fails, try API
+                if source_type == "web":
+                    logging.info("Web crawling failed, attempting API fallback...")
+                    try:
+                        response = await client.get(f"{self.base_url}/commodities", headers=self.headers)
+                        response.raise_for_status()
+                        data = response.json()
+                        logging.info(f"API Fallback successful: {len(data.get('commodities', []))} records")
+                        return {**data, "source": "api_fallback"}
+                    except:
+                        logging.error("Both web and API sources failed")
+                        pass
+                
                 return {"commodities": [], "error": str(e), "source": source_type}
     
     async def _parse_commodities_from_web(self, html_content: str) -> List[Dict[str, Any]]:
