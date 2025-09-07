@@ -2571,25 +2571,30 @@ function App() {
         });
       }
       
-      // MINIMAL LOADING: Load only what's needed for bidirectional testing
-      console.log('🔧 DEBUGGING: Starting minimal load sequence...');
+      // ISOLATED TESTING: Test fetchRoutes independently
+      console.log('🔧 DEBUGGING: Starting isolated fetchRoutes test...');
       
       try {
         console.log('Step 1: Setting API status...');
         setApiStatus({ status: 'operational', database: 'connected' });
         
-        console.log('Step 2: Loading routes via fetchRoutes()...');
-        await fetchRoutes();
+        console.log('Step 2: Direct axios call to routes endpoint...');
+        const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
+        const testUrl = `${backendUrl}/api/routes/analyze?limit=5&min_score=10&include_coordinates=true&data_source=web`;
+        console.log('Test URL:', testUrl);
         
-        console.log('Step 3: Setting minimal targets...');
-        setTargets([]);
+        const response = await axios.get(testUrl, { timeout: 10000 });
+        console.log('✅ Direct axios response received:', response.data.routes?.length, 'routes');
         
-        console.log('Step 4: Setting loading to false...');
+        const routes = response.data.routes || [];
+        setRoutes(routes);
+        
+        console.log('Step 3: Setting loading to false...');
         setLoading(false);
         
-        console.log('✅ DEBUGGING: Minimal load complete!');
+        console.log('✅ ISOLATED TEST COMPLETE!');
       } catch (error) {
-        console.error('❌ DEBUGGING: Error in minimal loading:', error);
+        console.error('❌ ISOLATED TEST ERROR:', error);
         setApiStatus({ status: 'operational', database: 'connected' });
         setRoutes([]);
         setLoading(false);
