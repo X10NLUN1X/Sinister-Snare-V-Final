@@ -816,92 +816,100 @@ async def analyze_routes(
             raw_routes = []
             
             # Process REAL Star Profit API data without modifications
-            route_count = 0
+            # Group commodities by name for buy/sell route pairing
+            commodity_groups = {}
             for commodity in commodities:
+                name = commodity.get('commodity_name', '')
+                if name and name not in commodity_groups:
+                    commodity_groups[name] = []
+                commodity_groups[name].append(commodity)
+            
+            route_count = 0
+            for commodity_name, commodity_list in commodity_groups.items():
                 if route_count >= limit:
                     break
                 
-                # Use ONLY real data from Star Profit API - no fake data
-                commodity_name = commodity.get('commodity_name', '')
-                terminal_name = commodity.get('terminal_name', '') or commodity.get('terminal', '')
+                # Find buy and sell locations for this commodity using REAL API data
+                buy_locations = [c for c in commodity_list if c.get('price_buy', 0) > 0 and c.get('status_buy', 0) > 0]
+                sell_locations = [c for c in commodity_list if c.get('price_sell', 0) > 0 and c.get('status_sell', 0) > 0]
                 
-                # Skip if essential data is missing
-                if not commodity_name or not terminal_name:
-                    continue
-                
-                # Use actual buy/sell prices from API data
-                buy_price = commodity.get('price_buy', 0) or commodity.get('buy_price', 0)
-                sell_price = commodity.get('price_sell', 0) or commodity.get('sell_price', 0)
-                buy_stock = commodity.get('scu_buy', 0) or commodity.get('buy_stock', 0) or commodity.get('stock', 0)
-                sell_stock = commodity.get('scu_sell', 0) or commodity.get('sell_stock', 0) or commodity.get('stock', 0)
-                
-                # Skip commodities without valid prices
-                if buy_price <= 0 or sell_price <= buy_price:
-                    continue
-                
-                # Map real terminal to correct system
-                origin_system = star_profit_client.map_terminal_to_system(terminal_name)
-                
-                # Use real destination terminal from API data if available
-                # Find a selling location for this commodity from the API
-                destination_terminal = "Port Olisar"  # Default fallback
-                destination_system = "Stanton"
-                
-                # Look for real sell location in the API data
-                for other_commodity in commodities:
-                    if (other_commodity.get('commodity_name') == commodity_name and 
-                        other_commodity.get('price_sell', 0) > 0 and
-                        other_commodity.get('terminal_name') != terminal_name):
-                        destination_terminal = other_commodity.get('terminal_name', 'Port Olisar')
-                        destination_system = star_profit_client.map_terminal_to_system(destination_terminal)
-                        break
-                
-                # Calculate profit using real API data
-                profit_per_unit = sell_price - buy_price
-                cargo_capacity = min(buy_stock or 1000, 1000)  # Assume max 1000 SCU cargo
-                total_profit = profit_per_unit * cargo_capacity
-                investment = buy_price * cargo_capacity
-                roi = (profit_per_unit / buy_price * 100) if buy_price > 0 else 0
-                
-                # Calculate distance based on system locations
-                if origin_system != destination_system:
-                    distance = random.randint(60000, 120000)  # Inter-system
-                else:
-                    distance = random.randint(15000, 45000)   # Same system
-                
-                # Generate route code using REAL terminal names (shortened)
-                origin_short = terminal_name[:8].replace(' ', '').replace('\'', '').upper()
-                dest_short = destination_terminal[:8].replace(' ', '').replace('\'', '').upper()
-                commodity_short = commodity_name[:10].replace(' ', '').upper()
-                route_code = f"{origin_short}-{commodity_short}-{dest_short}"
-                
-                # Create trading route with REAL API DATA ONLY
-                route = {
-                    "id": str(uuid.uuid4()),
-                    "code": route_code,
-                    "commodity_name": commodity_name,  # REAL commodity name from API
-                    "origin_star_system_name": origin_system,
-                    "origin_terminal_name": terminal_name,  # REAL terminal name from API
-                    "destination_star_system_name": destination_system,
-                    "destination_terminal_name": destination_terminal,  # REAL destination terminal
-                    "origin_name": f"{origin_system} - {terminal_name}",
-                    "destination_name": f"{destination_system} - {destination_terminal}",
-                    "profit": total_profit,
-                    "investment": investment,
-                    "price_roi": roi,
-                    "distance": distance,
-                    "score": min(100, max(10, int(total_profit / 10000))),  # Score based on profit
-                    "buy_price": buy_price,  # REAL buy price from API
-                    "sell_price": sell_price,  # REAL sell price from API
-                    "buy_stock": buy_stock,  # REAL stock from API
-                    "sell_stock": sell_stock,  # REAL stock from API
-                    "coordinates_origin": star_profit_client.generate_system_coordinates(origin_system),
-                    "coordinates_destination": star_profit_client.generate_system_coordinates(destination_system),
-                    "last_seen": datetime.now(timezone.utc).isoformat()
-                }
-                
-                raw_routes.append(route)
-                route_count += 1
+                # Create route from best buy to best sell location
+                if buy_locations and sell_locations:
+                    # Sort by price - cheapest buy, highest sell
+                    buy_locations.sort(key=lambda x: x.get('price_buy', 999999))
+                    sell_locations.sort(key=lambda x: x.get('price_sell', 0), reverse=True)
+                    
+                    best_buy = buy_locations[0]
+                    best_sell = sell_locations[0]
+                    
+                    # Skip if same terminal
+                    if best_buy.get('terminal_name') == best_sell.get('terminal_name'):
+                        continue
+                    
+                    buy_price = float(best_buy.get('price_buy', 0))
+                    sell_price = float(best_sell.get('price_sell', 0))
+                    
+                    # Skip unprofitable routes
+                    if sell_price <= buy_price:
+                        continue
+                    
+                    # Use REAL terminal names from API
+                    origin_terminal = best_buy.get('terminal_name', 'Unknown')
+                    destination_terminal = best_sell.get('terminal_name', 'Unknown')
+                    
+                    # Map real terminals to systems
+                    origin_system = star_profit_client.map_terminal_to_system(origin_terminal)
+                    destination_system = star_profit_client.map_terminal_to_system(destination_terminal)
+                    
+                    # Calculate profit using real API data
+                    profit_per_unit = sell_price - buy_price
+                    buy_stock = int(best_buy.get('scu_buy', 0))
+                    sell_stock = int(best_sell.get('scu_sell_stock', 0))
+                    cargo_capacity = min(buy_stock or 1000, 1000)  # Max 1000 SCU
+                    
+                    total_profit = profit_per_unit * cargo_capacity
+                    investment = buy_price * cargo_capacity
+                    roi = (profit_per_unit / buy_price * 100) if buy_price > 0 else 0
+                    
+                    # Calculate distance based on systems
+                    if origin_system != destination_system:
+                        distance = random.randint(60000, 120000)  # Inter-system
+                    else:
+                        distance = random.randint(15000, 45000)   # Same system
+                    
+                    # Generate route code using REAL names
+                    origin_short = origin_terminal[:8].replace(' ', '').replace('\'', '').upper()
+                    dest_short = destination_terminal[:8].replace(' ', '').replace('\'', '').upper()
+                    commodity_short = commodity_name[:10].replace(' ', '').upper()
+                    route_code = f"{origin_short}-{commodity_short}-{dest_short}"
+                    
+                    # Create route with REAL API DATA ONLY
+                    route = {
+                        "id": str(uuid.uuid4()),
+                        "code": route_code,
+                        "commodity_name": commodity_name,  # REAL commodity name from API
+                        "origin_star_system_name": origin_system,
+                        "origin_terminal_name": origin_terminal,  # REAL terminal name from API
+                        "destination_star_system_name": destination_system,
+                        "destination_terminal_name": destination_terminal,  # REAL destination terminal
+                        "origin_name": f"{origin_system} - {origin_terminal}",
+                        "destination_name": f"{destination_system} - {destination_terminal}",
+                        "profit": total_profit,
+                        "investment": investment,
+                        "price_roi": roi,
+                        "distance": distance,
+                        "score": min(100, max(10, int(total_profit / 10000))),  # Score based on profit
+                        "buy_price": buy_price,  # REAL buy price from API
+                        "sell_price": sell_price,  # REAL sell price from API
+                        "buy_stock": buy_stock,  # REAL stock from API
+                        "sell_stock": sell_stock,  # REAL stock from API
+                        "coordinates_origin": star_profit_client.generate_system_coordinates(origin_system),
+                        "coordinates_destination": star_profit_client.generate_system_coordinates(destination_system),
+                        "last_seen": datetime.now(timezone.utc).isoformat()
+                    }
+                    
+                    raw_routes.append(route)
+                    route_count += 1
             
             logging.info(f"Generated {len(raw_routes)} routes from {len(commodities)} commodities using {data_source.upper()}")
             routes_data = {"status": "ok", "data": raw_routes, "source": data_source}
