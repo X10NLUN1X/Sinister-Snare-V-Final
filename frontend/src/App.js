@@ -2235,11 +2235,6 @@ function App() {
     console.log(`[StateUpdate] Alternative route integration completed for ${newRoute.commodity_name}`);
   };
 
-  // Helper function to generate unique route IDs
-  const generateRouteId = () => {
-    return `route_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-  };
-
   const handleClearAllData = async () => {
     try {
       await sinisterDB.clearAllData();
