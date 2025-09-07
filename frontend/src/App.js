@@ -923,7 +923,7 @@ const TERMINAL_TO_SNAREPLAN_MAPPING = {
   // Outposts -> Nearest Planet
   "Ashland": "Hurston",
   "Checkmate": "Hurston", 
-  "Deakins Research": "microTech",
+  "Deakins Research": "Microtech",
   "Hickes Research": "microTech",
   "Maker's Point": "ArcCorp",
   "Pickers Field": "Hurston",
