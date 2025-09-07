@@ -292,206 +292,76 @@ class StarProfitClient:
         return cleaned
     
     def map_terminal_to_system(self, terminal_name: str) -> str:
-        """Map terminal names to their correct star systems based on real Star Citizen data (Updated 2025)"""
-        terminal_name_lower = terminal_name.lower()
+        """Map terminal names to systems based on Star Profit API data - Stanton or Pyro only"""
+        terminal_name_clean = terminal_name.strip()
         
-        # STANTON SYSTEM TERMINALS (Complete & Corrected 2025)
-        stanton_terminals = [
-            # === CRUSADER PLANET AREA ===
-            # Major Cities and Landing Zones
-            'port olisar', 'orison',
+        # STANTON SYSTEM TERMINALS (exakte API Namen)
+        stanton_terminals = {
+            # Lagrange Points - definitiv Stanton
+            "ARC-L1", "ARC-L2", "ARC-L3", "ARC-L4", "ARC-L5",
+            "CRU-L1", "CRU-L4", "CRU-L5", 
+            "HUR-L1", "HUR-L2", "HUR-L3", "HUR-L4", "HUR-L5",
+            "MIC-L1", "MIC-L2", "MIC-L3", "MIC-L4", "MIC-L5",
             
-            # Crusader Lagrange Points
-            'cru-l1', 'cru-l2', 'cru-l3', 'cru-l4', 'cru-l5',
+            # Hauptstädte und große Stationen - definitiv Stanton
+            "Area 18 IO Tower", "CBD Lorville", "Orison Providence", "MTP New Babbage",
+            "Lorville L19", "TDD Area 18", "TDD New Babbage", "TDD Orison",
             
-            # Crusader Moons and Stations
-            'cellin', 'daymar', 'yela', 'security post kareah', 'kareah',
-            'grimhex', 'grim hex',  # Yela - independent station
+            # Orbitale Stationen - definitiv Stanton
+            "Everus Harbor", "Port Tressler", "Baijini Point", "Seraphim",
             
-            # === HURSTON PLANET AREA ===
-            # Major Cities
-            'lorville', 'cbd lorville', 'teasa spaceport',
+            # ArcCorp Mining Plattformen - definitiv Stanton
+            "ArcCorp 045", "ArcCorp 048", "ArcCorp 056", "ArcCorp 061", "ArcCorp 141", "ArcCorp 157",
             
-            # Hurston Lagrange Points
-            'hur-l1', 'hur-l2', 'hur-l3', 'hur-l4', 'hur-l5',
-            'everus harbor',  # HUR-L1
+            # Shubin Mining - definitiv Stanton
+            "Shubin SAL-2", "Shubin SAL-5", "Shubin SCD-1", "Shubin SM0-10", 
+            "Shubin SM0-13", "Shubin SM0-18", "Shubin SM0-22", "Shubin SMCa-6", "Shubin SMCa-8",
             
-            # Hurston Moons
-            'magda', 'arial', 'lyria', 'ita',
-            'brio\'s breaker', 'brios breaker',  # Lyria
-            'shubin smca-6', 'shubin smca-8',  # Arial
+            # HDMS Stationen - definitiv Stanton
+            "HDMS-Anderson", "HDMS-Bezdek", "HDMS-Edmond", "HDMS-Hadley", "HDMS-Hahn",
+            "HDMS-Lathan", "HDMS-Norgaard", "HDMS-Oparei", "HDMS-Perlman", "HDMS-Pinewood",
+            "HDMS-Ryder", "HDMS-Stanhope", "HDMS-Thedus", "HDMS-Woodruff",
             
-            # === ARCCORP PLANET AREA ===
-            # Major Cities
-            'area18', 'area 18',
+            # Rayari Research - definitiv Stanton  
+            "Rayari Anvik", "Rayari Cantwell", "Rayari Deltana", "Rayari Kaltag", "Rayari McGrath",
             
-            # ArcCorp Lagrange Points
-            'arc-l1', 'arc-l2', 'arc-l3', 'arc-l4', 'arc-l5',
-            'baijini point',  # ARC-L1
-            'arccorp 141', 'arccorp 056',  # Mining platforms
+            # Salvage und Bergbau - definitiv Stanton
+            "Brio's Breaker", "Devlin Scrap", "Samson Son's", "Reclamation Orinth",
             
-            # ArcCorp Moons
-            'wala', 'lyria',  # Note: Lyria shared with Hurston
+            # Outposts und Depots - definitiv Stanton
+            "Ashland", "Checkmate", "Deakins Research", "Hickes Research", "Maker's Point",
+            "Megumi Refueling", "Pickers Field", "Prospect Depot", "Seer's Canyon", 
+            "Shepherd's Rest", "Sunset Mesa", "Fallow Field", "Bueno Ravine",
             
-            # === MICROTECH PLANET AREA ===
-            # Major Cities
-            'new babbage',
+            # Drug Labs und Outlaw - aber in Stanton System
+            "GrimHEX", "Dumper's Area 18", "Dumper's GrimHEX",
             
-            # microTech Lagrange Points
-            'mic-l1', 'mic-l2', 'mic-l3', 'mic-l4', 'mic-l5',
-            'port tressler',  # MIC-L1
+            # Rest Stops - in Stanton
+            "CRU-L4 Locker", "CRU-L5 Maintenance",
             
-            # microTech Moons
-            'calliope', 'clio', 'euterpe',
-            'rayari aneth research outpost', 'rayari deltana research outpost', 
-            'rayari kaltag research outpost',  # Research stations
+            # Platinum Stationen - in Stanton
+            "Platinum ARCL1", "Platinum Baijini", "Platinum CRUL1", "Platinum CRUL4", 
+            "Platinum CRUL5", "Platinum Everus", "Platinum HURL2", "Platinum HURL3", 
+            "Platinum HURL5", "Platinum Tressler",
             
-            # === STANTON SYSTEM WIDE ===
-            # Rest Stops and Service Stations
-            'seraphim station', 'paradise cove',
-            'jumptown', 'raven\'s roost', 'ravens roost', 'the orphanage',
-            
-            # Salvage and Mining Operations
-            'reclamation orinth', 'samson & son\'s salvage center', 'samson sons',
-            'devlin scrap', 'devlin scrap & salvage',
-            'shubin smc-ls-1', 'shubin smc-ls-2', 'shubin smc-ls-3',
-            
-            # Asteroid Belts and Deep Space
-            'aaron halo', 'delamar',  # Note: Delamar temporarily in Stanton
-            
-            # Communication Arrays and Security
-            'comm array st1-01', 'comm array st1-02', 'comm array st1-03',
-            
-            # Deep Space Stations
-            'deep space sensor array'
-        ]
-        
-        # PYRO SYSTEM TERMINALS (Complete & Corrected 2025)  
-        pyro_terminals = [
-            # === PYRO I ===
-            'ruin station',  # Main station orbiting Pyro I
-            
-            # === PYRO II ===  
-            'monox',  # Pyro II mining station
-            
-            # === PYRO III ===
-            'bloom',  # Pyro III station
-            
-            # === PYRO IV ===
-            'terminus',  # Major station at Pyro IV
-            
-            # === PYRO V (Nova) ===
-            # Outlaw Capital - Main Locations
-            'rat\'s nest', 'rats nest', 'rat nest',  # Primary outlaw base
-            
-            # Pyro V Moons
-            'fairo', 'fuego', 'vuur',
-            
-            # === PYRO VI ===
-            'pyro station alpha',  # Research/abandoned station
-            
-            # === ROUGH & READY FACTION CONTROLLED ===
-            'endgame',  # Major outlaw trading post
-            'checkpoint',  # Security checkpoint
-            'spider',  # Hidden base
-            
-            # === INDEPENDENT TRADERS & OUTLAWS ===
-            'golden riviera',  # Luxury outlaw resort
-            'shady glen',  # Hidden trading post
-            'glory',  # Abandoned mining station
-            
-            # === REST STOPS & FUEL STATIONS ===
-            'starlight service station',  # Citizens for Prosperity
-            'rod\'s fuel \'n supplies', 'rod\'s fuel n supplies',  # Fuel depot
-            'dudley & daughters', 'dudley and daughters',  # Supply station
-            
-            # === TRADE POSTS ===
-            'canard view',  # Trading outpost
-            'jackson\'s swap', 'jackson swap', 'jacksons swap',  # Salvage yard
-            'gonor steel',  # Steel processing facility
-            
-            # === ABANDONED/DERELICT STATIONS ===
-            'pyam-farstat-1-3', 'pyam-supvisr-3-4', 'pyam-farstat-3-5',
-            
-            # === ASTEROID MINING ===
-            'pyro belt alpha', 'pyro mining station beta'
-        ]
-        
-        # NYX SYSTEM TERMINALS
-        nyx_terminals = [
-            'levski',  # Delamar - Main landing zone
-            'delamar',  # Currently in Stanton but belongs to Nyx
-        ]
-        
-        # TERRA SYSTEM TERMINALS (Future Implementation)
-        terra_terminals = [
-            'terra prime', 'quasi', 'new cordoba', 'oya',
-            'terra tech', 'terra mills'
-        ]
-        
-        # MAGNUS SYSTEM TERMINALS (Future Implementation)
-        magnus_terminals = [
-            'borea', 'solas', 'high course station'
-        ]
-        
-        # === PRIORITY MATCHING SYSTEM ===
-        # Check specific high-priority terminals first to avoid conflicts
-        priority_mappings = {
-            # High-priority Pyro terminals that might be confused
-            'rat\'s nest': 'Pyro', 'rats nest': 'Pyro', 'rat nest': 'Pyro',
-            'endgame': 'Pyro',
-            'ruin station': 'Pyro',
-            'terminus': 'Pyro',
-            
-            # High-priority Stanton terminals
-            'port olisar': 'Stanton',
-            'lorville': 'Stanton', 
-            'cbd lorville': 'Stanton',
-            'area18': 'Stanton', 'area 18': 'Stanton',
-            'new babbage': 'Stanton',
-            'orison': 'Stanton',
-            'grimhex': 'Stanton', 'grim hex': 'Stanton',
-            'everus harbor': 'Stanton',
-            'port tressler': 'Stanton',
-            'baijini point': 'Stanton',
-            
-            # Salvage yards - definitely Stanton
-            'brio\'s breaker': 'Stanton', 'brios breaker': 'Stanton',
-            'reclamation orinth': 'Stanton',
-            
-            # Mining stations
-            'shubin smca-6': 'Stanton', 'shubin smca-8': 'Stanton',
-            'arccorp 141': 'Stanton', 'arccorp 056': 'Stanton',
+            # Gateway zu anderen Systemen - aber physisch in Stanton
+            "Stanton Gateway", "Pyro Gateway", "Terra Gateway", "Magnus Gateway",
+            "Platinum Pyro Gateway", "Platinum Stanton Gateway", "Platinum Magnus",
         }
         
-        # Check priority mappings first
-        for terminal_pattern, system in priority_mappings.items():
-            if terminal_pattern in terminal_name_lower:
-                return system
+        # Prüfe ob Terminal exakt in Stanton Liste ist
+        if terminal_name_clean in stanton_terminals:
+            return "Stanton"
         
-        # Then check full system lists
-        for terminal in pyro_terminals:
-            if terminal in terminal_name_lower:
-                return "Pyro"
+        # ALLE ANDEREN TERMINALS sind Pyro (einschließlich aber nicht beschränkt auf):
+        # Rat's Nest, Endgame, Ruin Station, Jackson's Swap, Canard View, 
+        # The Golden Riviera, Rod's Fuel 'N Supplies, Dudley and Daughters,
+        # Starlight Service, Gaslight, Chawla's Beach, Dunboro, Last Landings,
+        # Orbituary, Patch City, Rappel, Rustville, Sacren's Plot, Scarper's Turn,
+        # Slowburn Depot, Watcher's Depot, Dinger's Depot, Feo Canyon Depot,
+        # Terra Mills, Platinum Bay Terra, etc.
         
-        for terminal in stanton_terminals:
-            if terminal in terminal_name_lower:
-                return "Stanton"
-                
-        for terminal in nyx_terminals:
-            if terminal in terminal_name_lower:
-                return "Nyx"
-                
-        for terminal in terra_terminals:
-            if terminal in terminal_name_lower:
-                return "Terra"
-                
-        for terminal in magnus_terminals:
-            if terminal in terminal_name_lower:
-                return "Magnus"
-        
-        # Default to Stanton for unknown terminals (most terminals are currently in Stanton)
-        return "Stanton"
+        return "Pyro"
 
     def generate_system_coordinates(self, system_name: str) -> Dict[str, float]:
         """Generate realistic coordinates for different star systems"""
