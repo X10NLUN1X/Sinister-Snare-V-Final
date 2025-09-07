@@ -1587,79 +1587,117 @@ async def snare_commodity(commodity_name: str = Query(description="Commodity nam
         
         logging.info(f"Starting commodity snare analysis for: {commodity_name}")
         
-        # Search for routes with this commodity
-        commodity_routes = await db.route_analyses.find({
-            "commodity_name": {"$regex": commodity_name, "$options": "i"}
-        }).sort("piracy_rating", -1).limit(50).to_list(50)
+        # Always use fresh Star Profit API data instead of potentially corrupted database cache
+        logging.info(f"Generating fresh routes for {commodity_name} using Star Profit API...")
         
-        if not commodity_routes:
-            # Try to generate new routes for this commodity
-            logging.info(f"No existing routes found for {commodity_name}, generating new data...")
+        # Fetch fresh commodity data from Star Profit API
+        commodities_data = await star_profit_client.get_commodities("api")
+        commodities = commodities_data.get('commodities', [])
+        
+        # Filter for the specific commodity (exact or partial match)
+        matching_commodities = [c for c in commodities if commodity_name.lower() in c.get('commodity_name', '').lower()]
+        
+        if not matching_commodities:
+            return {
+                "status": "error",
+                "message": f"No data found for commodity '{commodity_name}'. Try a different commodity name or check back later.",
+                "commodity": commodity_name,
+                "summary": {
+                    "total_routes_found": 0,
+                    "profitable_routes": 0,
+                    "inter_system_routes": 0,
+                    "same_system_routes": 0,
+                    "average_profit": 0,
+                    "max_piracy_rating": 0,
+                    "recommended_strategy": "No routes available"
+                },
+                "snare_opportunities": []
+            }
+        
+        # Generate routes using the same logic as the main routes endpoint
+        commodity_routes = []
+        
+        # Group commodities by exact name for route pairing
+        commodity_groups = {}
+        for commodity in matching_commodities:
+            name = commodity.get('commodity_name', '')
+            if name and name not in commodity_groups:
+                commodity_groups[name] = []
+            commodity_groups[name].append(commodity)
+        
+        # Process each commodity group to create trading routes
+        for commodity_name_exact, commodity_list in commodity_groups.items():
+            # Find buy and sell locations for this commodity using REAL API data
+            buy_locations = [c for c in commodity_list if c.get('price_buy', 0) > 0 and c.get('status_buy', 0) > 0]
+            sell_locations = [c for c in commodity_list if c.get('price_sell', 0) > 0 and c.get('status_sell', 0) > 0]
             
-            # Fetch fresh commodity data
-            commodities_data = await star_profit_client.get_commodities("api")
-            commodities = commodities_data.get('commodities', [])
-            
-            # Filter for the specific commodity
-            matching_commodities = [c for c in commodities if commodity_name.lower() in c.get('commodity_name', '').lower()]
-            
-            if not matching_commodities:
-                return {
-                    "status": "error",
-                    "message": f"No data found for commodity '{commodity_name}'. Try a different commodity name or check back later.",
-                    "commodity": commodity_name,
-                    "summary": {
-                        "total_routes_found": 0,
-                        "profitable_routes": 0,
-                        "inter_system_routes": 0,
-                        "same_system_routes": 0,
-                        "average_profit": 0,
-                        "max_piracy_rating": 0,
-                        "recommended_strategy": "No routes available"
-                    },
-                    "snare_opportunities": []
-                }
-            
-            # Generate routes for this commodity
-            for commodity in matching_commodities:
-                route = {
-                    "commodity_name": commodity.get('commodity_name', commodity_name),
-                    "origin_name": f"Stanton - {commodity.get('terminal', 'Port Olisar')}",
-                    "destination_name": f"Pyro - Rat's Nest",
-                    "profit": abs(commodity.get('sell_price', 100) - commodity.get('buy_price', 50)) * 1000,
-                    "investment": commodity.get('buy_price', 100) * random.randint(100, 1000),
-                    "roi": ((commodity.get('sell_price', 100) - commodity.get('buy_price', 50)) / max(commodity.get('buy_price', 1), 1)) * 100,
-                    "distance": random.randint(45000, 85000),
-                    "score": min(100, max(10, commodity.get('sell_price', 100) / 10)),
-                    "buy_price": commodity.get('buy_price', 0),
-                    "sell_price": commodity.get('sell_price', 0),
-                    "stock": commodity.get('stock', random.randint(100, 1000))
-                }
-                
-                piracy_score = RouteAnalyzer.calculate_piracy_score(route)
-                route_code = f"{commodity.get('terminal', 'PORT')[:6].replace(' ', '').upper()}-{commodity_name[:8].replace(' ', '').upper()}-RATSNE"
-                
-                analysis = RouteAnalysis(
-                    route_code=route_code,
-                    commodity_name=commodity.get('commodity_name', commodity_name),
-                    origin_name=route['origin_name'],
-                    destination_name=route['destination_name'],
-                    profit=float(route['profit']),
-                    roi=float(route['roi']),
-                    distance=float(route['distance']),
-                    score=int(route['score']),
-                    piracy_rating=piracy_score,
-                    frequency_score=float(route['score']) / 10,
-                    risk_level=RouteAnalyzer.categorize_risk_level(piracy_score),
-                    investment=float(route['investment']),
-                    coordinates_origin=star_profit_client.generate_system_coordinates("Stanton"),
-                    coordinates_destination=star_profit_client.generate_system_coordinates("Pyro"),
-                    interception_zones=RouteAnalyzer.calculate_interception_points(route),
-                    last_seen=datetime.now(timezone.utc)
-                )
-                
-                await db.route_analyses.insert_one(analysis.dict())
-                commodity_routes.append(analysis.dict())
+            # Create routes between buy and sell locations
+            for buy_item in buy_locations[:5]:  # Limit to top 5 buy locations
+                for sell_item in sell_locations[:5]:  # Limit to top 5 sell locations
+                    if buy_item.get('terminal_name') == sell_item.get('terminal_name'):
+                        continue  # Skip same terminal
+                    
+                    buy_price = float(buy_item.get('price_buy', 0))
+                    sell_price = float(sell_item.get('price_sell', 0))
+                    
+                    if sell_price <= buy_price:
+                        continue  # Skip unprofitable routes
+                    
+                    # Use REAL terminal names from API
+                    origin_terminal = buy_item.get('terminal_name', 'Unknown')
+                    destination_terminal = sell_item.get('terminal_name', 'Unknown')
+                    
+                    # Map real terminals to systems
+                    origin_system = star_profit_client.map_terminal_to_system(origin_terminal)
+                    destination_system = star_profit_client.map_terminal_to_system(destination_terminal)
+                    
+                    # Calculate profit using real API data
+                    profit_per_unit = sell_price - buy_price
+                    buy_stock = int(buy_item.get('scu_buy', 0))
+                    sell_stock = int(sell_item.get('scu_sell_stock', 0))
+                    cargo_capacity = min(buy_stock or 1000, 1000)  # Max 1000 SCU
+                    
+                    total_profit = profit_per_unit * cargo_capacity
+                    investment = buy_price * cargo_capacity
+                    roi = (profit_per_unit / buy_price * 100) if buy_price > 0 else 0
+                    
+                    # Calculate distance based on systems
+                    if origin_system != destination_system:
+                        distance = random.randint(60000, 120000)  # Inter-system
+                    else:
+                        distance = random.randint(15000, 45000)  # Same system
+                    
+                    # Generate route code using REAL names
+                    origin_short = origin_terminal[:8].replace(' ', '').replace('\'', '').upper()
+                    dest_short = destination_terminal[:8].replace(' ', '').replace('\'', '').upper()
+                    commodity_short = commodity_name_exact[:10].replace(' ', '').upper()
+                    route_code = f"{origin_short}-{commodity_short}-{dest_short}"
+                    
+                    # Create route with REAL API DATA ONLY
+                    route = {
+                        "route_code": route_code,
+                        "commodity_name": commodity_name_exact,  # REAL commodity name from API
+                        "origin_name": f"{origin_system} - {origin_terminal}",  # REAL names
+                        "destination_name": f"{destination_system} - {destination_terminal}",  # REAL names
+                        "profit": total_profit,
+                        "investment": investment,
+                        "price_roi": roi,
+                        "roi": roi,
+                        "distance": distance,
+                        "score": min(100, max(10, int(total_profit / 10000))),  # Score based on profit
+                        "buy_price": buy_price,  # REAL buy price from API
+                        "sell_price": sell_price,  # REAL sell price from API
+                        "buy_stock": buy_stock,  # REAL stock from API
+                        "sell_stock": sell_stock,  # REAL stock from API
+                        "last_seen": datetime.now(timezone.utc).isoformat()
+                    }
+                    
+                    # Calculate piracy score
+                    piracy_score = RouteAnalyzer.calculate_piracy_score(route)
+                    route['piracy_rating'] = piracy_score
+                    route['risk_level'] = RouteAnalyzer.categorize_risk_level(piracy_score)
+                    
+                    commodity_routes.append(route)
         
         if not commodity_routes:
             return {
