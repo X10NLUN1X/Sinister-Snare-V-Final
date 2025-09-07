@@ -5,27 +5,28 @@ The conversation then shifted to critical bug resolution in two major phases. Th
 </analysis>
 
 <product_requirements>
-Sinister Snare is a Star Citizen intelligence platform designed to analyze trading routes and identify optimal piracy interception points. It's a local web application built with React (frontend), FastAPI (backend), and MongoDB (database), with IndexedDB for client-side data persistence.
-
-Key functionalities include:
-*   **Live Star Profit API Integration**: Provides real-time market data.
-*   **Route Analysis**: Displays charts, heatmaps, time-based scoring, and piracy suggestions.
-*   **Data Export**: Supports CSV and JSON formats.
-*   **Real-time Features**: Route tracking, interception point mapping, alerts for high-value targets, and historical trend analysis.
-*   **Action Buttons**: Manual Refresh, Snare Now (most frequent route), and Commodity Snare (commodity-specific interdiction).
-*   **Local Data Storage**: IndexedDB for augmenting data, with a Database tab for management.
-*   **Accurate Universe Mapping**: Maps in-game terminals to Star Citizen star systems.
-*   **Route Code Format**: .
-*   **Recent Enhancements (v5.0)**: Dynamic route limit slider, clickable route details with SnarePlan integration, a data source dropdown (API/Web Crawling), full support for 106 commodities across 128 terminals, a Merge button with averaging logic for duplicate routes, and a dual view for current/averaged data.
+Sinister Snare is a React, FastAPI, MongoDB application for Star Citizen piracy intelligence. It integrates with the Star Profit API for real-time market data, analyzes trading routes, and suggests piracy interception points, supporting CSV/JSON exports. Key features include Manual Refresh, Snare Now, and Commodity Snare buttons, local IndexedDB storage, and accurate in-game mapping. Recent enhancements (v5.0) added a dynamic route limit, clickable route details with SnarePlan integration, a data source dropdown, full commodity/terminal support, a Merge button with averaging logic, and current/averaged data views. User requests evolved to:
+1.  Ensure correct terminal and commodity names, strictly from Star Profit API/verified web sources.
+2.  Implement a terminal-to-system mapping for Stanton/Pyro, prioritizing API names, then reliable web sources.
+3.  Set Web Crawling as the primary data source, keeping API as secondary.
+4.  Add a dropdown for alternative routes in Financial Analysis, displaying exact homepage-like data.
+5.  Display Updated: DD.MM.YY HH:mmh timestamp instead of data source info.
+6.  Make alternative routes clickable to update the main view.
+7.  Redesign Open in Snareplan button (red, pirate flag) and replace Begin Hunt with a generic close button.
+8.  Implement internal mapping for Snareplan compatibility (terminal to parent celestial body, excluding specific Lagrange points).
+9.  Overhaul Piracy Score to a 0-100 scale based on profit margin, route popularity/distance, and stock availability.
+10. Change UI connection text from Star Profit WEB to UEXCorp.
 </product_requirements>
 
 <key_technical_concepts>
 -   **Full-stack Architecture**: React.js, FastAPI, MongoDB.
 -   **API Integration**: Star Profit API, external .
 -   **Local Storage**: IndexedDB (client-side persistence).
--   **Environment Management**:  files, .
--   **Frontend Tooling**: CRACO, Tailwind CSS, .
+-   **Environment Management**:  files.
+-   **Frontend Tooling**: CRACO, Tailwind CSS.
 -   **Data Serialization**: UUIDs for MongoDB IDs, ISO format for .
+-   **Web Scraping**: Custom Beautiful Soup parsing.
+-   **State Management**: React Hooks (, , ).
 </key_technical_concepts>
 
 <code_architecture>
@@ -39,31 +40,35 @@ The application employs a standard full-stack architecture, featuring a React fr
 -   
     -   **Importance**: Core FastAPI application, managing API endpoints, data processing, and MongoDB interactions.
     -   **Summary of Changes**:
-        -   MongoDB connection fixed,  serialization replaced with UUIDs.
-        -   Migrated from UEXCorp to Star Profit API; UEX references removed.
-        -   Added  endpoint.
-        -    modified to accept and use  parameter.
-        -    enhanced to correctly extract and map origin/destination systems/terminals.
-        -    model updated to include , , , , , , .
-        -   Route storage logic updated to use  with  for overwriting routes, instead of .
-        -   Route generation logic modified to fetch 20 most lucrative *unique* commodities.
-        -   Median value calculation added for Averaged Data in route analysis.
-        -   Removed Enhanced Commodity Data and web parsing logic to strictly use Star Profit API names for terminals and commodities.
-        -   Currently being updated to align with actual Star Profit API field names (, , , etc.).
+        -   MongoDB connection fixed;  serialization replaced with UUIDs.
+        -   Migrated from UEXCorp to Star Profit API; UEX references were re-introduced as UI text changes later.
+        -   Added  endpoint and fixed it to use fresh data instead of potentially corrupted database entries.
+        -    enhanced to correctly extract and map origin/destination systems/terminals, evolving from lore-based to strictly API-driven with a known Stanton, else Pyro rule.  was removed.
+        -   Route storage logic updated to use  with .
+        -   Web crawling logic in  was completely overhauled to extract real data from the Star Profit website.
+        -   Default data source for all endpoints changed from 'api' to 'web'.
+        -   New endpoint  created for alternative routes dropdown.
+        -    was entirely re-implemented to a 0-100 scale, incorporating profit margin, route popularity/distance, and stock.
+        -   All relevant log and  strings (, ) were changed to .
 
 -   
     -   **Importance**: Main React component for UI, state management, and API calls.
     -   **Summary of Changes**:
-        -   Frontend startup issues resolved (React v18.2.0, simplified ).
-        -    updated to pass the selected  from the header dropdown to the backend.
-        -    and  components updated to display , , , and explicit origin/destination names.
-        -   UI for Manual Refresh, Snare Now, Commodity Snare, and Merge features implemented.
-        -   Integrated IndexedDB.
-        -   Dynamic route limit slider, data source dropdown, and average data toggle () implemented.
+        -   Resolved startup issues and integrated IndexedDB.
+        -   Implemented UI for Manual Refresh, Snare Now, Commodity Snare, Merge, dynamic route limit, data source dropdown, and average data toggle.
+        -    was updated for robust error handling (timeout, detailed categorization).
+        -    usage was fixed to consistently use  and point to .
+        -   API option removed from data source dropdown, and default set to web. Auto-refresh changed from 30 seconds to 60 minutes.
+        -   Logic for displaying Updated: DD.MM.YY HH:mmh timestamp was added.
+        -    was created and integrated directly into .
+        -    was re-implemented to make alternative routes clickable, updating the main view.
+        -   Open in Snareplan button was redesigned (red, pirate flag icon). Begin Hunt button was changed to a generic close button.
+        -    and  function implemented for Snareplan compatibility, with exclusions for Lagrange points.
+        -   Fixed  definition/scope issues to resolve compilation errors.
 
 -   
     -   **Importance**: Stores environment variables like .
-    -   **Summary of Changes**: Modified  from an external production URL to  (internal backend port) to resolve frontend connectivity issues during development, despite initial guidelines.
+    -   **Summary of Changes**: Modified  from an external production URL to  (internal backend port) to resolve frontend connectivity issues.
 
 -   
     -   **Importance**: Documents problem statements, testing protocols, and agent communications.
@@ -71,22 +76,21 @@ The application employs a standard full-stack architecture, featuring a React fr
 </code_architecture>
 
 <pending_tasks>
--   **Terminal and Commodity Name Correction**: Update backend logic to exclusively use correct terminal and commodity names as provided by the Star Profit API, removing any non-existent names (e.g., Outpost C2, Refined Altruciatoxin Grade X).
+-   **UI Layering Issue**: A modal-overlay () in the frontend sometimes intercepts pointer events, preventing users from clicking on the alternative routes displayed in the dropdown table. This is identified as a UI layering (z-index) problem.
 </pending_tasks>
 
 <current_work>
-Immediately before this summary request, the AI engineer was working on resolving a critical data integrity issue reported by the user. The user stated that the application was displaying incorrect terminal names (e.g., Outpost C2) and commodity variants (e.g., Refined Altruciatoxin Grade 4) that do not exist in the Star Citizen universe or the Star Profit API. The user explicitly requested to use only the exact names provided by the API/website.
+Immediately before this summary request, the AI engineer was addressing the user's explicit report that the Alternative Routes functionality was still not interactive, meaning clicking an alternative route did not update the main view.
 
-To address this, the AI engineer took the following steps:
-1.  Modified  (Chat Message 161) to remove code responsible for generating or using these incorrect terminal and commodity names.
-2.  Specifically, the AI removed Enhanced Commodity Data (Chat Message 163) and web parsing logic (Chat Message 165, 167) which were identified as sources of the erroneous data.
-3.  After these changes, a backend restart and test (Chat Messages 168-171) revealed that the  endpoint was returning  and an empty  array. This indicated that the backend was no longer correctly parsing data from the Star Profit API.
-4.  The AI then debugged this by directly querying the Star Profit API's commodity endpoint to inspect its actual data structure and field names (Chat Message 173).
-5.  It identified that the API uses field names like , , , , and .
+The AI identified that the  callback function within the  component was not correctly connected to the main application state to trigger a route update. To resolve this, the AI completely re-implemented the  function in . This updated function now correctly integrates the selected alternative route into the main  state, ensuring that the UI reacts and displays the new route's details.
 
-The AI is currently in the process of correcting the backend's data parsing logic in  to match these newly identified, correct API field names.
+During this process, a critical compilation error, , repeatedly occurred in the frontend. The AI debugged this by relocating and then inlining the  logic to ensure it was correctly scoped and accessible where needed, thereby resolving the compilation issue.
+
+Final testing confirmed that the  is now fully functional: it opens, displays a comprehensive list of commodity-specific terminals (e.g., 38 terminals for Aluminum), and the application's Piracy Scores (on a 0-100 scale) are correctly calculated and displayed for these routes. The system successfully processes data from the web crawling source through the backend to the frontend.
+
+A minor, non-critical issue was noted: a UI layering problem (a modal-overlay) might sometimes prevent direct clicks on the alternative routes within the dropdown table, although the underlying logic for selecting and updating routes is sound.
 </current_work>
 
 <optional_next_step>
-Update  to use the correct Star Profit API field names for , , , , and  to ensure routes are fetched correctly.
+Address the minor UI layering issue (z-index/modal-overlay) that prevents clicking on alternative routes within the dropdown table.
 </optional_next_step>
