@@ -848,7 +848,142 @@ const RefreshModal = ({ isOpen, onClose, logs, isRefreshing }) => {
   );
 };
 
-// SnarePlan Location Mapping Database (synced with snareplan.dolus.eu)
+// Enhanced Terminal-to-Planet/Moon Mapping for Snareplan Compatibility
+const TERMINAL_TO_SNAREPLAN_MAPPING = {
+  // === STANTON SYSTEM ===
+  // Orbital Stations -> Main Planets
+  "Baijini Point": "ArcCorp",
+  "Everus Harbor": "Hurston", 
+  "Port Tressler": "microTech",
+  "Seraphim": "Crusader",
+  
+  // Landing Zones -> Planets (these are already compatible, but explicit mapping)
+  "Area 18 IO Tower": "ArcCorp",
+  "CBD Lorville": "Hurston",
+  "MTP New Babbage": "microTech", 
+  "Orison Providence": "Crusader",
+  
+  // Mining Stations -> Nearest Planet
+  "ArcCorp 045": "ArcCorp",
+  "ArcCorp 048": "ArcCorp", 
+  "ArcCorp 056": "ArcCorp",
+  "ArcCorp 061": "ArcCorp",
+  "ArcCorp 141": "ArcCorp",
+  "ArcCorp 157": "ArcCorp",
+  
+  // HDMS Stations -> Hurston
+  "HDMS-Anderson": "Hurston",
+  "HDMS-Bezdek": "Hurston",
+  "HDMS-Edmond": "Hurston",
+  "HDMS-Hadley": "Hurston",
+  "HDMS-Hahn": "Hurston",
+  "HDMS-Lathan": "Hurston",
+  "HDMS-Norgaard": "Hurston",
+  "HDMS-Oparei": "Hurston",
+  "HDMS-Perlman": "Hurston",
+  "HDMS-Pinewood": "Hurston",
+  "HDMS-Ryder": "Hurston",
+  "HDMS-Stanhope": "Hurston",
+  "HDMS-Thedus": "Hurston",
+  "HDMS-Woodruff": "Hurston",
+  
+  // Shubin Mining -> Nearest Planet/Moon
+  "Shubin SAL-2": "Hurston", // Hurston system
+  "Shubin SAL-5": "Hurston",
+  "Shubin SCD-1": "Hurston", 
+  "Shubin SM0-10": "Hurston",
+  "Shubin SM0-13": "Hurston",
+  "Shubin SM0-18": "Hurston",
+  "Shubin SM0-22": "Hurston",
+  "Shubin SMCa-6": "Hurston", // Arial moon
+  "Shubin SMCa-8": "Hurston", // Arial moon
+  
+  // Rayari Research -> microTech
+  "Rayari Anvik": "microTech",
+  "Rayari Cantwell": "microTech",
+  "Rayari Deltana": "microTech", 
+  "Rayari Kaltag": "microTech",
+  "Rayari McGrath": "microTech",
+  
+  // Salvage Operations -> Hurston system
+  "Brio's Breaker": "Hurston", // Lyria moon
+  "Devlin Scrap": "Hurston",
+  "Samson Son's": "Hurston",
+  "Reclamation Orinth": "Hurston",
+  
+  // Outposts -> Nearest Planet
+  "Seraphim": "Crusader",
+  "Ashland": "Hurston",
+  "Checkmate": "Hurston", 
+  "Deakins Research": "microTech",
+  "Hickes Research": "microTech",
+  "Maker's Point": "ArcCorp",
+  "Pickers Field": "Hurston",
+  "Prospect Depot": "Hurston",
+  "Seer's Canyon": "Hurston",
+  "Shepherd's Rest": "Crusader",
+  "Sunset Mesa": "Hurston",
+  "Fallow Field": "Hurston", 
+  "Bueno Ravine": "Hurston",
+  
+  // GrimHEX -> Crusader (Yela moon)
+  "GrimHEX": "Crusader",
+  
+  // === PYRO SYSTEM ===
+  // Major Stations -> Pyro (general system)
+  "Ruin Station": "Pyro I",
+  "Rat's Nest": "Pyro V", 
+  "Endgame": "Pyro IV",
+  "Orbituary": "Pyro III",
+  
+  // Outlaw Stations -> Pyro planets
+  "Rod's Fuel 'N Supplies": "Pyro V",
+  "Starlight Service": "Pyro III",
+  "Dudley and Daughters": "Pyro IV",
+  "Gaslight": "Pyro V",
+  "Megumi Refueling": "Pyro IV",
+  "Patch City": "Pyro III",
+  
+  // Trading Posts -> Pyro system
+  "Canard View": "Pyro",
+  "Jackson's Swap": "Pyro", 
+  "The Golden Riviera": "Pyro",
+  "Chawla's Beach": "Pyro",
+  "Dunboro": "Pyro",
+  "Last Landings": "Pyro",
+  "Rappel": "Pyro",
+  "Rustville": "Pyro",
+  "Sacren's Plot": "Pyro",
+  "Scarper's Turn": "Pyro",
+  "Slowburn Depot": "Pyro",
+  "Watcher's Depot": "Pyro",
+  "Dinger's Depot": "Pyro",
+  "Feo Canyon Depot": "Pyro"
+};
+
+// Lagrange Points that should NOT be mapped (keep original names)
+const LAGRANGE_EXCLUSIONS = [
+  "HUR-L1", "HUR-L2", "HUR-L3", "HUR-L4", "HUR-L5",
+  "CRU-L1", "CRU-L2", "CRU-L3", "CRU-L4", "CRU-L5", 
+  "MIC-L1", "MIC-L2", "MIC-L3", "MIC-L4", "MIC-L5",
+  "ARC-L1", "ARC-L2", "ARC-L3", "ARC-L4", "ARC-L5"
+];
+
+// Function to map terminal name to Snareplan-compatible location
+const mapTerminalForSnareplan = (terminalName) => {
+  // Check if this is a Lagrange Point that should be excluded
+  if (LAGRANGE_EXCLUSIONS.includes(terminalName)) {
+    return terminalName; // Keep original name
+  }
+  
+  // Check if we have a specific mapping for this terminal
+  if (TERMINAL_TO_SNAREPLAN_MAPPING[terminalName]) {
+    return TERMINAL_TO_SNAREPLAN_MAPPING[terminalName];
+  }
+  
+  // If no mapping found, return original name (fallback)
+  return terminalName;
+};
 const SNAREPLAN_LOCATIONS = {
   // STANTON SYSTEM
   'Stanton': {
