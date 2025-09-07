@@ -1084,8 +1084,10 @@ const generateSnarePlanUrl = (routeData) => {
       location = potentialLocation;
     }
     
-    // Map location name to SnarePlan exact terminology
-    let mappedLocation = location;
+    // Map location name using new terminal mapping
+    let mappedLocation = mapTerminalForSnareplan(location);
+    
+    // Additional legacy mapping check for backwards compatibility
     if (SNAREPLAN_LOCATIONS[system] && SNAREPLAN_LOCATIONS[system][location]) {
       mappedLocation = SNAREPLAN_LOCATIONS[system][location];
     } else {
