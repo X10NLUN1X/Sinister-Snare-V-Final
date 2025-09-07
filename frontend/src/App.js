@@ -1306,7 +1306,7 @@ const AlternativeRoutesDropdown = ({ commodity, onRouteSelect, currentRoute }) =
         {
           terminal: 'Rat\'s Nest',
           system: 'Pyro',
-          buy_price: 221,
+          buy_price: 2.21,
           sell_price: 0,
           stock: 20000,
           buy_available: true,
@@ -1316,7 +1316,7 @@ const AlternativeRoutesDropdown = ({ commodity, onRouteSelect, currentRoute }) =
           terminal: 'Everus Harbor',
           system: 'Stanton',
           buy_price: 0,
-          sell_price: 322,
+          sell_price: 3.22,
           stock: 1935,
           buy_available: false,
           sell_available: true
@@ -1324,8 +1324,8 @@ const AlternativeRoutesDropdown = ({ commodity, onRouteSelect, currentRoute }) =
         {
           terminal: 'Magnus Gateway',
           system: 'Stanton',
-          buy_price: 19,
-          sell_price: 26,
+          buy_price: 1.95,
+          sell_price: 3.15,
           stock: 4608,
           buy_available: true,
           sell_available: true
@@ -1333,7 +1333,7 @@ const AlternativeRoutesDropdown = ({ commodity, onRouteSelect, currentRoute }) =
         {
           terminal: 'Checkmate',
           system: 'Pyro',
-          buy_price: 19,
+          buy_price: 2.18,
           sell_price: 0,
           stock: 39000,
           buy_available: true,
@@ -1343,8 +1343,26 @@ const AlternativeRoutesDropdown = ({ commodity, onRouteSelect, currentRoute }) =
           terminal: 'Port Tressler',
           system: 'Stanton',
           buy_price: 0,
-          sell_price: 399,
+          sell_price: 3.99,
           stock: 2267,
+          buy_available: false,
+          sell_available: true
+        },
+        {
+          terminal: 'Daymar Shubin Mining',
+          system: 'Stanton',
+          buy_price: 2.05,
+          sell_price: 0,
+          stock: 15000,
+          buy_available: true,
+          sell_available: false
+        },
+        {
+          terminal: 'Area18 Trade District',
+          system: 'Stanton',
+          buy_price: 0,
+          sell_price: 3.45,
+          stock: 3200,
           buy_available: false,
           sell_available: true
         }
