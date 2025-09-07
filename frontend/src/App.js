@@ -1440,183 +1440,170 @@ const CommoditySnareModal = ({ isOpen, onClose, onSnare }) => {
   );
 };
 
-const DatabasePanel = ({ dbStats, onRefreshStats, onClearAll, onClearOld }) => {
-  const [clearWeeks, setClearWeeks] = useState(4);
-  const [showConfirmClear, setShowConfirmClear] = useState(false);
-  const [clearType, setClearType] = useState(null);
-
-  const handleClearAll = () => {
-    setClearType('all');
-    setShowConfirmClear(true);
-  };
-
-  const handleClearOld = () => {
-    setClearType('old');
-    setShowConfirmClear(true);
-  };
-
-  const confirmClear = async () => {
-    if (clearType === 'all') {
-      await onClearAll();
-    } else if (clearType === 'old') {
-      await onClearOld(clearWeeks);
+const DatabasePanel = ({ dbStats, onRefreshStats, onClearAll, onClearOld, showAverageData }) => {
+  const [mergeLoading, setMergeLoading] = useState(false);
+  const [mergeStats, setMergeStats] = useState(null);
+  
+  const handleMergeRoutes = async () => {
+    setMergeLoading(true);
+    try {
+      const response = await axios.post(`${API}/database/merge`);
+      if (response.data.status === 'success') {
+        setMergeStats(response.data.statistics);
+        onRefreshStats(); // Refresh database stats
+        alert(`✅ MERGE erfolgreich!\n\n${response.data.statistics.merged_routes} Routen zusammengefasst\n${response.data.statistics.duplicates_removed} Duplikate entfernt`);
+      } else {
+        throw new Error(response.data.message || 'Merge failed');
+      }
+    } catch (error) {
+      console.error('Merge error:', error);
+      alert(`❌ MERGE Fehler: ${error.message}`);
+    } finally {
+      setMergeLoading(false);
     }
-    setShowConfirmClear(false);
-    setClearType(null);
-    onRefreshStats();
   };
 
   return (
     <div className="space-y-6">
-      <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
-        <h3 className="text-white text-xl font-bold mb-4">💾 Lokale Datenbank Statistiken</h3>
+      {/* Database Statistics */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="bg-blue-900/20 rounded-lg p-4 border border-blue-700">
+          <div className="text-center">
+            <p className="text-blue-400 text-3xl font-bold">{dbStats?.routes || 0}</p>
+            <p className="text-gray-400 text-sm">Routen analysiert</p>
+          </div>
+        </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          <div className="bg-blue-900/20 rounded-lg p-4 border border-blue-700">
-            <div className="text-center">
-              <p className="text-blue-400 text-3xl font-bold">{dbStats?.routes || 0}</p>
-              <p className="text-gray-400 text-sm">Gespeicherte Routen</p>
-            </div>
-          </div>
-          
-          <div className="bg-green-900/20 rounded-lg p-4 border border-green-700">
-            <div className="text-center">
-              <p className="text-green-400 text-3xl font-bold">{dbStats?.commodities || 0}</p>
-              <p className="text-gray-400 text-sm">Commodity Datensätze</p>
-            </div>
-          </div>
-          
-          <div className="bg-purple-900/20 rounded-lg p-4 border border-purple-700">
-            <div className="text-center">
-              <p className="text-purple-400 text-3xl font-bold">{dbStats?.interceptions || 0}</p>
-              <p className="text-gray-400 text-sm">Interception Historie</p>
-            </div>
-          </div>
-          
-          <div className="bg-yellow-900/20 rounded-lg p-4 border border-yellow-700">
-            <div className="text-center">
-              <p className="text-yellow-400 text-3xl font-bold">{dbStats?.sizeFormatted || '0 B'}</p>
-              <p className="text-gray-400 text-sm">Datenbankgröße</p>
-            </div>
+        <div className="bg-green-900/20 rounded-lg p-4 border border-green-700">
+          <div className="text-center">
+            <p className="text-green-400 text-3xl font-bold">{dbStats?.commodities || 0}</p>
+            <p className="text-gray-400 text-sm">Commodity Datensätze</p>
           </div>
         </div>
-
-        <div className="bg-black/30 rounded-lg p-4 mb-6">
-          <h4 className="text-white font-semibold mb-3">📊 Datenbank Details</h4>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-            <div>
-              <p className="text-gray-400">Gesamtdatensätze:</p>
-              <p className="text-white font-semibold">{dbStats?.totalRecords || 0}</p>
-            </div>
-            <div>
-              <p className="text-gray-400">Letztes Update:</p>
-              <p className="text-white font-semibold">
-                {dbStats?.lastUpdate ? new Date(dbStats.lastUpdate).toLocaleString('de-DE') : 'Nie'}
-              </p>
-            </div>
-            <div>
-              <p className="text-gray-400">Speicherverbrauch:</p>
-              <p className="text-white font-semibold">{dbStats?.sizeBytes || 0} Bytes</p>
-            </div>
-            <div>
-              <p className="text-gray-400">Datenbank Version:</p>
-              <p className="text-white font-semibold">v1.0</p>
-            </div>
+        
+        <div className="bg-purple-900/20 rounded-lg p-4 border border-purple-700">
+          <div className="text-center">
+            <p className="text-purple-400 text-3xl font-bold">{dbStats?.interceptions || 0}</p>
+            <p className="text-gray-400 text-sm">Interception Historie</p>
           </div>
         </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="bg-red-900/20 rounded-lg p-4 border border-red-700">
-            <h4 className="text-red-400 font-semibold mb-3">🗑️ Daten Löschen</h4>
-            <div className="space-y-3">
-              <button
-                onClick={handleClearAll}
-                className="w-full bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded font-medium transition-colors"
-              >
-                🚨 Alle Daten Löschen
-              </button>
-              
-              <div className="flex items-center space-x-2">
-                <select
-                  value={clearWeeks}
-                  onChange={(e) => setClearWeeks(parseInt(e.target.value))}
-                  className="bg-gray-700 text-white rounded px-3 py-1 text-sm"
-                >
-                  <option value={1}>1 Woche</option>
-                  <option value={2}>2 Wochen</option>
-                  <option value={3}>3 Wochen</option>
-                  <option value={4}>4 Wochen</option>
-                </select>
-                <button
-                  onClick={handleClearOld}
-                  className="bg-orange-600 hover:bg-orange-700 text-white px-3 py-1 rounded text-sm transition-colors"
-                >
-                  Alte Daten Löschen
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-blue-900/20 rounded-lg p-4 border border-blue-700">
-            <h4 className="text-blue-400 font-semibold mb-3">🔄 Daten Management</h4>
-            <div className="space-y-3">
-              <button
-                onClick={onRefreshStats}
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded font-medium transition-colors"
-              >
-                📊 Statistiken Aktualisieren
-              </button>
-              
-              <button
-                onClick={() => window.location.reload()}
-                className="w-full bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded font-medium transition-colors"
-              >
-                🔄 Anwendung Neustarten
-              </button>
-            </div>
+        
+        <div className="bg-yellow-900/20 rounded-lg p-4 border border-yellow-700">
+          <div className="text-center">
+            <p className="text-yellow-400 text-3xl font-bold">{dbStats?.sizeFormatted || '0 B'}</p>
+            <p className="text-gray-400 text-sm">Datenbankgröße</p>
           </div>
         </div>
       </div>
 
-      <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
-        <h3 className="text-white text-lg font-semibold mb-4">ℹ️ Datensammlung Information</h3>
-        <div className="space-y-3 text-sm text-gray-300">
-          <p>• <strong>Automatische Ergänzung:</strong> Bei jedem API-Abruf werden neue Daten hinzugefügt, nicht überschrieben</p>
-          <p>• <strong>Historische Analyse:</strong> Mehr Daten ermöglichen genauere Interception-Vorhersagen</p>
-          <p>• <strong>Lokale Speicherung:</strong> Alle Daten werden lokal in Ihrem Browser gespeichert</p>
-          <p>• <strong>Performance:</strong> IndexedDB ermöglicht schnelle Suche und Analyse großer Datenmengen</p>
-          <p>• <strong>Privatsphäre:</strong> Daten verlassen niemals Ihren Computer</p>
-        </div>
-      </div>
-
-      {/* Confirmation Modal */}
-      {showConfirmClear && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4 border border-red-700">
-            <h4 className="text-red-400 text-lg font-bold mb-4">⚠️ Bestätigung Erforderlich</h4>
-            <p className="text-white mb-4">
-              {clearType === 'all' 
-                ? 'Sind Sie sicher, dass Sie ALLE gespeicherten Daten löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.'
-                : `Sind Sie sicher, dass Sie alle Daten älter als ${clearWeeks} Woche(n) löschen möchten?`
-              }
-            </p>
-            <div className="flex space-x-3">
-              <button
-                onClick={confirmClear}
-                className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded font-medium"
-              >
-                ✅ Ja, Löschen
-              </button>
-              <button
-                onClick={() => setShowConfirmClear(false)}
-                className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded font-medium"
-              >
-                ❌ Abbrechen
-              </button>
+      {/* MERGE Statistics */}
+      {mergeStats && (
+        <div className="bg-green-900/10 border border-green-700 rounded-lg p-4">
+          <h4 className="text-green-400 font-semibold mb-3">📊 Letzter MERGE Vorgang</h4>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+            <div>
+              <p className="text-gray-400">Original Routen:</p>
+              <p className="text-white font-semibold">{mergeStats.total_original_routes}</p>
+            </div>
+            <div>
+              <p className="text-gray-400">Einzigartige Routen:</p>
+              <p className="text-white font-semibold">{mergeStats.unique_routes}</p>
+            </div>
+            <div>
+              <p className="text-gray-400">Zusammengefasste:</p>
+              <p className="text-green-400 font-semibold">{mergeStats.merged_routes}</p>
+            </div>
+            <div>
+              <p className="text-gray-400">Duplikate entfernt:</p>
+              <p className="text-red-400 font-semibold">{mergeStats.duplicates_removed}</p>
             </div>
           </div>
         </div>
       )}
+
+      <div className="bg-black/30 rounded-lg p-4 mb-6">
+        <h4 className="text-white font-semibold mb-3">📊 Datenbank Details</h4>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+          <div>
+            <p className="text-gray-400">Gesamtdatensätze:</p>
+            <p className="text-white font-semibold">{dbStats?.totalRecords || 0}</p>
+          </div>
+          <div>
+            <p className="text-gray-400">Letztes Update:</p>
+            <p className="text-white font-semibold">
+              {dbStats?.lastUpdate ? new Date(dbStats.lastUpdate).toLocaleString('de-DE') : 'Nie'}
+            </p>
+          </div>
+          <div>
+            <p className="text-gray-400">Speicherverbrauch:</p>
+            <p className="text-white font-semibold">{dbStats?.sizeBytes || 0} Bytes</p>
+          </div>
+          <div>
+            <p className="text-gray-400">Browser Storage:</p>
+            <p className="text-white font-semibold">IndexedDB</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Database Management Buttons */}
+      <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
+        <h4 className="text-white font-semibold mb-4">🔧 Datenbank Verwaltung</h4>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+          <button
+            onClick={onRefreshStats}
+            className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded text-white font-medium transition-colors"
+          >
+            🔄 Statistiken aktualisieren
+          </button>
+          
+          <button
+            onClick={handleMergeRoutes}
+            disabled={mergeLoading}
+            className="bg-orange-600 hover:bg-orange-700 disabled:bg-gray-600 px-4 py-2 rounded text-white font-medium transition-colors"
+          >
+            {mergeLoading ? '⏳ Merging...' : '🔀 MERGE Duplikate'}
+          </button>
+          
+          <button
+            onClick={() => onClearOld(30)}
+            className="bg-yellow-600 hover:bg-yellow-700 px-4 py-2 rounded text-white font-medium transition-colors"
+          >
+            🗑️ Alte Daten löschen
+          </button>
+          
+          <button
+            onClick={onClearAll}
+            className="bg-red-600 hover:bg-red-700 px-4 py-2 rounded text-white font-medium transition-colors"
+          >
+            ⚠️ Alle Daten löschen
+          </button>
+        </div>
+        
+        <div className="mt-4 text-xs text-gray-400">
+          <p>• MERGE: Zusammenfassen doppelter Routen mit Durchschnittswerten</p>
+          <p>• Alte Daten: Löscht Einträge älter als 30 Tage</p>
+          <p>• Alle Daten: Löscht komplette lokale Datenbank (nicht rückgängig machbar)</p>
+        </div>
+      </div>
+
+      {/* Data Type Selector for Routes */}
+      <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
+        <h4 className="text-white font-semibold mb-4">📈 Routen-Datenansicht</h4>
+        <div className="flex items-center space-x-4 mb-4">
+          <span className="text-gray-400">Aktuelle Ansicht:</span>
+          <div className="flex space-x-2">
+            <span className={`px-3 py-1 rounded text-sm ${showAverageData ? 'bg-blue-600 text-white' : 'bg-gray-700 text-gray-400'}`}>
+              📊 {showAverageData ? 'Durchschnittsdaten' : 'Aktuelle Daten'}
+            </span>
+          </div>
+        </div>
+        <p className="text-xs text-gray-400">
+          {showAverageData 
+            ? '📊 Zeigt gemergerte Durchschnittswerte von zusammengefassten Routen' 
+            : '📈 Zeigt die neuesten individuellen Routen-Analysen'
+          }
+        </p>
+      </div>
     </div>
   );
 };
