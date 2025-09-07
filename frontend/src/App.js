@@ -2200,7 +2200,7 @@ function App() {
         // Replace existing route completely
         updatedRoutes[existingIndex] = {
           ...newRoute,
-          id: newRoute.id || generateRouteId(),
+          id: newRoute.id || `route_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
           last_updated: new Date().toISOString()
         };
         console.log(`[StateUpdate] Replaced route at index ${existingIndex}`);
