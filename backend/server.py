@@ -67,7 +67,7 @@ class StarProfitClient:
         self.base_url = STAR_PROFIT_API_BASE
         self.headers = {
             "Accept": "application/json",
-            "User-Agent": "Sinister-Snare-Piracy-Intelligence/2.0"
+            "User-Agent": "Sinister-Snare-Piracy-Intelligence/5.0"
         }
     
     async def get_commodities(self) -> Dict[str, Any]:
