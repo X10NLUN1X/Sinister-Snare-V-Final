@@ -889,7 +889,7 @@ async def analyze_routes(
                 }
             
             # Generate trading routes from commodity data
-            routes = await star_profit_client.get_trading_routes(data_source)
+            routes = await star_profit_client.get_trading_routes(source_type=data_source)
             if routes.get('status') == 'ok' and routes.get('data'):
                 logging.info(f"Using real Star Citizen trading data from Star Profit {data_source.upper()}")
                 routes_data = routes
