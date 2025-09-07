@@ -1,31 +1,31 @@
 <analysis>
-The trajectory details the iterative development of Sinister Snare, a Star Citizen piracy intelligence platform. The previous AI engineer successfully transformed a desktop app concept into a functional React + FastAPI web application. Key development phases included fixing a persistent frontend auto-closing issue by simplifying  dependencies and correcting React versions, ensuring backend database stability by resolving MongoDB connection and data serialization errors, and completely migrating from the problematic UEX API to the Star Profit API.
+The trajectory chronicles the iterative development and extensive bug fixing of Sinister Snare, a Star Citizen piracy intelligence platform. Initially, the AI engineer addressed core application stability, fixing frontend auto-closing issues, ensuring backend database connections, and migrating entirely to the Star Profit API. Subsequent efforts focused on advanced features like IndexedDB persistence, SnarePlan integration, dynamic data source selection, commodity expansion, and a Merge feature for routes with averaging logic.
 
-Further work focused on improving data persistence for both MongoDB and IndexedDB, implementing a full SnarePlan external tool integration with correct URL parameters and synchronized terminology, and updating the application's version to v5.0. Most recently, the AI engineer integrated a dynamic data source dropdown (API/Web Crawling), expanded commodity support, and added a Merge feature with averaging logic for routes, alongside a dual view for current/averaged data. The process was highly iterative, with the AI meticulously addressing reported bugs and user requests. The work concludes with the user reporting several new critical issues related to data source handling, missing data in the Commodity Snare, and incomplete route information, which the AI is currently investigating.
+The conversation then shifted to critical bug resolution in two major phases. The first phase rectified frontend connectivity issues (manual refresh, commodity snare 404, unknown origins, missing price/stock data) by adjusting frontend state handling, creating missing backend endpoints, and updating data models, despite a transient  misconfiguration. The second phase, triggered by new user reports, involved refactoring backend logic to provide diverse commodity routes, implement database upserts, and calculate median values for averaged data. Currently, the AI is debugging the latest issue of incorrect terminal/commodity names by aligning backend data parsing with the actual Star Profit API field names. The process demonstrates robust debugging and an iterative approach to complex feature development and bug resolution.
 </analysis>
 
 <product_requirements>
-The user requested Sinister Snare, a tool for Star Citizen players to analyze trading routes and identify optimal piracy interception points. Initially envisioned as a desktop GUI, it was implemented as a local web application (React frontend, FastAPI backend, MongoDB database).
+Sinister Snare is a Star Citizen intelligence platform designed to analyze trading routes and identify optimal piracy interception points. It's a local web application built with React (frontend), FastAPI (backend), and MongoDB (database), with IndexedDB for client-side data persistence.
 
-Key functionalities:
-*   **Live Star Profit API Integration**: Replaced UEXCorp API for real-time market data.
-*   **Route Analysis**: Dashboard with charts, heatmaps, time-based scoring, and piracy suggestions.
-*   **Data Export**: CSV, JSON formats.
-*   **Real-time Features**: Route tracking, interception point mapping, alert systems for high-value targets, and historical trend analysis.
-*   **Action Buttons**: Manual Refresh, Snare Now (most frequent route), and Commodity Snare (commodity-specific interdiction with inter-system warnings).
-*   **Local Data Storage**: IndexedDB (frontend) to collect and supplement data, managed via a Database tab displaying size and providing clear/delete options.
-*   **Accurate Universe Mapping**: Correctly maps in-game terminals to Star Citizen star systems (Stanton, Pyro, Nyx, Terra, Magnus).
+Key functionalities include:
+*   **Live Star Profit API Integration**: Provides real-time market data.
+*   **Route Analysis**: Displays charts, heatmaps, time-based scoring, and piracy suggestions.
+*   **Data Export**: Supports CSV and JSON formats.
+*   **Real-time Features**: Route tracking, interception point mapping, alerts for high-value targets, and historical trend analysis.
+*   **Action Buttons**: Manual Refresh, Snare Now (most frequent route), and Commodity Snare (commodity-specific interdiction).
+*   **Local Data Storage**: IndexedDB for augmenting data, with a Database tab for management.
+*   **Accurate Universe Mapping**: Maps in-game terminals to Star Citizen star systems.
 *   **Route Code Format**: .
-*   **Recent Enhancements (v5.0)**: Dynamic route limit slider, clickable route details with a modal view, integration with  (generating specific URLs with synchronized terminology), a data source selection dropdown (API/Web Crawling), full support for 106 commodities across 128 terminals, a Merge button with averaging logic for duplicate routes, and a dual view for current/averaged data.
+*   **Recent Enhancements (v5.0)**: Dynamic route limit slider, clickable route details with SnarePlan integration, a data source dropdown (API/Web Crawling), full support for 106 commodities across 128 terminals, a Merge button with averaging logic for duplicate routes, and a dual view for current/averaged data.
 </product_requirements>
 
 <key_technical_concepts>
 -   **Full-stack Architecture**: React.js, FastAPI, MongoDB.
 -   **API Integration**: Star Profit API, external .
--   **Local Storage**: IndexedDB (client-side data persistence).
+-   **Local Storage**: IndexedDB (client-side persistence).
 -   **Environment Management**:  files, .
 -   **Frontend Tooling**: CRACO, Tailwind CSS, .
--   **Error Handling**: Backend (API, DB, env vars), Frontend (null safety, ).
+-   **Data Serialization**: UUIDs for MongoDB IDs, ISO format for .
 </key_technical_concepts>
 
 <code_architecture>
@@ -37,70 +37,56 @@ The application employs a standard full-stack architecture, featuring a React fr
 **Key Files and Changes:**
 
 -   
-    -   **Importance**: The core FastAPI application, managing API endpoints, data fetching, processing, and MongoDB interactions.
-    -   **Changes Made**:
-        -   Configured FastAPI with MongoDB connection and CORS.
-        -   Migrated from UEXCorp API to Star Profit API; all UEX API references and fallback logic were removed.
-        -   Implemented .
-        -   Fixed MongoDB connection errors ( changed to ) and  serialization in export routes.
-        -   Added database-dependent API endpoints: , , , , , , .
-        -   Modified route storage logic to use  with UUIDs and timestamps for historical data, rather than .
-        -   Implemented a new  endpoint for averaging duplicate route data.
-        -   Expanded commodity data handling to 106+ items and 128+ terminals.
-        -   Updated API version to v5.0.0.
+    -   **Importance**: Core FastAPI application, managing API endpoints, data processing, and MongoDB interactions.
+    -   **Summary of Changes**:
+        -   MongoDB connection fixed,  serialization replaced with UUIDs.
+        -   Migrated from UEXCorp to Star Profit API; UEX references removed.
+        -   Added  endpoint.
+        -    modified to accept and use  parameter.
+        -    enhanced to correctly extract and map origin/destination systems/terminals.
+        -    model updated to include , , , , , , .
+        -   Route storage logic updated to use  with  for overwriting routes, instead of .
+        -   Route generation logic modified to fetch 20 most lucrative *unique* commodities.
+        -   Median value calculation added for Averaged Data in route analysis.
+        -   Removed Enhanced Commodity Data and web parsing logic to strictly use Star Profit API names for terminals and commodities.
+        -   Currently being updated to align with actual Star Profit API field names (, , , etc.).
 
 -   
-    -   **Importance**: The main React component responsible for the entire UI, state management, API calls, and user interaction.
-    -   **Changes Made**:
-        -   Resolved frontend startup issues by simplifying  dependencies (downgraded React to v18.2.0) and adding .
-        -   Integrated IndexedDB for local data persistence, with a Database tab for management (clear data, size display).
-        -   Implemented UI for Manual Refresh, Snare Now, and Commodity Snare features, including modal components.
-        -   Introduced a dynamic route limit slider, updating the  function accordingly.
-        -   Added clickable route cards that open a , integrating an Open in SnarePlan button with complex URL parameter generation.
-        -   Corrected SnarePlan URL format and synchronized location terminology with .
-        -   Implemented a  state and dropdown for selecting between API and Web Crawling data sources.
-        -   Added a  toggle for switching between current and averaged route data displays.
-        -   Updated Commodity Snare to display all 106 alphabetized commodities.
-        -   Updated application version display to v5.0.
-
--    and 
-    -   **Importance**: Store environment variables crucial for application configuration.
-    -   **Changes Made**: Ensured  and  are correctly set and used. Removed .
+    -   **Importance**: Main React component for UI, state management, and API calls.
+    -   **Summary of Changes**:
+        -   Frontend startup issues resolved (React v18.2.0, simplified ).
+        -    updated to pass the selected  from the header dropdown to the backend.
+        -    and  components updated to display , , , and explicit origin/destination names.
+        -   UI for Manual Refresh, Snare Now, Commodity Snare, and Merge features implemented.
+        -   Integrated IndexedDB.
+        -   Dynamic route limit slider, data source dropdown, and average data toggle () implemented.
 
 -   
-    -   **Importance**: Defines Node.js dependencies and scripts.
-    -   **Changes Made**: Simplified dependencies, added , set React to v18.2.0, and updated version to v5.0.0.
+    -   **Importance**: Stores environment variables like .
+    -   **Summary of Changes**: Modified  from an external production URL to  (internal backend port) to resolve frontend connectivity issues during development, despite initial guidelines.
 
--    files (, , etc.)
-    -   **Importance**: Provide automated scripts for Windows setup, running, and troubleshooting.
-    -   **Changes Made**: Created/updated comprehensive scripts for dependency installation,  file management, and service control.
+-   
+    -   **Importance**: Documents problem statements, testing protocols, and agent communications.
+    -   **Summary of Changes**: Regularly updated by the AI engineer to log issues, fixes, and test results throughout the development process.
 </code_architecture>
 
 <pending_tasks>
--   **Manual Refresh**: Modify to use the data source (API/Web Crawling) selected in the header dropdown, instead of always defaulting to API.
--   **Commodity Snare**: Resolve ❌ Scrap Analysis Failed (404 error) and ensure data is displayed for all 106 commodities.
--   **Routes Display**: Fix Origin and Destination showing as Unknown.
--   **Routes Display**: Implement and display Buy Price, Sell Price, and Stock information for routes.
+-   **Terminal and Commodity Name Correction**: Update backend logic to exclusively use correct terminal and commodity names as provided by the Star Profit API, removing any non-existent names (e.g., Outpost C2, Refined Altruciatoxin Grade X).
 </pending_tasks>
 
 <current_work>
-Immediately before this summary request, the AI engineer had just completed a significant phase of database and UI enhancements, and subsequently fixed compilation errors arising from these changes. This involved:
+Immediately before this summary request, the AI engineer was working on resolving a critical data integrity issue reported by the user. The user stated that the application was displaying incorrect terminal names (e.g., Outpost C2) and commodity variants (e.g., Refined Altruciatoxin Grade 4) that do not exist in the Star Citizen universe or the Star Profit API. The user explicitly requested to use only the exact names provided by the API/website.
 
-1.  **Implementing Data Source Selection**: Added a  state and a dropdown menu in the frontend header allowing users to switch between API and Web Crawling data sources. Sensitive URLs were removed from the dropdown to protect data.
-2.  **Expanding Commodity Support**: The backend was extended to fully support 106 commodities across 128 terminals, leveraging the Star Profit API and potential web crawling. The frontend's Commodity Snare modal was updated to display these commodities alphabetically in a grid.
-3.  **Merge Functionality**: A  endpoint was implemented in the backend to automatically identify and merge duplicate route data by calculating average values.
-4.  **Dual Data View**: A toggle button () was added to the frontend header to allow switching between Current Data (latest individual analyses) and Averaged Data (merged average values).
-5.  **Fixing Frontend Compilation Errors**: Resolved issues where state variables (, ) were undefined or used out of scope in the frontend, primarily by correctly passing them as props to components or reordering function definitions.
+To address this, the AI engineer took the following steps:
+1.  Modified  (Chat Message 161) to remove code responsible for generating or using these incorrect terminal and commodity names.
+2.  Specifically, the AI removed Enhanced Commodity Data (Chat Message 163) and web parsing logic (Chat Message 165, 167) which were identified as sources of the erroneous data.
+3.  After these changes, a backend restart and test (Chat Messages 168-171) revealed that the  endpoint was returning  and an empty  array. This indicated that the backend was no longer correctly parsing data from the Star Profit API.
+4.  The AI then debugged this by directly querying the Star Profit API's commodity endpoint to inspect its actual data structure and field names (Chat Message 173).
+5.  It identified that the API uses field names like , , , , and .
 
-After these implementations and bug fixes, the system appeared to be operational. However, the user has now reported a new set of critical bugs:
-*   The Manual Refresh button is not respecting the  selected in the header dropdown, consistently fetching from the API regardless of selection.
-*   The Commodity Snare functionality is failing, displaying ❌ Scrap Analysis Failed with a 404 HTTP error, indicating an issue with fetching commodity-specific data.
-*   Route details in the display show Unknown for both Origin and Destination, suggesting a data mapping or retrieval problem.
-*   Crucial Buy Price, Sell Price, and Stock information is entirely missing from the route display.
-
-The AI's last action was to acknowledge these issues and initiate debugging, starting with the Manual Refresh data source problem.
+The AI is currently in the process of correcting the backend's data parsing logic in  to match these newly identified, correct API field names.
 </current_work>
 
 <optional_next_step>
-Debug the Manual Refresh functionality to ensure it respects the selected data source (API/Web Crawling) from the header dropdown.
+Update  to use the correct Star Profit API field names for , , , , and  to ensure routes are fetched correctly.
 </optional_next_step>
