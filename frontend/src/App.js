@@ -1274,7 +1274,7 @@ const AlternativeRoutesDropdown = ({ commodity, onRouteSelect, currentRoute }) =
       const response = await fetch(url, {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' },
-        signal: AbortSignal.timeout(8000) // 8 second timeout
+        signal: controller.signal
       });
       
       if (response.ok) {
