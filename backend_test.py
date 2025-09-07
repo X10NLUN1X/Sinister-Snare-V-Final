@@ -1398,7 +1398,13 @@ async def main():
     
     all_results = TestResults()
     
-    # Test specific fixes from review request first
+    # Test review request fixes FIRST (highest priority)
+    review_results = await test_review_request_fixes()
+    all_results.results.extend(review_results.results)
+    all_results.passed += review_results.passed
+    all_results.failed += review_results.failed
+    
+    # Test additional specific fixes from previous requests
     specific_results = await test_specific_fixes()
     all_results.results.extend(specific_results.results)
     all_results.passed += specific_results.passed
