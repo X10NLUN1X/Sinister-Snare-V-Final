@@ -1296,24 +1296,65 @@ const AlternativeRoutesDropdown = ({ commodity, onRouteSelect, currentRoute }) =
 
   // Handle clicking on alternative route to make it the main route
   const handleAlternativeRouteClick = (terminal) => {
-    if (onRouteSelect) {
-      // Create new route object based on selected terminal
+    if (onRouteSelect && currentRoute) {
+      console.log(`[AlternativeRoutes] Creating new route from terminal: ${terminal.terminal}`);
+      
+      // Determine the new route configuration based on terminal capabilities
+      let newOrigin = currentRoute.origin_name;
+      let newDestination = currentRoute.destination_name;
+      let newBuyPrice = currentRoute.buy_price;
+      let newSellPrice = currentRoute.sell_price;
+      let newBuyStock = currentRoute.buy_stock;
+      let newSellStock = currentRoute.sell_stock;
+      
+      // If terminal has buy capability, make it the new origin
+      if (terminal.buy_available && terminal.buy_price > 0) {
+        newOrigin = `${terminal.system} - ${terminal.terminal}`;
+        newBuyPrice = terminal.buy_price;
+        newBuyStock = terminal.stock;
+        console.log(`[AlternativeRoutes] New buy location: ${newOrigin} at ${newBuyPrice} aUEC`);
+      }
+      
+      // If terminal has sell capability, make it the new destination  
+      if (terminal.sell_available && terminal.sell_price > 0) {
+        newDestination = `${terminal.system} - ${terminal.terminal}`;
+        newSellPrice = terminal.sell_price;
+        newSellStock = terminal.stock;
+        console.log(`[AlternativeRoutes] New sell location: ${newDestination} at ${newSellPrice} aUEC`);
+      }
+      
+      // Calculate new profit and other metrics
+      const profitPerUnit = newSellPrice - newBuyPrice;
+      const estimatedCargo = Math.min(newBuyStock || 1000, 1000); // Max 1000 SCU
+      const newProfit = profitPerUnit * estimatedCargo;
+      const newInvestment = newBuyPrice * estimatedCargo;
+      const newROI = newBuyPrice > 0 ? (profitPerUnit / newBuyPrice) * 100 : 0;
+      
+      // Create comprehensive new route object
       const newRoute = {
-        commodity_name: commodity,
-        origin_name: terminal.buy_available ? `${terminal.system} - ${terminal.terminal}` : currentRoute?.origin_name,
-        destination_name: terminal.sell_available ? `${terminal.system} - ${terminal.terminal}` : currentRoute?.destination_name,
-        buy_price: terminal.buy_price,
-        sell_price: terminal.sell_price,
-        buy_stock: terminal.buy_available ? terminal.stock : 0,
-        sell_stock: terminal.sell_available ? terminal.stock : 0,
-        system_origin: terminal.buy_available ? terminal.system : currentRoute?.system_origin,
-        system_destination: terminal.sell_available ? terminal.system : currentRoute?.system_destination,
-        terminal_name: terminal.terminal,
-        ...currentRoute // Preserve other route properties
+        ...currentRoute, // Preserve existing route properties
+        id: generateRouteId(), // Generate new unique ID
+        origin_name: newOrigin,
+        destination_name: newDestination,
+        buy_price: newBuyPrice,
+        sell_price: newSellPrice,
+        buy_stock: newBuyStock,
+        sell_stock: newSellStock,
+        profit: newProfit,
+        investment: newInvestment,
+        roi: newROI,
+        price_roi: newROI,
+        selected_terminal: terminal.terminal,
+        route_code: `${terminal.terminal.slice(0,8).toUpperCase()}-${commodity.slice(0,8).toUpperCase()}-${Date.now().toString().slice(-4)}`,
+        last_updated: new Date().toISOString(),
+        is_alternative_selection: true
       };
       
+      console.log(`[AlternativeRoutes] Created new route:`, newRoute);
       onRouteSelect(newRoute);
       setIsOpen(false); // Close dropdown after selection
+    } else {
+      console.warn('[AlternativeRoutes] onRouteSelect callback not available');
     }
   };
 
