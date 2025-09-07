@@ -450,33 +450,33 @@ async def test_backend_endpoints():
                 f"Connection error: {str(e)}"
             )
         
-        # Test 9: Snare Commodity Endpoint (New Feature)
+        # Test 9: Snare Commodity Endpoint (New Feature) - Testing with Agricium as requested
         try:
-            response = await client.get(f"{BACKEND_URL}/api/snare/commodity?commodity_name=Laranite")
+            response = await client.get(f"{BACKEND_URL}/api/snare/commodity?commodity_name=Agricium")
             if response.status_code == 200:
                 data = response.json()
                 if data.get('status') == 'success':
                     snare_points = len(data.get('snare_points', []))
                     results.add_result(
-                        "Snare Commodity Endpoint",
+                        "Snare Commodity Endpoint (Agricium)",
                         "PASS",
-                        f"Snare Commodity endpoint working - {snare_points} snare points for Laranite"
+                        f"Snare Commodity endpoint working - {snare_points} snare points for Agricium"
                     )
                 else:
                     results.add_result(
-                        "Snare Commodity Endpoint",
+                        "Snare Commodity Endpoint (Agricium)",
                         "FAIL",
                         f"Snare Commodity API returned status: {data.get('status')}"
                     )
             else:
                 results.add_result(
-                    "Snare Commodity Endpoint",
+                    "Snare Commodity Endpoint (Agricium)",
                     "FAIL",
                     f"HTTP {response.status_code}: {response.text[:200]}"
                 )
         except Exception as e:
             results.add_result(
-                "Snare Commodity Endpoint",
+                "Snare Commodity Endpoint (Agricium)",
                 "FAIL",
                 f"Connection error: {str(e)}"
             )
