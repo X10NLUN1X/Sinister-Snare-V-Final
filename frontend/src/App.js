@@ -2170,11 +2170,6 @@ function App() {
     }
   }, []);
 
-  // Helper function to generate unique route IDs
-  const generateRouteId = () => {
-    return `route_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-  };
-
   // Route Detail Modal Handler
   const handleRouteClick = (route) => {
     setRouteDetailModal({ open: true, route });
