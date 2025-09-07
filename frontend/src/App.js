@@ -2245,16 +2245,17 @@ function App() {
         const newRoutes = response.data.routes || [];
         setRoutes(newRoutes);
         
-        // Store routes in local database for historical analysis
+        // TEMPORARILY DISABLE: Store routes in local database for historical analysis
         if (newRoutes.length > 0) {
-          try {
-            await sinisterDB.addRoutes(newRoutes);
-            console.log(`✅ Stored ${newRoutes.length} routes from ${dataSource} in local database`);
-            // Update database stats in background (don't wait for it)
-            fetchDbStats().catch(e => console.warn('Database stats update failed:', e.message));
-          } catch (dbError) {
-            console.warn('Database storage failed, continuing without local storage:', dbError);
-          }
+          console.log(`✅ Skipping database storage - using ${newRoutes.length} routes from ${dataSource} directly`);
+          // try {
+          //   await sinisterDB.addRoutes(newRoutes);
+          //   console.log(`✅ Stored ${newRoutes.length} routes from ${dataSource} in local database`);
+          //   // Update database stats in background (don't wait for it)
+          //   fetchDbStats().catch(e => console.warn('Database stats update failed:', e.message));
+          // } catch (dbError) {
+          //   console.warn('Database storage failed, continuing without local storage:', dbError);
+          // }
         }
       }
     } catch (error) {
