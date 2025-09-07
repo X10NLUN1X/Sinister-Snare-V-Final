@@ -2201,7 +2201,7 @@ function App() {
       }
       fetchApiStatus();
       fetchTrackingStatus();
-    }, 30000); // Refresh every 30 seconds
+    }, 3600000); // Refresh every 60 minutes (60 * 60 * 1000)
 
     return () => clearInterval(interval);
   }, [autoRefresh, activeTab, fetchRoutes, fetchTargets, fetchAlerts, fetchApiStatus, fetchTrackingStatus]);
