@@ -547,6 +547,349 @@ async def test_backend_endpoints():
     
     return results
 
+async def test_web_crawling_implementation():
+    """Test Web Crawling implementation and Alternative Routes functionality as per review request"""
+    results = TestResults()
+    
+    print(f"\n🕷️ Testing Web Crawling Implementation & Alternative Routes")
+    print("Focus Areas: Web Crawling Primary Data Source, Alternative Routes Endpoint, Data Quality, API vs Web Comparison")
+    
+    async with httpx.AsyncClient(timeout=60.0) as client:
+        
+        # Test 1: Web Crawling Primary Data Source Test
+        try:
+            response = await client.get(f"{BACKEND_URL}/api/routes/analyze?limit=5&data_source=web")
+            if response.status_code == 200:
+                data = response.json()
+                if data.get('status') == 'success':
+                    data_source = data.get('data_source', 'unknown')
+                    api_used = data.get('api_used', 'unknown')
+                    routes = data.get('routes', [])
+                    
+                    # Verify data comes from "web" source, not "api"
+                    web_source_confirmed = 'web' in data_source.lower()
+                    web_api_used = 'web' in api_used.lower()
+                    
+                    # Check terminal-to-system mappings use web-researched data
+                    pyro_terminals_found = False
+                    stanton_terminals_found = False
+                    
+                    for route in routes:
+                        origin = route.get('origin_name', '')
+                        destination = route.get('destination_name', '')
+                        
+                        if 'Pyro' in origin or 'Pyro' in destination:
+                            pyro_terminals_found = True
+                        if 'Stanton' in origin or 'Stanton' in destination:
+                            stanton_terminals_found = True
+                    
+                    if web_source_confirmed and len(routes) > 0 and (pyro_terminals_found or stanton_terminals_found):
+                        results.add_result(
+                            "Web Crawling Primary Data Source",
+                            "PASS",
+                            f"Web crawling working - Source: {data_source}, API: {api_used}, Routes: {len(routes)}, Pyro terminals: {pyro_terminals_found}, Stanton terminals: {stanton_terminals_found}"
+                        )
+                    else:
+                        issues = []
+                        if not web_source_confirmed:
+                            issues.append(f"Expected web source, got: {data_source}")
+                        if len(routes) == 0:
+                            issues.append("No routes returned")
+                        if not (pyro_terminals_found or stanton_terminals_found):
+                            issues.append("No proper system mappings found")
+                        
+                        results.add_result(
+                            "Web Crawling Primary Data Source",
+                            "FAIL",
+                            f"Issues: {'; '.join(issues)}"
+                        )
+                else:
+                    results.add_result(
+                        "Web Crawling Primary Data Source",
+                        "FAIL",
+                        f"API returned status: {data.get('status')}"
+                    )
+            else:
+                results.add_result(
+                    "Web Crawling Primary Data Source",
+                    "FAIL",
+                    f"HTTP {response.status_code}: {response.text[:200]}"
+                )
+        except Exception as e:
+            results.add_result(
+                "Web Crawling Primary Data Source",
+                "FAIL",
+                f"Connection error: {str(e)}"
+            )
+        
+        # Test 2: Check Default Data Source is Web
+        try:
+            response = await client.get(f"{BACKEND_URL}/api/routes/analyze?limit=3")  # No data_source parameter
+            if response.status_code == 200:
+                data = response.json()
+                if data.get('status') == 'success':
+                    data_source = data.get('data_source', 'unknown')
+                    
+                    if 'web' in data_source.lower():
+                        results.add_result(
+                            "Default Data Source is Web",
+                            "PASS",
+                            f"Default data source correctly set to web: {data_source}"
+                        )
+                    else:
+                        results.add_result(
+                            "Default Data Source is Web",
+                            "FAIL",
+                            f"Expected web as default, got: {data_source}"
+                        )
+                else:
+                    results.add_result(
+                        "Default Data Source is Web",
+                        "FAIL",
+                        f"API returned status: {data.get('status')}"
+                    )
+            else:
+                results.add_result(
+                    "Default Data Source is Web",
+                    "FAIL",
+                    f"HTTP {response.status_code}: {response.text[:200]}"
+                )
+        except Exception as e:
+            results.add_result(
+                "Default Data Source is Web",
+                "FAIL",
+                f"Connection error: {str(e)}"
+            )
+        
+        # Test 3: Alternative Routes Endpoint Test
+        try:
+            response = await client.get(f"{BACKEND_URL}/api/commodity/terminals?commodity_name=Altruciatoxin&data_source=web")
+            if response.status_code == 200:
+                data = response.json()
+                if data.get('status') == 'success':
+                    terminals = data.get('terminals', [])
+                    
+                    if terminals:
+                        # Check table format like Star Profit homepage
+                        sample_terminal = terminals[0]
+                        required_columns = ['buy_price', 'sell_price', 'stock', 'terminal', 'system']
+                        missing_columns = [col for col in required_columns if col not in sample_terminal]
+                        
+                        # Check for both Stanton and Pyro terminals
+                        systems_found = set()
+                        for terminal in terminals:
+                            system = terminal.get('system', '')
+                            if system:
+                                systems_found.add(system)
+                        
+                        has_stanton = 'Stanton' in systems_found
+                        has_pyro = 'Pyro' in systems_found
+                        
+                        # Check format matches: "Reclamation Orinth | 0 | 4,460 | 1 | Stanton"
+                        proper_format = True
+                        for terminal in terminals[:3]:  # Check first 3
+                            terminal_name = terminal.get('terminal', '')
+                            buy_price = terminal.get('buy_price', 0)
+                            sell_price = terminal.get('sell_price', 0)
+                            stock = terminal.get('stock', 0)
+                            system = terminal.get('system', '')
+                            
+                            if not all([terminal_name, isinstance(buy_price, (int, float)), isinstance(sell_price, (int, float)), system]):
+                                proper_format = False
+                                break
+                        
+                        if not missing_columns and (has_stanton or has_pyro) and proper_format:
+                            results.add_result(
+                                "Alternative Routes Endpoint (Altruciatoxin)",
+                                "PASS",
+                                f"Alternative routes working - {len(terminals)} terminals found, Systems: {list(systems_found)}, Format verified"
+                            )
+                        else:
+                            issues = []
+                            if missing_columns:
+                                issues.append(f"Missing columns: {missing_columns}")
+                            if not (has_stanton or has_pyro):
+                                issues.append(f"No Stanton/Pyro terminals found, systems: {list(systems_found)}")
+                            if not proper_format:
+                                issues.append("Data format doesn't match Star Profit homepage")
+                            
+                            results.add_result(
+                                "Alternative Routes Endpoint (Altruciatoxin)",
+                                "FAIL",
+                                f"Issues: {'; '.join(issues)}"
+                            )
+                    else:
+                        results.add_result(
+                            "Alternative Routes Endpoint (Altruciatoxin)",
+                            "FAIL",
+                            "No terminals returned for Altruciatoxin"
+                        )
+                else:
+                    results.add_result(
+                        "Alternative Routes Endpoint (Altruciatoxin)",
+                        "FAIL",
+                        f"API returned status: {data.get('status')}"
+                    )
+            elif response.status_code == 404:
+                results.add_result(
+                    "Alternative Routes Endpoint (Altruciatoxin)",
+                    "FAIL",
+                    "Endpoint not found (404) - /api/commodity/terminals endpoint may not be implemented"
+                )
+            else:
+                results.add_result(
+                    "Alternative Routes Endpoint (Altruciatoxin)",
+                    "FAIL",
+                    f"HTTP {response.status_code}: {response.text[:200]}"
+                )
+        except Exception as e:
+            results.add_result(
+                "Alternative Routes Endpoint (Altruciatoxin)",
+                "FAIL",
+                f"Connection error: {str(e)}"
+            )
+        
+        # Test 4: Data Quality Verification - Multiple Commodities
+        commodities_to_test = ['Altruciatoxin', 'Agricium', 'Aluminum']
+        for commodity in commodities_to_test:
+            try:
+                response = await client.get(f"{BACKEND_URL}/api/routes/analyze?limit=10&data_source=web")
+                if response.status_code == 200:
+                    data = response.json()
+                    if data.get('status') == 'success':
+                        routes = data.get('routes', [])
+                        
+                        # Find routes for this commodity
+                        commodity_routes = [route for route in routes if commodity.lower() in route.get('commodity_name', '').lower()]
+                        
+                        if commodity_routes:
+                            route = commodity_routes[0]
+                            
+                            # Check terminal names match API exactly (no cleanup applied)
+                            origin_terminal = route.get('origin_terminal_name', '')
+                            destination_terminal = route.get('destination_terminal_name', '')
+                            
+                            # Check system mappings are correct
+                            origin_name = route.get('origin_name', '')
+                            destination_name = route.get('destination_name', '')
+                            
+                            # Verify Rat's Nest = Pyro, Everus Harbor = Stanton
+                            correct_mappings = True
+                            if "Rat's Nest" in origin_name and "Pyro" not in origin_name:
+                                correct_mappings = False
+                            if "Everus Harbor" in origin_name and "Stanton" not in origin_name:
+                                correct_mappings = False
+                            if "Rat's Nest" in destination_name and "Pyro" not in destination_name:
+                                correct_mappings = False
+                            if "Everus Harbor" in destination_name and "Stanton" not in destination_name:
+                                correct_mappings = False
+                            
+                            # Check data consistency
+                            has_prices = route.get('buy_price', 0) > 0 and route.get('sell_price', 0) > 0
+                            has_terminals = origin_terminal and destination_terminal and origin_terminal != destination_terminal
+                            
+                            if correct_mappings and has_prices and has_terminals:
+                                results.add_result(
+                                    f"Data Quality - {commodity}",
+                                    "PASS",
+                                    f"Quality verified - Origin: {origin_name}, Dest: {destination_name}, Buy: {route.get('buy_price')}, Sell: {route.get('sell_price')}"
+                                )
+                            else:
+                                issues = []
+                                if not correct_mappings:
+                                    issues.append("Incorrect system mappings")
+                                if not has_prices:
+                                    issues.append("Missing/zero prices")
+                                if not has_terminals:
+                                    issues.append("Missing/same terminals")
+                                
+                                results.add_result(
+                                    f"Data Quality - {commodity}",
+                                    "FAIL",
+                                    f"Issues: {'; '.join(issues)}"
+                                )
+                        else:
+                            results.add_result(
+                                f"Data Quality - {commodity}",
+                                "PASS",
+                                f"No routes found for {commodity} (acceptable - depends on current market data)"
+                            )
+                    else:
+                        results.add_result(
+                            f"Data Quality - {commodity}",
+                            "FAIL",
+                            f"API returned status: {data.get('status')}"
+                        )
+                else:
+                    results.add_result(
+                        f"Data Quality - {commodity}",
+                        "FAIL",
+                        f"HTTP {response.status_code}: {response.text[:200]}"
+                    )
+            except Exception as e:
+                results.add_result(
+                    f"Data Quality - {commodity}",
+                    "FAIL",
+                    f"Connection error: {str(e)}"
+                )
+        
+        # Test 5: API vs Web Source Comparison
+        try:
+            # Test with API data source
+            response_api = await client.get(f"{BACKEND_URL}/api/routes/analyze?limit=3&data_source=api")
+            response_web = await client.get(f"{BACKEND_URL}/api/routes/analyze?limit=3&data_source=web")
+            
+            api_success = response_api.status_code == 200
+            web_success = response_web.status_code == 200
+            
+            if api_success and web_success:
+                api_data = response_api.json()
+                web_data = response_web.json()
+                
+                api_source = api_data.get('data_source', 'unknown')
+                web_source = web_data.get('data_source', 'unknown')
+                
+                api_routes = len(api_data.get('routes', []))
+                web_routes = len(web_data.get('routes', []))
+                
+                # Both should work but web is default
+                api_works = 'api' in api_source.lower() and api_routes > 0
+                web_works = 'web' in web_source.lower() and web_routes > 0
+                web_is_default = True  # Already tested above
+                
+                if api_works and web_works and web_is_default:
+                    results.add_result(
+                        "API vs Web Source Comparison",
+                        "PASS",
+                        f"Both sources work - API: {api_routes} routes ({api_source}), Web: {web_routes} routes ({web_source}), Web is default"
+                    )
+                else:
+                    issues = []
+                    if not api_works:
+                        issues.append(f"API source issues: {api_source}, routes: {api_routes}")
+                    if not web_works:
+                        issues.append(f"Web source issues: {web_source}, routes: {web_routes}")
+                    
+                    results.add_result(
+                        "API vs Web Source Comparison",
+                        "FAIL",
+                        f"Issues: {'; '.join(issues)}"
+                    )
+            else:
+                results.add_result(
+                    "API vs Web Source Comparison",
+                    "FAIL",
+                    f"HTTP errors - API: {response_api.status_code}, Web: {response_web.status_code}"
+                )
+        except Exception as e:
+            results.add_result(
+                "API vs Web Source Comparison",
+                "FAIL",
+                f"Connection error: {str(e)}"
+            )
+    
+    return results
+
 async def test_review_request_fixes():
     """Test the specific fixes mentioned in the current review request"""
     results = TestResults()
