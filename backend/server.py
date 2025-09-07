@@ -1628,6 +1628,127 @@ async def manual_refresh(data_source: str = Query(default="web", description="Da
             "logs": [{"timestamp": datetime.now(timezone.utc).isoformat(), "message": f"❌ Refresh failed: {str(e)}", "type": "error"}]
         }
 
+@api_router.get("/commodity/terminals")
+async def get_commodity_terminals(
+    commodity_name: str = Query(description="Commodity name to get terminals for"),
+    data_source: str = Query(default="web", description="Data source: 'web' (default) or 'api'")
+):
+    """
+    Get all terminals that buy/sell a specific commodity with prices and stock
+    Returns data exactly like the Star Profit homepage table
+    """
+    try:
+        logging.info(f"Getting terminals for commodity: {commodity_name} from {data_source}")
+        
+        # Get commodity data
+        star_profit_client = StarProfitClient()
+        commodities_data = await star_profit_client.get_commodities(data_source)
+        commodities = commodities_data.get('commodities', [])
+        
+        if not commodities:
+            return {
+                "status": "error",
+                "message": "No commodity data available",
+                "commodity": commodity_name,
+                "terminals": []
+            }
+        
+        # Filter for the specific commodity (case-insensitive partial match)
+        matching_commodities = []
+        for commodity in commodities:
+            commodity_api_name = commodity.get('commodity_name', '')
+            if commodity_name.lower() in commodity_api_name.lower():
+                matching_commodities.append(commodity)
+        
+        if not matching_commodities:
+            return {
+                "status": "error", 
+                "message": f"Commodity '{commodity_name}' not found",
+                "commodity": commodity_name,
+                "terminals": []
+            }
+        
+        # Group terminals by name and aggregate data
+        terminal_data = {}
+        
+        for commodity in matching_commodities:
+            terminal_name = commodity.get('terminal_name', 'Unknown')
+            buy_price = float(commodity.get('price_buy', 0))
+            sell_price = float(commodity.get('price_sell', 0))
+            buy_stock = int(commodity.get('scu_buy', 0))
+            sell_stock = int(commodity.get('scu_sell_stock', 0))
+            buy_status = int(commodity.get('status_buy', 0))
+            sell_status = int(commodity.get('status_sell', 0))
+            
+            # Map terminal to system
+            system = star_profit_client.map_terminal_to_system(terminal_name)
+            
+            # Create terminal entry if not exists
+            if terminal_name not in terminal_data:
+                terminal_data[terminal_name] = {
+                    "terminal_name": terminal_name,
+                    "system": system,
+                    "buy_price": 0,
+                    "sell_price": 0, 
+                    "buy_stock": 0,
+                    "sell_stock": 0,
+                    "buy_available": False,
+                    "sell_available": False,
+                    "action": "View Details"  # Default action
+                }
+            
+            # Update with current data
+            terminal_entry = terminal_data[terminal_name]
+            
+            # Update buy data if this terminal buys the commodity
+            if buy_status > 0 and buy_price > 0:
+                terminal_entry["buy_price"] = buy_price
+                terminal_entry["buy_stock"] = buy_stock 
+                terminal_entry["buy_available"] = True
+                
+            # Update sell data if this terminal sells the commodity
+            if sell_status > 0 and sell_price > 0:
+                terminal_entry["sell_price"] = sell_price
+                terminal_entry["sell_stock"] = sell_stock
+                terminal_entry["sell_available"] = True
+        
+        # Convert to list and sort by sell price (descending), then buy price (ascending)
+        terminals_list = list(terminal_data.values())
+        terminals_list.sort(key=lambda x: (-x["sell_price"], x["buy_price"]))
+        
+        # Format for frontend (exactly like homepage table)
+        formatted_terminals = []
+        for terminal in terminals_list:
+            formatted_terminals.append({
+                "terminal": terminal["terminal_name"],
+                "system": terminal["system"],
+                "buy_price": terminal["buy_price"] if terminal["buy_available"] else 0,
+                "sell_price": terminal["sell_price"] if terminal["sell_available"] else 0, 
+                "stock": terminal["sell_stock"] if terminal["sell_available"] else terminal["buy_stock"],
+                "stock_type": "sell" if terminal["sell_available"] else "buy",
+                "action": terminal["action"],
+                "buy_available": terminal["buy_available"],
+                "sell_available": terminal["sell_available"]
+            })
+        
+        return {
+            "status": "success",
+            "commodity": commodity_name,
+            "terminals": formatted_terminals,
+            "total_terminals": len(formatted_terminals),
+            "data_source": data_source
+        }
+        
+    except Exception as e:
+        logging.error(f"Error getting commodity terminals: {e}")
+        return {
+            "status": "error",
+            "message": f"Failed to get terminals: {str(e)}",
+            "commodity": commodity_name,
+            "terminals": []
+        }
+
+
 @api_router.get("/snare/commodity")
 async def snare_commodity(commodity_name: str = Query(description="Commodity name to analyze")):
     """Analyze specific commodity for optimal snare opportunities"""
