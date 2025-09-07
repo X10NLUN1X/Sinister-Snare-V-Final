@@ -1105,6 +1105,118 @@ const SnareModal = ({ isOpen, onClose, snareData }) => {
 };
 
 // Route Detail Modal Component  
+// Alternative Routes Dropdown Component
+const AlternativeRoutesDropdown = ({ commodity }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [terminals, setTerminals] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  const fetchAlternativeRoutes = async () => {
+    if (!commodity || terminals.length > 0) return; // Don't fetch if already loaded
+    
+    setLoading(true);
+    try {
+      const response = await fetch(`${import.meta.env.REACT_APP_BACKEND_URL || process.env.REACT_APP_BACKEND_URL}/api/commodity/terminals?commodity_name=${encodeURIComponent(commodity)}&data_source=web`);
+      const data = await response.json();
+      
+      if (data.status === 'success') {
+        setTerminals(data.terminals || []);
+      } else {
+        console.error('Failed to fetch alternative routes:', data.message);
+        setTerminals([]);
+      }
+    } catch (error) {
+      console.error('Error fetching alternative routes:', error);
+      setTerminals([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleToggle = () => {
+    setIsOpen(!isOpen);
+    if (!isOpen) {
+      fetchAlternativeRoutes();
+    }
+  };
+
+  const formatPrice = (price) => price > 0 ? price.toLocaleString('de-DE') : '-';
+  const formatStock = (stock) => stock > 0 ? stock.toLocaleString('de-DE') : '-';
+
+  return (
+    <div className="mt-4 border-t border-gray-600 pt-4">
+      <button 
+        onClick={handleToggle}
+        className="w-full flex items-center justify-between text-left text-blue-400 hover:text-blue-300 transition-colors"
+      >
+        <span className="font-semibold">📋 Alternative Routes ({commodity})</span>
+        <span className={`transform transition-transform ${isOpen ? 'rotate-180' : ''}`}>▼</span>
+      </button>
+      
+      {isOpen && (
+        <div className="mt-3 bg-gray-800/50 rounded-lg p-3 max-h-96 overflow-y-auto">
+          {loading ? (
+            <div className="text-center text-gray-400 py-4">
+              <div className="animate-spin inline-block w-6 h-6 border-2 border-blue-400 border-t-transparent rounded-full mr-2"></div>
+              Loading alternative routes...
+            </div>
+          ) : terminals.length > 0 ? (
+            <div className="overflow-x-auto">
+              <table className="w-full text-xs">
+                <thead>
+                  <tr className="border-b border-gray-600">
+                    <th className="text-left text-gray-400 py-2 px-1">Terminal</th>
+                    <th className="text-right text-gray-400 py-2 px-1">Buy Price</th>
+                    <th className="text-right text-gray-400 py-2 px-1">Sell Price</th>
+                    <th className="text-right text-gray-400 py-2 px-1">Stock</th>
+                    <th className="text-center text-gray-400 py-2 px-1">System</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {terminals.map((terminal, idx) => (
+                    <tr key={idx} className="border-b border-gray-700/50 hover:bg-gray-700/30">
+                      <td className="py-2 px-1">
+                        <div className="text-white font-medium">{terminal.terminal}</div>
+                      </td>
+                      <td className="text-right py-2 px-1">
+                        <span className={terminal.buy_price > 0 ? 'text-red-400' : 'text-gray-500'}>
+                          {formatPrice(terminal.buy_price)}
+                        </span>
+                      </td>
+                      <td className="text-right py-2 px-1">
+                        <span className={terminal.sell_price > 0 ? 'text-green-400' : 'text-gray-500'}>
+                          {formatPrice(terminal.sell_price)}
+                        </span>
+                      </td>
+                      <td className="text-right py-2 px-1">
+                        <span className="text-blue-400">{formatStock(terminal.stock)}</span>
+                      </td>
+                      <td className="text-center py-2 px-1">
+                        <span className={`px-2 py-1 rounded text-xs font-bold ${
+                          terminal.system === 'Pyro' ? 'bg-red-600/20 text-red-400' : 'bg-blue-600/20 text-blue-400'
+                        }`}>
+                          {terminal.system}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <div className="mt-3 text-xs text-gray-400 text-center">
+                📊 Showing {terminals.length} terminals • Data from Web Crawling • Updated from Star Profit
+              </div>
+            </div>
+          ) : (
+            <div className="text-center text-gray-400 py-4">
+              No alternative routes found for {commodity}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+
 const RouteDetailModal = ({ isOpen, onClose, route }) => {
   if (!isOpen || !route) return null;
 
