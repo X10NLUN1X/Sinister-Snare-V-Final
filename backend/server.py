@@ -297,18 +297,20 @@ class StarProfitClient:
             "Stanton Gateway",        # VERIFIED: Pyro-Stanton Jump Point (Pyro side)
             
             # Rough & Ready Gang Controlled (VERIFIED)
-            "Checkmate",              # VERIFIED: L4 Lagrange point of Monox
-            "Endgame",                # VERIFIED: Terminus L3 Lagrange point  
             "Orbituary",              # VERIFIED: High orbit above Bloom
             "Patch City",             # VERIFIED: Bloom's L3 Lagrange point
             
             # Independent/Outlaw Stations (VERIFIED)
             "Rat's Nest",            # VERIFIED: Pyro V's L5 Lagrange point
-            "Rod's Fuel 'N Supplies", # VERIFIED: Pyro V's L4 Lagrange point
+            "Rod's Fuel 'N Supplies", # VERIFIED: Pyro V's L4 Lagrange point  
             "Starlight Service",      # VERIFIED: Bloom's L1 Lagrange point
             "Dudley and Daughters",   # VERIFIED: Terminus L4 Lagrange point
             "Gaslight",               # VERIFIED: Pyro V's L2 Lagrange point
-            "Megumi Refueling",       # VERIFIED: Terminus L5 Lagrange point
+            
+            # NOTE: Some terminals moved to correct systems based on web research
+            "Endgame",                # VERIFIED: Terminus L3 Lagrange point (Pyro)
+            "Checkmate",              # MOVED: This is actually in Pyro system  
+            "Megumi Refueling",       # MOVED: This is Terminus L5 (Pyro system)
             
             # Trading Posts and Outposts (from API - assumed Pyro)
             "Canard View", "Jackson's Swap", "The Golden Riviera", 
