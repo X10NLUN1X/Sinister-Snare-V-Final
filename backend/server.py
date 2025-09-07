@@ -845,7 +845,7 @@ async def analyze_routes(
     min_score: Optional[int] = Query(default=None),
     include_coordinates: bool = Query(default=True),
     use_real_data: bool = Query(default=True),
-    data_source: str = Query(default="api", description="Data source: 'api' or 'web'")
+    data_source: str = Query(default="web", description="Data source: 'web' (default) or 'api'")  # Changed default to "web"
 ):
     """Enhanced route analysis with real Star Citizen trading data"""
     try:
