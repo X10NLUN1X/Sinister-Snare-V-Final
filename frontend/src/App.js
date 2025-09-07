@@ -2250,8 +2250,8 @@ function App() {
           try {
             await sinisterDB.addRoutes(newRoutes);
             console.log(`✅ Stored ${newRoutes.length} routes from ${dataSource} in local database`);
-            // Update database stats after adding routes
-            await fetchDbStats();
+            // Update database stats in background (don't wait for it)
+            fetchDbStats().catch(e => console.warn('Database stats update failed:', e.message));
           } catch (dbError) {
             console.warn('Database storage failed, continuing without local storage:', dbError);
           }
