@@ -1519,7 +1519,11 @@ const RouteDetailModal = ({ isOpen, onClose, route }) => {
             </div>
             
             {/* Alternative Routes Dropdown */}
-            <AlternativeRoutesDropdown commodity={route.commodity_name} />
+            <AlternativeRoutesDropdown 
+              commodity={route.commodity_name}
+              onRouteSelect={null} // No route switching in modal context
+              currentRoute={route}
+            />
           </div>
         </div>
 
