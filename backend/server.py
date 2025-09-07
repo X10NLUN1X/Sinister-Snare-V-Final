@@ -1725,11 +1725,15 @@ async def snare_commodity(commodity_name: str = Query(description="Commodity nam
                     if sell_price <= buy_price:
                         continue  # Skip unprofitable routes
                     
-                    # Use REAL terminal names from API
-                    origin_terminal = buy_item.get('terminal_name', 'Unknown')
-                    destination_terminal = sell_item.get('terminal_name', 'Unknown')
+                    # Use REAL terminal names from API with cleanup
+                    origin_terminal_raw = buy_item.get('terminal_name', 'Unknown')
+                    destination_terminal_raw = sell_item.get('terminal_name', 'Unknown')
                     
-                    # Map real terminals to systems
+                    # Clean up terminal names to match Star Citizen lore
+                    origin_terminal = star_profit_client.cleanup_terminal_name(origin_terminal_raw)
+                    destination_terminal = star_profit_client.cleanup_terminal_name(destination_terminal_raw)
+                    
+                    # Map cleaned terminals to systems
                     origin_system = star_profit_client.map_terminal_to_system(origin_terminal)
                     destination_system = star_profit_client.map_terminal_to_system(destination_terminal)
                     
