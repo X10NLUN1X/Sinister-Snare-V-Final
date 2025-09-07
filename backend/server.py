@@ -281,7 +281,7 @@ class StarProfitClient:
             "Baijini Point",          # ArcCorp's primary cargo hub
             "Everus Harbor",          # Hurston's main port for Lorville
             "Port Olisar",            # Crusader gateway
-            "Port Tressler",          # microTech main transfer hub
+            "Port Tressler",          # Microtech main transfer hub
             "GrimHEX",                # Asteroid housing exchange (illicit hub)
             
             # Lagrange Point Stations (VERIFIED from Web)
@@ -313,7 +313,7 @@ class StarProfitClient:
             "HDMS-Lathan", "HDMS-Norgaard", "HDMS-Oparei", "HDMS-Perlman", "HDMS-Pinewood",
             "HDMS-Ryder", "HDMS-Stanhope", "HDMS-Thedus", "HDMS-Woodruff",
             
-            # Research Facilities (VERIFIED microTech/Stanton)
+            # Research Facilities (VERIFIED Microtech/Stanton)
             "Rayari Anvik", "Rayari Cantwell", "Rayari Deltana", "Rayari Kaltag", "Rayari McGrath",
             
             # Salvage Operations (VERIFIED Stanton)
