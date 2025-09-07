@@ -2254,6 +2254,7 @@ function App() {
               onRefreshStats={fetchDbStats}
               onClearAll={handleClearAllData}
               onClearOld={handleClearOldData}
+              showAverageData={showAverageData}
             />
           </div>
         )}
