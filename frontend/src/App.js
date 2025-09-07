@@ -1356,6 +1356,13 @@ const AlternativeRoutesDropdown = ({ commodity, onRouteSelect, currentRoute }) =
 
   // NEW: Handle second selection (complete route creation)
   const handleSecondSelection = (terminal) => {
+    console.log(`[AlternativeRoutes] handleSecondSelection called:`, {
+      workflowStep,
+      terminal: terminal?.terminal,
+      selectedOrigin: selectedOrigin?.terminal,
+      selectedDestination: selectedDestination?.terminal
+    });
+    
     if (workflowStep === 'buy_selected') {
       // User selected buy first, now selecting sell terminal
       setSelectedDestination(terminal);
@@ -1366,6 +1373,8 @@ const AlternativeRoutesDropdown = ({ commodity, onRouteSelect, currentRoute }) =
       setSelectedOrigin(terminal);
       console.log(`[AlternativeRoutes] Route complete: Buy from ${terminal.terminal} → Sell to ${selectedDestination.terminal}`);
       createNewRoute(terminal, selectedDestination);
+    } else {
+      console.warn(`[AlternativeRoutes] ❌ handleSecondSelection called but workflowStep is: ${workflowStep}`);
     }
   };
 
