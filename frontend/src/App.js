@@ -1119,7 +1119,7 @@ const AlternativeRoutesDropdown = ({ commodity }) => {
     console.log(`[AlternativeRoutes] Fetching data for commodity: ${commodity}`); // Debug log
     setLoading(true);
     try {
-      const backendUrl = import.meta.env.REACT_APP_BACKEND_URL || process.env.REACT_APP_BACKEND_URL;
+      const backendUrl = process.env.REACT_APP_BACKEND_URL || import.meta.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
       const url = `${backendUrl}/api/commodity/terminals?commodity_name=${encodeURIComponent(commodity)}&data_source=web`;
       console.log(`[AlternativeRoutes] Request URL: ${url}`); // Debug log
       
