@@ -1570,11 +1570,7 @@ const RouteDetailModal = ({ isOpen, onClose, route }) => {
             onClick={openInSnarePlan}
             className="bg-red-600 hover:bg-red-700 px-6 py-2 rounded text-white font-semibold flex items-center justify-center transition-colors"
           >
-            {/* Pirate Flag SVG Icon */}
-            <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M3 3v18l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V3l-2 1-2-1-2 1-2-1-2 1-2-1-2 1-2-1-2 1-2-1zm9 3.5c-.83 0-1.5.67-1.5 1.5s.67 1.5 1.5 1.5 1.5-.67 1.5-1.5-.67-1.5-1.5-1.5zm3 3c-.83 0-1.5.67-1.5 1.5s.67 1.5 1.5 1.5 1.5-.67 1.5-1.5-.67-1.5-1.5-1.5zm-6 0c-.83 0-1.5.67-1.5 1.5s.67 1.5 1.5 1.5 1.5-.67 1.5-1.5-.67-1.5-1.5-1.5zm3 3c-.83 0-1.5.67-1.5 1.5s.67 1.5 1.5 1.5 1.5-.67 1.5-1.5-.67-1.5-1.5-1.5z"/>
-            </svg>
-            Open in SnarePlan
+            🏴‍☠️ Open in SnarePlan
           </button>
           <button 
             onClick={onClose}
