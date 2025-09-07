@@ -1066,7 +1066,7 @@ async def analyze_routes(
                 
                 analyzed_routes.append(analysis)
                 
-                # Store in database for historical analysis (append, don't overwrite)
+                # Store in database for historical analysis (UPSERT - overwrite existing)
                 if db is not None:
                     try:
                         # Add timestamp to make each analysis unique
@@ -1074,10 +1074,23 @@ async def analyze_routes(
                         analysis_dict['stored_at'] = datetime.now(timezone.utc)
                         analysis_dict['analysis_id'] = str(uuid.uuid4())
                         
-                        # Insert new analysis (append to database)
-                        await db.route_analyses.insert_one(analysis_dict)
+                        # UPSERT: Update existing route or insert new one based on route_code
+                        existing_route = await db.route_analyses.find_one({"route_code": analysis_dict['route_code']})
+                        
+                        if existing_route:
+                            # Update existing route with new data (overwrite)
+                            await db.route_analyses.replace_one(
+                                {"route_code": analysis_dict['route_code']}, 
+                                analysis_dict
+                            )
+                            logging.debug(f"Updated existing route: {analysis_dict['route_code']}")
+                        else:
+                            # Insert new route
+                            await db.route_analyses.insert_one(analysis_dict)
+                            logging.debug(f"Inserted new route: {analysis_dict['route_code']}")
+                            
                     except Exception as db_error:
-                        logging.warning(f"Database storage failed: {db_error}")
+                        logging.warning(f"Database upsert failed: {db_error}")
                 
             except Exception as e:
                 logging.error(f"Error analyzing route: {e}")
