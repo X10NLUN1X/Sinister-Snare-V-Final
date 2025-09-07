@@ -265,9 +265,9 @@ class StarProfitClient:
             # Salvage Operations (VERIFIED Stanton)
             "Brio's Breaker", "Devlin Scrap", "Samson Son's", "Reclamation Orinth",
             
-            # Stanton Outposts and Trading Posts
-            "Seraphim", "Ashland", "Checkmate", "Deakins Research", "Hickes Research",
-            "Maker's Point", "Megumi Refueling", "Pickers Field", "Prospect Depot",
+            # Stanton Outposts and Trading Posts (corrected based on web research)
+            "Seraphim", "Ashland", "Deakins Research", "Hickes Research",
+            "Maker's Point", "Pickers Field", "Prospect Depot",
             "Seer's Canyon", "Shepherd's Rest", "Sunset Mesa", "Fallow Field", "Bueno Ravine",
             
             # TDD (Trade & Development Division) - Stanton 
