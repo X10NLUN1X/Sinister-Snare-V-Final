@@ -2073,7 +2073,16 @@ function App() {
     setRefreshModal({ open: true, logs: [], isRefreshing: true });
     
     try {
-      const response = await axios.post(`${API}/refresh/manual?data_source=${dataSource}`);
+      // Add timeout and retry logic
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+      
+      const response = await axios.post(`${API}/refresh/manual?data_source=${dataSource}`, {}, {
+        signal: controller.signal,
+        timeout: 30000
+      });
+      
+      clearTimeout(timeoutId);
       
       if (response.data.status === 'success') {
         setRefreshModal(prev => ({ 
@@ -2092,22 +2101,46 @@ function App() {
           ...prev, 
           logs: response.data.logs || [{ 
             timestamp: new Date().toISOString(), 
-            message: "Refresh failed", 
+            message: "Refresh failed - Server returned error status", 
             type: "error" 
           }],
           isRefreshing: false 
         }));
       }
     } catch (error) {
+      let errorMessage = "Unknown error occurred";
+      
+      if (error.name === 'AbortError') {
+        errorMessage = "Request timeout - Server took too long to respond";
+      } else if (error.code === 'NETWORK_ERROR' || error.message.includes('Network Error')) {
+        errorMessage = "Network Error - Check internet connection and server status";
+      } else if (error.response) {
+        errorMessage = `Server Error: ${error.response.status} - ${error.response.statusText}`;
+      } else if (error.request) {
+        errorMessage = "No response from server - Check if backend is running";
+      } else {
+        errorMessage = `Request setup error: ${error.message}`;
+      }
+      
       setRefreshModal(prev => ({ 
         ...prev, 
         logs: [{ 
           timestamp: new Date().toISOString(), 
-          message: `Error: ${error.message}`, 
+          message: `❌ Manual Refresh Failed: ${errorMessage}`, 
           type: "error" 
+        }, {
+          timestamp: new Date().toISOString(), 
+          message: `Backend URL: ${API}`, 
+          type: "info" 
+        }, {
+          timestamp: new Date().toISOString(), 
+          message: `Data Source: ${dataSource}`, 
+          type: "info" 
         }],
         isRefreshing: false 
       }));
+      
+      console.error('Manual refresh error:', error);
     }
   };
 
