@@ -871,9 +871,28 @@ async def analyze_routes(
     try:
         # Fetch routes from Star Profit API or Web Crawling
         try:
-            routes_data = await star_profit_client.get_trading_routes(source_type=data_source)
-            if routes_data.get('status') == 'ok' and routes_data.get('data'):
-                logging.info(f"Using real Star Citizen trading data from Star Profit {'API' if data_source == 'api' else 'Web Crawling'}")
+            # Get commodities data using specified source
+            commodities_data = await star_profit_client.get_commodities(data_source)
+            commodities = commodities_data.get('commodities', [])
+            
+            if not commodities:
+                logging.warning(f"Star Profit {data_source.upper()} returned no commodity data")
+                return {
+                    "status": "error",
+                    "message": f"Star Profit {data_source.upper()} unavailable",
+                    "routes": [],
+                    "total_routes": 0,
+                    "analysis_timestamp": datetime.now(timezone.utc).isoformat(),
+                    "data_source": data_source,  
+                    "api_used": f"Star Profit {data_source.upper()} (failed)",
+                    "database_available": db is not None
+                }
+            
+            # Generate trading routes from commodity data
+            routes = await star_profit_client.get_trading_routes(data_source)
+            if routes.get('status') == 'ok' and routes.get('data'):
+                logging.info(f"Using real Star Citizen trading data from Star Profit {data_source.upper()}")
+                routes_data = routes
             else:
                 logging.warning(f"Star Profit {data_source.upper()} failed, returning empty data")
                 return {
