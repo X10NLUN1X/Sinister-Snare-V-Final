@@ -635,53 +635,92 @@ class TrackingStatus(BaseModel):
 class RouteAnalyzer:
     @staticmethod
     def calculate_piracy_score(route_data: Dict[str, Any]) -> float:
-        """Enhanced piracy potential score calculation"""
+        """
+        NEW Enhanced Piracy Score (0-100) - Indicates probability of finding profitable traders
+        
+        Calculates the likelihood of successfully intercepting a profitable trader on this route.
+        Score 100 = extremely high probability, Score 0 = minimal probability
+        """
         try:
-            # Base factors
+            # Extract data with safe defaults
+            buy_price = float(route_data.get('buy_price', 0))
+            sell_price = float(route_data.get('sell_price', 0))
             profit = float(route_data.get('profit', 0))
-            investment = float(route_data.get('investment', 1))
+            buy_stock = int(route_data.get('buy_stock', 0))
+            sell_stock = int(route_data.get('sell_stock', 0))
             distance = float(route_data.get('distance', 1))
-            score = int(route_data.get('score', 0))
-            roi = float(route_data.get('price_roi', 0))
-            volatility_avg = (float(route_data.get('volatility_origin', 0)) + 
-                            float(route_data.get('volatility_destination', 0))) / 2
+            origin_name = route_data.get('origin_name', '')
+            destination_name = route_data.get('destination_name', '')
             
-            # Enhanced scoring factors
-            profit_factor = min(profit / 2000000, 1.0)  # Normalize to max 2M profit
-            traffic_factor = min(score / 100, 1.0)      # Normalize score
-            distance_factor = max(0, 1 - (distance / 60000))  # Prefer reasonable distances
-            roi_factor = min(roi / 80, 1.0)            # ROI factor up to 80%
-            volatility_factor = min(volatility_avg * 2, 1.0)  # Higher volatility = more opportunity
+            # Calculate profit margin (key factor)
+            if buy_price > 0:
+                profit_margin = (sell_price - buy_price) / buy_price
+            else:
+                profit_margin = 0
             
-            # Risk/reward calculation
-            risk_reward = (profit / max(investment, 1)) * 100
-            risk_factor = min(risk_reward / 50, 1.0)
+            # Factor 1: Profit Margin Score (40% weight)
+            # High margins attract more traders
+            profit_margin_score = min(profit_margin * 20, 40.0)  # Cap at 40 points
             
-            # Special commodity bonuses
-            commodity_bonus = 0.0
-            commodity_name = route_data.get('commodity_name', '').lower()
-            if 'narcotic' in commodity_name or 'drug' in commodity_name:
-                commodity_bonus = 0.15  # High risk, high reward
-            elif 'medical' in commodity_name:
-                commodity_bonus = 0.12  # Emergency supplies
-            elif 'quantum' in commodity_name or 'superconductor' in commodity_name:
-                commodity_bonus = 0.10  # High-tech goods
-            elif 'gold' in commodity_name or 'luxury' in commodity_name:
-                commodity_bonus = 0.08  # Luxury items
+            # Factor 2: Route Popularity & Distance (30% weight)
+            # Popular routes between major systems are more trafficked
+            route_popularity_score = 0
             
-            piracy_score = (
-                profit_factor * 0.35 +      # High value cargo
-                traffic_factor * 0.25 +     # High traffic routes
-                distance_factor * 0.15 +    # Reasonable distance
-                roi_factor * 0.10 +         # Good ROI
-                volatility_factor * 0.05 +  # Market volatility
-                risk_factor * 0.10 +        # Risk/reward ratio
-                commodity_bonus             # Commodity-specific bonus
-            ) * 100
+            # Check for popular systems (Stanton-Pyro is most popular)
+            is_inter_system = False
+            if ('Stanton' in origin_name and 'Pyro' in destination_name) or \
+               ('Pyro' in origin_name and 'Stanton' in destination_name):
+                route_popularity_score += 15  # Inter-system bonus
+                is_inter_system = True
+            elif 'Stanton' in origin_name and 'Stanton' in destination_name:
+                route_popularity_score += 10  # Same-system Stanton
+            elif 'Pyro' in origin_name and 'Pyro' in destination_name:
+                route_popularity_score += 8   # Same-system Pyro
             
-            return round(piracy_score, 2)
+            # Distance factor (shorter distances = more traffic)
+            if distance > 0:
+                if is_inter_system:
+                    # Inter-system: prefer 60k-120k range
+                    optimal_distance = 90000
+                    distance_factor = max(0, 15 - abs(distance - optimal_distance) / 10000)
+                else:
+                    # Same-system: prefer 15k-45k range
+                    optimal_distance = 30000
+                    distance_factor = max(0, 15 - abs(distance - optimal_distance) / 5000)
+                route_popularity_score += min(distance_factor, 15)
+            
+            # Factor 3: Stock Availability (30% weight)
+            # High availability at both ends = more likely traders
+            stock_score = 0
+            
+            # Buy stock availability (origin)
+            if buy_stock > 0:
+                buy_availability = min(buy_stock / 1000, 1.0)  # Normalize to 1000 SCU
+                stock_score += buy_availability * 15
+            
+            # Sell stock availability (destination) 
+            if sell_stock > 0:
+                sell_availability = min(sell_stock / 1000, 1.0)  # Normalize to 1000 SCU
+                stock_score += sell_availability * 15
+            
+            # Combined stock bonus for high availability on both ends
+            if buy_stock > 500 and sell_stock > 500:
+                stock_score += 5  # Bonus for high availability on both ends
+            
+            # Calculate final score (0-100)
+            final_score = profit_margin_score + route_popularity_score + stock_score
+            
+            # Apply diminishing returns to prevent scores over 100
+            if final_score > 85:
+                final_score = 85 + (final_score - 85) * 0.3
+            
+            # Ensure score is between 0 and 100
+            final_score = max(0, min(100, final_score))
+            
+            return round(final_score, 1)
+            
         except Exception as e:
-            logging.error(f"Error calculating piracy score: {e}")
+            logging.error(f"Error calculating new piracy score: {e}")
             return 0.0
     
     @staticmethod
