@@ -1022,20 +1022,20 @@ const SNAREPLAN_LOCATIONS = {
     'Whala Emergency': 'Whala Emergency',
     
     // Planets and Moons (common variations)
-    'MicroTech': 'MicroTech',
+    'MicroTech': 'microTech',
     'ArcCorp': 'ArcCorp', 
     'Hurston': 'Hurston',
     'Crusader': 'Crusader',
-    'Area18': 'Area18',
-    'Lorville': 'Lorville',
-    'New Babbage': 'New Babbage',
-    'Orison': 'Orison',
+    'Area18': 'ArcCorp',
+    'Lorville': 'Hurston',
+    'New Babbage': 'microTech',
+    'Orison': 'Crusader',
     
     // Common Station Names 
-    'Port Olisar': 'Port Olisar',
-    'Port Tressler': 'Port Tressler',
-    'Everus Harbor': 'Everus Harbor',
-    'Baijini Point': 'Baijini Point'
+    'Port Olisar': 'Crusader',
+    'Port Tressler': 'microTech',
+    'Everus Harbor': 'Hurston',
+    'Baijini Point': 'ArcCorp'
   },
   
   // PYRO SYSTEM  
