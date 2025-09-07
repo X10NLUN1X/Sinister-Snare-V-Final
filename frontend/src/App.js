@@ -1230,7 +1230,7 @@ const AlternativeRoutesDropdown = ({ commodity }) => {
                 </tbody>
               </table>
               <div className="mt-3 text-xs text-gray-400 text-center">
-                📊 Showing {terminals.length} terminals • Data from Web Crawling • Updated from Star Profit
+                📊 Showing {terminals.length} terminals • {formatUpdateTimestamp(lastUpdated)}
               </div>
             </div>
           ) : (
