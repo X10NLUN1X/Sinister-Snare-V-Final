@@ -549,13 +549,14 @@ metadata:
 
 test_plan:
   current_focus:
+    - "NEW Bidirectional Alternative Routes Endpoint"
     - "Web Crawling Primary Data Source Implementation"
     - "Alternative Routes Endpoint Implementation"
     - "Data Quality Verification and Terminal Name Mapping"
     - "API vs Web Source Comparison Implementation"
   stuck_tasks: []
   test_all: false
-  test_priority: "web_crawling_implementation"
+  test_priority: "bidirectional_alternative_routes"
 
 agent_communication:
     - agent: "main"
