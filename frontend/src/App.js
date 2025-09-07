@@ -338,8 +338,8 @@ const Header = ({ dataSource, setDataSource, showAverageData, setShowAverageData
             onChange={(e) => setDataSource(e.target.value)}
             className="bg-gray-800 text-white px-3 py-1 rounded border border-gray-600 focus:border-red-500 text-sm"
           >
-            <option value="api">🔗 API (star-profit.mathioussee.com/api/commodities)</option>
-            <option value="web">🌐 Web Crawling (star-profit.mathioussee.com/commodities)</option>
+            <option value="api">🔗 API</option>
+            <option value="web">🌐 Web Crawling</option>
           </select>
         </div>
         
