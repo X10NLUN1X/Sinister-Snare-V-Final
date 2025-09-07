@@ -606,6 +606,10 @@ class RouteAnalysis(BaseModel):
     frequency_score: float
     risk_level: str
     investment: float
+    buy_price: Optional[float] = 0.0
+    sell_price: Optional[float] = 0.0
+    buy_stock: Optional[int] = 0
+    sell_stock: Optional[int] = 0
     coordinates_origin: Optional[Dict[str, float]] = None
     coordinates_destination: Optional[Dict[str, float]] = None
     interception_zones: List[Dict[str, Any]] = []
