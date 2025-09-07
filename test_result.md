@@ -487,12 +487,63 @@ metadata:
         - agent: "testing"
         - comment: "🎉 DATA QUALITY VERIFICATION COMPLETE: ✅ EXCELLENT SUCCESS! Executed comprehensive backend testing of critical endpoints affected by terminal/commodity name fixes. RESULTS: ✅ PRIMARY ROUTES ENDPOINT (/api/routes/analyze?limit=10): All 10 routes use real commodity names (Altruciatoxin, Astatine, Aluminum), real terminal names (Reclamation Orinth, Everus Harbor, Seer's Canyon), correct Star Profit API fields (buy_price, sell_price, buy_stock, sell_stock), and proper system-location format. ✅ COMMODITY SNARE ENDPOINT (/api/snare/commodity?commodity_name=Agricium): Working correctly with 20 routes found, no 'Unknown - Unknown' entries, real terminal names (Shubin SMCa-6, ARC-L3, ArcCorp 141), proper inter-system vs same-system classification (5 inter-system, 15 same-system). ✅ DATA QUALITY VERIFICATION: No fake commodity grades, no fake terminal names (Outpost B10, etc.), all terminal names authentic (Gaslight, Seer's Canyon, Ashland, Chawla's Beach), correct system mappings verified. ✅ API STATUS CHECK: System operational with Star Profit API connected (2261 records available), database connected, 125 routes analyzed. SUCCESS RATE: 89.5% (17/19 tests passed). Minor issues: commodity name field empty in snare response (data present but field not populated), Star Profit API status shows 'unknown' in status endpoint (but working correctly). All critical data quality issues from review request have been successfully resolved. Backend is production-ready with authentic Star Citizen data."
 
+  - task: "Web Crawling Primary Data Source Implementation"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+        - agent: "testing"
+        - comment: "SUCCESS: Web Crawling Primary Data Source fully implemented and working. ✅ GET /api/routes/analyze?limit=5&data_source=web returns data from 'web' source with 'Star Profit WEB' API identifier. ✅ Default data_source correctly set to 'web' when no parameter specified. ✅ Terminal-to-system mappings use web-researched data with Pyro terminals (Rat's Nest, Endgame, Megumi Refueling) and Stanton terminals (Reclamation Orinth, ARC-L4, Everus Harbor) correctly assigned. ✅ Both Stanton and Pyro terminals properly identified in route analysis. Web crawling is now the primary data source as requested."
+
+  - task: "Alternative Routes Endpoint Implementation"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+        - agent: "testing"
+        - comment: "SUCCESS: Alternative Routes Endpoint fully implemented and working. ✅ GET /api/commodity/terminals?commodity_name=Altruciatoxin&data_source=web returns table format exactly like Star Profit homepage. ✅ Includes all required columns: buy_price, sell_price, stock, terminal, system. ✅ Both Stanton and Pyro terminals correctly identified in results. ✅ Data format matches specification: 'Reclamation Orinth | 0 | 4460.0 | 1 | Stanton'. ✅ Found 20 terminals for Altruciatoxin with proper system assignments. Alternative routes functionality working perfectly."
+
+  - task: "Data Quality Verification and Terminal Name Mapping"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+        - agent: "testing"
+        - comment: "SUCCESS: Data Quality Verification completed with excellent results. ✅ Multiple commodities tested (Altruciatoxin, Agricium, Aluminum) all return consistent data. ✅ Web Crawling returns consistent data with proper terminal names matching API exactly (no cleanup applied). ✅ System mappings verified correct: Rat's Nest = Pyro, Everus Harbor = Stanton, ARC-L4 = Stanton, Endgame = Pyro. ✅ Terminal names preserved exactly as from API without modification. ✅ All routes have different origin/destination terminals with proper population. ✅ RouteAnalysis model enhanced with origin_terminal_name and destination_terminal_name fields. Data quality issues resolved."
+
+  - task: "API vs Web Source Comparison Implementation"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+        - agent: "testing"
+        - comment: "SUCCESS: API vs Web Source Comparison working perfectly. ✅ Both data_source=api and data_source=web work correctly and return proper routes. ✅ API source returns 'api' with 'Star Profit API' identifier. ✅ Web source returns 'web' with 'Star Profit WEB' identifier. ✅ Web is confirmed as default data source when no parameter specified. ✅ Both sources provide consistent data structure with different source identifiers. ✅ User can choose between API and Web crawling as requested, with Web as primary and API as backup."
+
 test_plan:
   current_focus:
-    - "Data Quality Fixes Verification"
+    - "Web Crawling Primary Data Source Implementation"
+    - "Alternative Routes Endpoint Implementation"
+    - "Data Quality Verification and Terminal Name Mapping"
+    - "API vs Web Source Comparison Implementation"
   stuck_tasks: []
   test_all: false
-  test_priority: "critical_data_quality_issues"
+  test_priority: "web_crawling_implementation"
 
 agent_communication:
     - agent: "main"
