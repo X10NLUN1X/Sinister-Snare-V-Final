@@ -487,8 +487,7 @@ metadata:
 test_plan:
   current_focus:
     - "Data Quality Fixes Verification"
-  stuck_tasks:
-    - "Data Quality Fixes Verification"
+  stuck_tasks: []
   test_all: false
   test_priority: "critical_data_quality_issues"
 
