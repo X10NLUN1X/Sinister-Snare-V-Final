@@ -535,6 +535,18 @@ metadata:
         - agent: "testing"
         - comment: "SUCCESS: API vs Web Source Comparison working perfectly. ✅ Both data_source=api and data_source=web work correctly and return proper routes. ✅ API source returns 'api' with 'Star Profit API' identifier. ✅ Web source returns 'web' with 'Star Profit WEB' identifier. ✅ Web is confirmed as default data source when no parameter specified. ✅ Both sources provide consistent data structure with different source identifiers. ✅ User can choose between API and Web crawling as requested, with Web as primary and API as backup."
 
+  - task: "NEW Bidirectional Alternative Routes Endpoint"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+        - agent: "testing"
+        - comment: "SUCCESS: NEW Bidirectional Alternative Routes functionality fully implemented and working perfectly. ✅ TERMINAL DATA STRUCTURE: GET /api/commodity/terminals?commodity_name=Aluminum&data_source=web returns complete terminal data with all required fields (terminal, buy_price, sell_price, stock, system). Found 38 terminals for Aluminum, 25 for Agricium, 20 for Altruciatoxin. ✅ BUY/SELL SEPARATION: Bidirectional workflow fully supported - Aluminum: 21 buy locations + 17 sell locations, Agricium: 4 buy locations + 21 sell locations, Altruciatoxin: 2 buy locations + 18 sell locations. Users can select buy terminal first OR sell terminal first. ✅ SYSTEM ASSIGNMENT: Correct system mapping verified - Stanton and Pyro terminals properly identified across all commodities. Aluminum: 29 Stanton + 9 Pyro terminals. ✅ MULTIPLE COMMODITIES: Consistent data structure across all 3 test commodities (Aluminum, Agricium, Altruciatoxin) with 83 total terminals. ✅ BIDIRECTIONAL WORKFLOW SIMULATION: Complete workflow support confirmed - users can start with either buy or sell terminal selection, then choose opposite terminal to complete route. 38 unique terminals provide sufficient variety for route creation. All requirements from review request fully satisfied."
+
 test_plan:
   current_focus:
     - "Web Crawling Primary Data Source Implementation"
