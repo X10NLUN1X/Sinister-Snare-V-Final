@@ -382,7 +382,7 @@ const StatusCard = ({ title, value, status, icon, subtitle, trend }) => (
   </div>
 );
 
-const RouteCard = ({ route, onSelect }) => {
+const RouteCard = ({ route, onSelect, onAlternativeRouteSelect }) => {
   const getRiskColor = (risk) => {
     switch (risk) {
       case 'LEGENDARY': return 'text-purple-300 bg-purple-900/30 border-purple-500';
