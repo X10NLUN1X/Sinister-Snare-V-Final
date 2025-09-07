@@ -992,6 +992,10 @@ async def analyze_routes(
                     frequency_score=float(route.get('score', 0)) / 10,  # Normalize frequency
                     risk_level=RouteAnalyzer.categorize_risk_level(piracy_score),
                     investment=float(route.get('investment', 0)),
+                    buy_price=float(route.get('buy_price', 0)),
+                    sell_price=float(route.get('sell_price', 0)),
+                    buy_stock=int(route.get('buy_stock', 0)),
+                    sell_stock=int(route.get('sell_stock', 0)),
                     coordinates_origin=route.get('coordinates_origin'),
                     coordinates_destination=route.get('coordinates_destination'),
                     interception_zones=interception_zones,
