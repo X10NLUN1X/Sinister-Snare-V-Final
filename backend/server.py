@@ -1541,7 +1541,7 @@ async def get_hourly_analysis():
         raise HTTPException(status_code=500, detail=str(e))
 
 @api_router.post("/refresh/manual")
-async def manual_refresh(data_source: str = Query(default="api", description="Data source: 'api' or 'web'")):
+async def manual_refresh(data_source: str = Query(default="web", description="Data source: 'web' (default) or 'api'")):  # Changed default to "web"
     """Manual refresh with live update logs and configurable data source"""
     try:
         refresh_logs = []
