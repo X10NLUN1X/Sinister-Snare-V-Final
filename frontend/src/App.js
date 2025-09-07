@@ -1331,8 +1331,8 @@ const CommoditySnareModal = ({ isOpen, onClose, onSnare }) => {
           <div>
             <div className="mb-6">
               <label className="block text-white font-semibold mb-2">Select Target Commodity:</label>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mb-4">
-                {commonCommodities.map(commodity => (
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 mb-4">
+                {allCommodities.map(commodity => (
                   <button
                     key={commodity}
                     onClick={() => setSelectedCommodity(commodity)}
