@@ -328,6 +328,35 @@ const Header = () => (
           <p className="text-xs opacity-75">{new Date().toLocaleString()}</p>
         </div>
       </div>
+      
+      {/* Data Source Selector */}
+      <div className="mt-4 flex items-center justify-between">
+        <div className="flex items-center space-x-4">
+          <label className="text-sm text-gray-400">Datenquelle:</label>
+          <select 
+            value={dataSource}
+            onChange={(e) => setDataSource(e.target.value)}
+            className="bg-gray-800 text-white px-3 py-1 rounded border border-gray-600 focus:border-red-500 text-sm"
+          >
+            <option value="api">🔗 API (star-profit.mathioussee.com/api/commodities)</option>
+            <option value="web">🌐 Web Crawling (star-profit.mathioussee.com/commodities)</option>
+          </select>
+        </div>
+        
+        <div className="flex items-center space-x-4">
+          <label className="text-sm text-gray-400">Ansicht:</label>
+          <button
+            onClick={() => setShowAverageData(!showAverageData)}
+            className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
+              showAverageData 
+                ? 'bg-blue-600 text-white' 
+                : 'bg-gray-800 text-gray-400 border border-gray-600'
+            }`}
+          >
+            {showAverageData ? '📊 Durchschnittsdaten' : '📈 Aktuelle Daten'}
+          </button>
+        </div>
+      </div>
     </div>
   </header>
 );
