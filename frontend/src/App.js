@@ -912,6 +912,149 @@ const SnareModal = ({ isOpen, onClose, snareData }) => {
   );
 };
 
+// Route Detail Modal Component  
+const RouteDetailModal = ({ isOpen, onClose, route }) => {
+  if (!isOpen || !route) return null;
+
+  // SnarePlan Integration Function
+  const openInSnarePlan = () => {
+    const origin = encodeURIComponent(route.origin_name || '');
+    const destination = encodeURIComponent(route.destination_name || '');
+    const commodity = encodeURIComponent(route.commodity_name || '');
+    
+    const snarePlanUrl = `https://snareplan.dolus.eu/?origin=${origin}&destination=${destination}&commodity=${commodity}&profit=${route.profit}&route=${encodeURIComponent(route.route_code)}`;
+    
+    window.open(snarePlanUrl, '_blank', 'noopener,noreferrer');
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-gray-800 rounded-lg p-6 max-w-4xl w-full mx-4 border border-blue-700">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-blue-400 text-xl font-bold">📊 Route Details</h3>
+          <button onClick={onClose} className="text-gray-400 hover:text-white text-xl">✕</button>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Basic Route Info */}
+          <div className="bg-black/30 rounded p-4">
+            <h4 className="text-yellow-400 font-semibold mb-3">🛣️ Route Information</h4>
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span className="text-gray-400">Route Code:</span>
+                <span className="text-white font-mono">{route.route_code}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-400">Commodity:</span>
+                <span className="text-white">{route.commodity_name}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-400">Origin:</span>
+                <span className="text-white text-xs">{route.origin_name}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-400">Destination:</span>
+                <span className="text-white text-xs">{route.destination_name}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-400">Distance:</span>
+                <span className="text-white">{route.distance?.toLocaleString()} GM</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Financial Info */}
+          <div className="bg-black/30 rounded p-4">
+            <h4 className="text-green-400 font-semibold mb-3">💰 Financial Analysis</h4>
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span className="text-gray-400">Profit:</span>
+                <span className="text-green-400 font-bold">{(route.profit / 1000000).toFixed(2)}M aUEC</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-400">Investment:</span>
+                <span className="text-white">{(route.investment / 1000000).toFixed(2)}M aUEC</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-400">ROI:</span>
+                <span className="text-yellow-400">{route.roi?.toFixed(1)}%</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-400">Risk Level:</span>
+                <span className={`font-bold ${
+                  route.risk_level === 'HIGH' ? 'text-red-400' : 
+                  route.risk_level === 'MODERATE' ? 'text-yellow-400' : 'text-green-400'
+                }`}>{route.risk_level}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-400">Piracy Rating:</span>
+                <span className="text-red-400 font-bold">{route.piracy_rating?.toFixed(1)}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Interception Points */}
+        {route.interception_zones && route.interception_zones.length > 0 && (
+          <div className="mt-6 bg-black/30 rounded p-4">
+            <h4 className="text-red-400 font-semibold mb-3">🎯 Interception Points</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+              {route.interception_zones.map((zone, idx) => (
+                <div key={idx} className="bg-gray-700/30 rounded p-3 text-sm">
+                  <div className="text-white font-semibold">{zone.name}</div>
+                  <div className="text-gray-400 text-xs">Risk: {zone.risk_level}</div>
+                  <div className="text-yellow-400 text-xs">Success: {zone.success_probability}%</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Coordinates */}
+        {(route.coordinates_origin || route.coordinates_destination) && (
+          <div className="mt-6 bg-black/30 rounded p-4">
+            <h4 className="text-purple-400 font-semibold mb-3">🗺️ Coordinates</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+              {route.coordinates_origin && (
+                <div>
+                  <p className="text-gray-400 mb-1">Origin:</p>
+                  <p className="text-white font-mono text-xs">
+                    {route.coordinates_origin.x}, {route.coordinates_origin.y}, {route.coordinates_origin.z}
+                  </p>
+                </div>
+              )}
+              {route.coordinates_destination && (
+                <div>
+                  <p className="text-gray-400 mb-1">Destination:</p>
+                  <p className="text-white font-mono text-xs">
+                    {route.coordinates_destination.x}, {route.coordinates_destination.y}, {route.coordinates_destination.z}
+                  </p>
+                </div>  
+              )}
+            </div>
+          </div>
+        )}
+        
+        {/* Action Buttons */}
+        <div className="mt-6 flex flex-col sm:flex-row gap-3 justify-center">
+          <button 
+            onClick={openInSnarePlan}
+            className="bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded text-white font-semibold flex items-center justify-center"
+          >
+            🗺️ Open in SnarePlan
+          </button>
+          <button 
+            onClick={onClose}
+            className="bg-gray-600 hover:bg-gray-700 px-6 py-2 rounded text-white font-semibold"
+          >
+            Close Details
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const CommoditySnareModal = ({ isOpen, onClose, onSnare }) => {
   const [selectedCommodity, setSelectedCommodity] = useState('');
   const [snareResults, setSnareResults] = useState(null);
