@@ -821,37 +821,38 @@ async def analyze_routes(
     min_profit: Optional[float] = Query(default=None),
     min_score: Optional[int] = Query(default=None),
     include_coordinates: bool = Query(default=True),
-    use_real_data: bool = Query(default=True)
+    use_real_data: bool = Query(default=True),
+    data_source: str = Query(default="api", description="Data source: 'api' or 'web'")
 ):
     """Enhanced route analysis with real Star Citizen trading data"""
     try:
-        # Fetch routes from Star Profit API only
+        # Fetch routes from Star Profit API or Web Crawling
         try:
-            routes_data = await star_profit_client.get_trading_routes()
+            routes_data = await star_profit_client.get_trading_routes(source_type=data_source)
             if routes_data.get('status') == 'ok' and routes_data.get('data'):
-                logging.info("Using real Star Citizen trading data from Star Profit API")
+                logging.info(f"Using real Star Citizen trading data from Star Profit {'API' if data_source == 'api' else 'Web Crawling'}")
             else:
-                logging.warning("Star Profit API failed, returning empty data")
+                logging.warning(f"Star Profit {data_source.upper()} failed, returning empty data")
                 return {
                     "status": "error",
-                    "message": "Star Profit API unavailable",
+                    "message": f"Star Profit {data_source.upper()} unavailable",
                     "routes": [],
                     "total_routes": 0,
                     "analysis_timestamp": datetime.now(timezone.utc).isoformat(),
-                    "data_source": "none",
-                    "api_used": "Star Profit API (failed)",
+                    "data_source": data_source,
+                    "api_used": f"Star Profit {data_source.upper()} (failed)",
                     "database_available": db is not None
                 }
         except Exception as e:
-            logging.error(f"Star Profit API error: {e}")
+            logging.error(f"Star Profit {data_source.upper()} error: {e}")
             return {
                 "status": "error", 
-                "message": f"Star Profit API error: {str(e)}",
+                "message": f"Star Profit {data_source.upper()} error: {str(e)}",
                 "routes": [],
                 "total_routes": 0,
                 "analysis_timestamp": datetime.now(timezone.utc).isoformat(),
-                "data_source": "none",
-                "api_used": "Star Profit API (error)",
+                "data_source": data_source,
+                "api_used": f"Star Profit {data_source.upper()} (error)",
                 "database_available": db is not None
             }
         
