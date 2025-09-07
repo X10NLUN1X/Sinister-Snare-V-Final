@@ -1024,15 +1024,17 @@ async def analyze_routes(
         # Sort by piracy rating
         analyzed_routes.sort(key=lambda x: x.piracy_rating, reverse=True)
         
-        data_source = "real" if use_real_data and routes_data.get('data') else "simulated"
+        # Determine actual data source used
+        actual_data_source = routes_data.get('source', data_source)
+        api_description = f"Star Profit {actual_data_source.upper()}" if actual_data_source in ['api', 'web'] else "Star Profit API"
         
         return {
             "status": "success",
             "total_routes": len(analyzed_routes),
             "routes": analyzed_routes,
             "analysis_timestamp": datetime.now(timezone.utc).isoformat(),
-            "data_source": data_source,
-            "api_used": "Star Profit API" if data_source == "real" else "Mock Data",
+            "data_source": actual_data_source,
+            "api_used": api_description,
             "database_available": db is not None
         }
         
