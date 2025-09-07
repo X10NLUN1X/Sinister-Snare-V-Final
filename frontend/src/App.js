@@ -1459,22 +1459,33 @@ const AlternativeRoutesDropdown = ({ commodity, onRouteSelect, currentRoute }) =
 
   // NEW: Handle terminal click based on workflow step
   const handleTerminalClick = (terminal) => {
+    console.log(`[AlternativeRoutes] handleTerminalClick called:`, {
+      workflowStep,
+      terminal: terminal?.terminal,
+      buy_price: terminal?.buy_price,
+      sell_price: terminal?.sell_price
+    });
+    
     if (workflowStep === 'overview') {
       // Step 1: User can click either buy or sell price
       // Determine which price they clicked based on availability
       if (terminal.buy_price > 0 && terminal.sell_price > 0) {
         // Both available - user needs to choose by clicking specific price column
         // For now, prioritize buy-first workflow if both are available
+        console.log(`[AlternativeRoutes] Both buy/sell available - choosing buy-first workflow`);
         handleBuyTerminalClick(terminal);
       } else if (terminal.buy_price > 0) {
         // Only buy available
+        console.log(`[AlternativeRoutes] Only buy available - starting buy-first workflow`);
         handleBuyTerminalClick(terminal);
       } else if (terminal.sell_price > 0) {
         // Only sell available  
+        console.log(`[AlternativeRoutes] Only sell available - starting sell-first workflow`);
         handleSellTerminalClick(terminal);
       }
     } else {
       // Step 2: Complete the route
+      console.log(`[AlternativeRoutes] Step 2: Calling handleSecondSelection`);
       handleSecondSelection(terminal);
     }
   };
