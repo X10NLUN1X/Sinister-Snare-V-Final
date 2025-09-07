@@ -2685,6 +2685,7 @@ function App() {
                   key={route.id || index} 
                   route={route} 
                   onSelect={handleRouteClick}
+                  onAlternativeRouteSelect={handleAlternativeRouteSelect}
                 />
               ))}
             </div>
