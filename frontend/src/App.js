@@ -428,6 +428,30 @@ const RouteCard = ({ route, onSelect }) => {
           <span className="text-gray-400">Destination:</span>
           <span className="text-white text-right">{route.destination_name}</span>
         </div>
+        {(route.buy_price > 0 || route.sell_price > 0) && (
+          <div className="grid grid-cols-2 gap-2 text-xs mt-2 pt-2 border-t border-gray-700">
+            <div className="flex justify-between">
+              <span className="text-gray-400">Buy Price:</span>
+              <span className="text-yellow-400">{route.buy_price ? route.buy_price.toFixed(2) : 'N/A'} aUEC</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-400">Sell Price:</span>
+              <span className="text-green-400">{route.sell_price ? route.sell_price.toFixed(2) : 'N/A'} aUEC</span>
+            </div>
+          </div>
+        )}
+        {(route.buy_stock > 0 || route.sell_stock > 0) && (
+          <div className="grid grid-cols-2 gap-2 text-xs">
+            <div className="flex justify-between">
+              <span className="text-gray-400">Buy Stock:</span>
+              <span className="text-blue-400">{route.buy_stock || 'N/A'} SCU</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-400">Sell Stock:</span>
+              <span className="text-purple-400">{route.sell_stock || 'N/A'} SCU</span>
+            </div>
+          </div>
+        )}
       </div>
       
       <div className="grid grid-cols-2 gap-4 mb-4">
