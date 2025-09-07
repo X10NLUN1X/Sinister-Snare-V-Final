@@ -1899,7 +1899,7 @@ function App() {
     setRefreshModal({ open: true, logs: [], isRefreshing: true });
     
     try {
-      const response = await axios.post(`${API}/refresh/manual`);
+      const response = await axios.post(`${API}/refresh/manual?data_source=${dataSource}`);
       
       if (response.data.status === 'success') {
         setRefreshModal(prev => ({ 
