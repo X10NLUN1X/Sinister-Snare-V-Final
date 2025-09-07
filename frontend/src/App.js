@@ -2208,7 +2208,7 @@ function App() {
         // Add new route to the beginning of the list
         updatedRoutes.unshift({
           ...newRoute,
-          id: newRoute.id || generateRouteId(),
+          id: newRoute.id || `route_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
           last_updated: new Date().toISOString()
         });
         console.log(`[StateUpdate] Added new route to beginning of list`);
