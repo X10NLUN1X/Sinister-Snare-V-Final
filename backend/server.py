@@ -368,7 +368,7 @@ class StarProfitClient:
             return {"status": "error", "data": [], "message": str(e)}
 
 # Create the main app without a prefix
-app = FastAPI(title="Sinister Snare - Star Citizen Piracy Intelligence", version="2.0.0")
+app = FastAPI(title="Sinister Snare - Star Citizen Piracy Intelligence", version="5.0.0")
 
 # Create a router with the /api prefix
 api_router = APIRouter(prefix="/api")
