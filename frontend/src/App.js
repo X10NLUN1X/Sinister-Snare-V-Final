@@ -2028,7 +2028,7 @@ function App() {
                 <RouteCard 
                   key={route.id || index} 
                   route={route} 
-                  onSelect={setSelectedRoute}
+                  onSelect={handleRouteClick}
                 />
               ))}
             </div>
