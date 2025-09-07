@@ -1576,7 +1576,8 @@ async def manual_refresh(data_source: str = Query(default="api", description="Da
                 "status": "success",
                 "logs": refresh_logs,
                 "routes_processed": processed_count,
-                "total_commodities": len(commodities)
+                "total_commodities": len(commodities),
+                "data_source_used": data_source
             }
         else:
             refresh_logs.append({"timestamp": datetime.now(timezone.utc).isoformat(), "message": "❌ Failed to generate trading routes", "type": "error"})
