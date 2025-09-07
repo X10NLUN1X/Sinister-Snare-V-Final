@@ -858,13 +858,13 @@ const TERMINAL_TO_SNAREPLAN_MAPPING = {
   // Orbital Stations -> Main Planets
   "Baijini Point": "ArcCorp",
   "Everus Harbor": "Hurston", 
-  "Port Tressler": "microTech",
+  "Port Tressler": "Microtech",
   "Seraphim": "Crusader",
   
   // Landing Zones -> Planets (these are already compatible, but explicit mapping)
   "Area 18 IO Tower": "ArcCorp",
   "CBD Lorville": "Hurston",
-  "MTP New Babbage": "microTech", 
+  "MTP New Babbage": "Microtech", 
   "Orison Providence": "Crusader",
   
   // Mining Stations -> Nearest Planet
@@ -902,12 +902,12 @@ const TERMINAL_TO_SNAREPLAN_MAPPING = {
   "Shubin SMCa-6": "Hurston", // Arial moon
   "Shubin SMCa-8": "Hurston", // Arial moon
   
-  // Rayari Research -> microTech
-  "Rayari Anvik": "microTech",
-  "Rayari Cantwell": "microTech",
-  "Rayari Deltana": "microTech", 
-  "Rayari Kaltag": "microTech",
-  "Rayari McGrath": "microTech",
+  // Rayari Research -> Microtech
+  "Rayari Anvik": "Microtech",
+  "Rayari Cantwell": "Microtech",
+  "Rayari Deltana": "Microtech", 
+  "Rayari Kaltag": "Microtech",
+  "Rayari McGrath": "Microtech",
   
   // Salvage Operations -> Hurston system
   "Brio's Breaker": "Hurston", // Lyria moon
@@ -918,8 +918,8 @@ const TERMINAL_TO_SNAREPLAN_MAPPING = {
   // Outposts -> Nearest Planet
   "Ashland": "Hurston",
   "Checkmate": "Hurston", 
-  "Deakins Research": "microTech",
-  "Hickes Research": "microTech",
+  "Deakins Research": "Microtech",
+  "Hickes Research": "Microtech",
   "Maker's Point": "ArcCorp",
   "Pickers Field": "Hurston",
   "Prospect Depot": "Hurston",
@@ -1022,18 +1022,18 @@ const SNAREPLAN_LOCATIONS = {
     'Whala Emergency': 'Whala Emergency',
     
     // Planets and Moons (common variations)
-    'MicroTech': 'microTech',
+    'MicroTech': 'Microtech',
     'ArcCorp': 'ArcCorp', 
     'Hurston': 'Hurston',
     'Crusader': 'Crusader',
     'Area18': 'ArcCorp',
     'Lorville': 'Hurston',
-    'New Babbage': 'microTech',
+    'New Babbage': 'Microtech',
     'Orison': 'Crusader',
     
     // Common Station Names 
     'Port Olisar': 'Crusader',
-    'Port Tressler': 'microTech',
+    'Port Tressler': 'Microtech',
     'Everus Harbor': 'Hurston',
     'Baijini Point': 'ArcCorp'
   },
