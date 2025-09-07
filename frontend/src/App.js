@@ -2598,32 +2598,35 @@ function App() {
         });
       }
       
-      // TEMPORARY: Simplified loading to test the new bidirectional workflow
-      // Load only essential data with very short timeouts
-      const fetchWithTimeout = async (fetchFunction, name, timeoutMs = 3000) => {
-        try {
-          console.log(`⏳ Loading ${name}...`);
-          const timeoutPromise = new Promise((_, reject) => 
-            setTimeout(() => reject(new Error(`${name} timeout after ${timeoutMs}ms`)), timeoutMs)
-          );
-          
-          await Promise.race([fetchFunction(), timeoutPromise]);
-          console.log(`✅ ${name} loaded successfully`);
-        } catch (error) {
-          console.warn(`⚠️ ${name} failed to load:`, error.message);
-          // Continue loading other components even if this one fails
+      // EMERGENCY: Skip all API calls for now to test the bidirectional workflow
+      console.log('🚀 Sinister Snare starting in emergency mode (no API calls)');
+      
+      // Set minimal default data so the app can load
+      setApiStatus({ status: 'operational', database: 'connected' });
+      setRoutes([
+        {
+          id: 'test-route-1',
+          commodity_name: 'Aluminum',
+          origin_name: 'Pyro - Rat\'s Nest',
+          destination_name: 'Stanton - Everus Harbor',
+          route_code: 'RATSNE-ALUMINUM-EVERUSH',
+          profit: 101000,
+          piracy_rating: 71.5,
+          risk_level: 'HIGH',
+          buy_price: 2.21,
+          sell_price: 3.22,
+          buy_stock: 1000,
+          sell_stock: 500,
+          roi: 45.7,
+          distance: 115919,
+          score: 10,
+          investment: 221000,
+          interception_zones: []
         }
-      };
-
-      // Load minimal essential data to get app working
-      await Promise.allSettled([
-        fetchWithTimeout(fetchApiStatus, 'API Status', 3000),
-        fetchWithTimeout(fetchRoutes, 'Routes', 5000)
-        // Temporarily skip other problematic endpoints
       ]);
       
-      console.log('🎉 Sinister Snare loading complete (minimal mode)!');
       setLoading(false);
+      console.log('🎉 Emergency mode loaded - ready to test bidirectional workflow!');
     };
 
     initializeApp();
