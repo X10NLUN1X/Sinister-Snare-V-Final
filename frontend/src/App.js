@@ -2571,47 +2571,64 @@ function App() {
         });
       }
       
-      // FETCH TEST: Use native fetch instead of axios  
-      console.log('🔧 DEBUGGING: Testing with native fetch...');
+      // BYPASS NETWORK: Set mock data to test bidirectional workflow
+      console.log('🔧 DEBUGGING: Bypassing network calls with mock data...');
       
       try {
         console.log('Step 1: Setting API status...');
         setApiStatus({ status: 'operational', database: 'connected' });
         
-        console.log('Step 2: Native fetch call to routes endpoint...');
-        const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
-        const testUrl = `${backendUrl}/api/routes/analyze?limit=5&min_score=10&include_coordinates=true&data_source=web`;
-        console.log('Test URL:', testUrl);
-        
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 second timeout
-        
-        const response = await fetch(testUrl, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
+        console.log('Step 2: Setting mock routes for bidirectional testing...');
+        const mockRoutes = [
+          {
+            id: 'test-route-1',
+            commodity_name: 'Aluminum',
+            origin_name: 'Pyro - Rat\'s Nest',
+            destination_name: 'Stanton - Everus Harbor',
+            route_code: 'RATSNE-ALUMINUM-EVERUSH',
+            profit: 101000,
+            piracy_rating: 72.4,
+            risk_level: 'HIGH',
+            buy_price: 221,
+            sell_price: 322,
+            buy_stock: 20000,
+            sell_stock: 1935,
+            roi: 45.7,
+            distance: 106942,
+            score: 10,
+            investment: 221000,
+            interception_zones: []
           },
-          signal: controller.signal
-        });
+          {
+            id: 'test-route-2',
+            commodity_name: 'Carbon',
+            origin_name: 'Pyro - Checkmate',
+            destination_name: 'Stanton - Magnus Gateway',
+            route_code: 'CHECKMAT-CARBON-MAGNUSG',
+            profit: 7000,
+            piracy_rating: 69.9,
+            risk_level: 'HIGH',
+            buy_price: 19,
+            sell_price: 26,
+            buy_stock: 39000,
+            sell_stock: 4608,
+            roi: 36.8,
+            distance: 64977,
+            score: 10,
+            investment: 19000,
+            interception_zones: []
+          }
+        ];
         
-        clearTimeout(timeoutId);
-        
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-        const data = await response.json();
-        console.log('✅ Native fetch response received:', data.routes?.length, 'routes');
-        
-        const routes = data.routes || [];
-        setRoutes(routes);
+        setRoutes(mockRoutes);
+        console.log(`✅ Set ${mockRoutes.length} mock routes for testing`);
         
         console.log('Step 3: Setting loading to false...');
         setLoading(false);
         
-        console.log('✅ FETCH TEST COMPLETE!');
+        console.log('✅ BYPASS TEST COMPLETE - Ready for bidirectional workflow testing!');
       } catch (error) {
-        console.error('❌ FETCH TEST ERROR:', error.name, error.message);
+        console.error('❌ BYPASS ERROR:', error);
         setApiStatus({ status: 'operational', database: 'connected' });
         setRoutes([]);
         setLoading(false);
