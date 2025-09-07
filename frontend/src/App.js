@@ -869,7 +869,7 @@ const TERMINAL_TO_SNAREPLAN_MAPPING = {
   
   // TDD (Trade & Development Division) Terminals -> Correct Planets
   "TDD Area 18": "ArcCorp",      // Area 18 Landing Zone on ArcCorp
-  "TDD New Babbage": "Microtech", // New Babbage Landing Zone on microTech  
+  "TDD New Babbage": "Microtech", // New Babbage Landing Zone on Microtech  
   "TDD Orison": "Crusader",      // Orison Landing Zone on Crusader
   
   // Mining Stations -> Nearest Planet
