@@ -1153,6 +1153,29 @@ const AlternativeRoutesDropdown = ({ commodity, onRouteSelect, currentRoute }) =
     }
   };
 
+  // Handle clicking on alternative route to make it the main route
+  const handleAlternativeRouteClick = (terminal) => {
+    if (onRouteSelect) {
+      // Create new route object based on selected terminal
+      const newRoute = {
+        commodity_name: commodity,
+        origin_name: terminal.buy_available ? `${terminal.system} - ${terminal.terminal}` : currentRoute?.origin_name,
+        destination_name: terminal.sell_available ? `${terminal.system} - ${terminal.terminal}` : currentRoute?.destination_name,
+        buy_price: terminal.buy_price,
+        sell_price: terminal.sell_price,
+        buy_stock: terminal.buy_available ? terminal.stock : 0,
+        sell_stock: terminal.sell_available ? terminal.stock : 0,
+        system_origin: terminal.buy_available ? terminal.system : currentRoute?.system_origin,
+        system_destination: terminal.sell_available ? terminal.system : currentRoute?.system_destination,
+        terminal_name: terminal.terminal,
+        ...currentRoute // Preserve other route properties
+      };
+      
+      onRouteSelect(newRoute);
+      setIsOpen(false); // Close dropdown after selection
+    }
+  };
+
   const formatPrice = (price) => price > 0 ? price.toLocaleString('de-DE') : '-';
   const formatStock = (stock) => stock > 0 ? stock.toLocaleString('de-DE') : '-';
   
