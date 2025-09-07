@@ -1254,6 +1254,11 @@ const AlternativeRoutesDropdown = ({ commodity, onRouteSelect, currentRoute }) =
   const [terminals, setTerminals] = useState([]);
   const [loading, setLoading] = useState(false);
   const [lastUpdated, setLastUpdated] = useState(null);
+  
+  // NEW: Bidirectional workflow states
+  const [workflowStep, setWorkflowStep] = useState('overview'); // 'overview', 'buy_selected', 'sell_selected'
+  const [selectedOrigin, setSelectedOrigin] = useState(null); // Selected buy terminal
+  const [selectedDestination, setSelectedDestination] = useState(null); // Selected sell terminal
 
   const fetchAlternativeRoutes = async () => {
     if (!commodity || terminals.length > 0) return; // Don't fetch if already loaded
@@ -1291,70 +1296,131 @@ const AlternativeRoutesDropdown = ({ commodity, onRouteSelect, currentRoute }) =
     setIsOpen(!isOpen);
     if (!isOpen) {
       fetchAlternativeRoutes();
+      // Reset workflow state when opening
+      setWorkflowStep('overview');
+      setSelectedOrigin(null);
+      setSelectedDestination(null);
     }
   };
 
-  // Handle clicking on alternative route to make it the main route
-  const handleAlternativeRouteClick = (terminal) => {
+  // NEW: Handle buy terminal selection (Step 2a: Buy first workflow)
+  const handleBuyTerminalClick = (terminal) => {
+    console.log(`[AlternativeRoutes] Buy terminal selected: ${terminal.terminal}`);
+    setSelectedOrigin(terminal);
+    setWorkflowStep('buy_selected');
+  };
+
+  // NEW: Handle sell terminal selection (Step 2b: Sell first workflow) 
+  const handleSellTerminalClick = (terminal) => {
+    console.log(`[AlternativeRoutes] Sell terminal selected: ${terminal.terminal}`);
+    setSelectedDestination(terminal);
+    setWorkflowStep('sell_selected');
+  };
+
+  // NEW: Handle second selection (complete route creation)
+  const handleSecondSelection = (terminal) => {
+    if (workflowStep === 'buy_selected') {
+      // User selected buy first, now selecting sell terminal
+      setSelectedDestination(terminal);
+      console.log(`[AlternativeRoutes] Route complete: Buy from ${selectedOrigin.terminal} → Sell to ${terminal.terminal}`);
+      createNewRoute(selectedOrigin, terminal);
+    } else if (workflowStep === 'sell_selected') {
+      // User selected sell first, now selecting buy terminal
+      setSelectedOrigin(terminal);
+      console.log(`[AlternativeRoutes] Route complete: Buy from ${terminal.terminal} → Sell to ${selectedDestination.terminal}`);
+      createNewRoute(terminal, selectedDestination);
+    }
+  };
+
+  // NEW: Back to overview functionality
+  const handleBackToOverview = () => {
+    console.log(`[AlternativeRoutes] Returning to overview from ${workflowStep}`);
+    setWorkflowStep('overview');
+    setSelectedOrigin(null);
+    setSelectedDestination(null);
+  };
+
+  // NEW: Create new route from selected origin and destination
+  const createNewRoute = (originTerminal, destinationTerminal) => {
     if (onRouteSelect && currentRoute) {
-      console.log(`[AlternativeRoutes] Creating new route from terminal: ${terminal.terminal}`);
+      console.log(`[AlternativeRoutes] Creating new route: ${originTerminal.terminal} → ${destinationTerminal.terminal}`);
       
-      // Determine the new route configuration based on terminal capabilities
-      let newOrigin = currentRoute.origin_name;
-      let newDestination = currentRoute.destination_name;
-      let newBuyPrice = currentRoute.buy_price;
-      let newSellPrice = currentRoute.sell_price;
-      let newBuyStock = currentRoute.buy_stock;
-      let newSellStock = currentRoute.sell_stock;
-      
-      // If terminal has buy capability, make it the new origin
-      if (terminal.buy_available && terminal.buy_price > 0) {
-        newOrigin = `${terminal.system} - ${terminal.terminal}`;
-        newBuyPrice = terminal.buy_price;
-        newBuyStock = terminal.stock;
-        console.log(`[AlternativeRoutes] New buy location: ${newOrigin} at ${newBuyPrice} aUEC`);
-      }
-      
-      // If terminal has sell capability, make it the new destination  
-      if (terminal.sell_available && terminal.sell_price > 0) {
-        newDestination = `${terminal.system} - ${terminal.terminal}`;
-        newSellPrice = terminal.sell_price;
-        newSellStock = terminal.stock;
-        console.log(`[AlternativeRoutes] New sell location: ${newDestination} at ${newSellPrice} aUEC`);
-      }
-      
-      // Calculate new profit and other metrics
-      const profitPerUnit = newSellPrice - newBuyPrice;
-      const estimatedCargo = Math.min(newBuyStock || 1000, 1000); // Max 1000 SCU
+      // Calculate new route metrics
+      const buyPrice = originTerminal.buy_price || 0;
+      const sellPrice = destinationTerminal.sell_price || 0;
+      const profitPerUnit = sellPrice - buyPrice;
+      const estimatedCargo = Math.min(originTerminal.stock || 1000, 1000); // Max 1000 SCU
       const newProfit = profitPerUnit * estimatedCargo;
-      const newInvestment = newBuyPrice * estimatedCargo;
-      const newROI = newBuyPrice > 0 ? (profitPerUnit / newBuyPrice) * 100 : 0;
+      const newInvestment = buyPrice * estimatedCargo;
+      const newROI = buyPrice > 0 ? (profitPerUnit / buyPrice) * 100 : 0;
       
       // Create comprehensive new route object
       const newRoute = {
         ...currentRoute, // Preserve existing route properties
-        id: `route_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`, // Inline ID generation
-        origin_name: newOrigin,
-        destination_name: newDestination,
-        buy_price: newBuyPrice,
-        sell_price: newSellPrice,
-        buy_stock: newBuyStock,
-        sell_stock: newSellStock,
+        id: `route_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        origin_name: `${originTerminal.system} - ${originTerminal.terminal}`,
+        destination_name: `${destinationTerminal.system} - ${destinationTerminal.terminal}`,
+        buy_price: buyPrice,
+        sell_price: sellPrice,
+        buy_stock: originTerminal.stock || 0,
+        sell_stock: destinationTerminal.stock || 0,
         profit: newProfit,
         investment: newInvestment,
         roi: newROI,
         price_roi: newROI,
-        selected_terminal: terminal.terminal,
-        route_code: `${terminal.terminal.slice(0,8).toUpperCase()}-${commodity.slice(0,8).toUpperCase()}-${Date.now().toString().slice(-4)}`,
+        route_code: `${originTerminal.terminal.slice(0,6).toUpperCase()}-${commodity.slice(0,6).toUpperCase()}-${destinationTerminal.terminal.slice(0,6).toUpperCase()}`,
         last_updated: new Date().toISOString(),
-        is_alternative_selection: true
+        is_alternative_selection: true,
+        workflow_type: workflowStep === 'buy_selected' ? 'buy_first' : 'sell_first'
       };
       
       console.log(`[AlternativeRoutes] Created new route:`, newRoute);
       onRouteSelect(newRoute);
-      setIsOpen(false); // Close dropdown after selection
+      setIsOpen(false); // Close dropdown after route creation
+      
+      // Reset workflow state
+      setWorkflowStep('overview');
+      setSelectedOrigin(null);
+      setSelectedDestination(null);
     } else {
       console.warn('[AlternativeRoutes] onRouteSelect callback not available');
+    }
+  };
+
+  // NEW: Get filtered terminals based on workflow step
+  const getFilteredTerminals = () => {
+    if (workflowStep === 'overview') {
+      // Step 1: Show ALL terminals
+      return terminals;
+    } else if (workflowStep === 'buy_selected') {
+      // Step 2a: Only show sell terminals (buy terminals fade away)
+      return terminals.filter(terminal => terminal.sell_price > 0);
+    } else if (workflowStep === 'sell_selected') {
+      // Step 2b: Only show buy terminals (sell terminals fade away)
+      return terminals.filter(terminal => terminal.buy_price > 0);
+    }
+    return terminals;
+  };
+
+  // NEW: Handle terminal click based on workflow step
+  const handleTerminalClick = (terminal) => {
+    if (workflowStep === 'overview') {
+      // Step 1: User can click either buy or sell price
+      // Determine which price they clicked based on availability
+      if (terminal.buy_price > 0 && terminal.sell_price > 0) {
+        // Both available - user needs to choose by clicking specific price column
+        // For now, prioritize buy-first workflow if both are available
+        handleBuyTerminalClick(terminal);
+      } else if (terminal.buy_price > 0) {
+        // Only buy available
+        handleBuyTerminalClick(terminal);
+      } else if (terminal.sell_price > 0) {
+        // Only sell available  
+        handleSellTerminalClick(terminal);
+      }
+    } else {
+      // Step 2: Complete the route
+      handleSecondSelection(terminal);
     }
   };
 
@@ -1375,52 +1441,78 @@ const AlternativeRoutesDropdown = ({ commodity, onRouteSelect, currentRoute }) =
     return `Updated: ${day}.${month}.${year} ${hours}:${minutes}h`;
   };
 
+  // NEW: Get workflow step title
+  const getWorkflowTitle = () => {
+    if (workflowStep === 'overview') {
+      return `📋 Alternative Routes (${commodity})`;
+    } else if (workflowStep === 'buy_selected') {
+      return `🛒 Kaufort gewählt: ${selectedOrigin?.terminal} → Verkaufsort wählen`;
+    } else if (workflowStep === 'sell_selected') {
+      return `💰 Verkaufsort gewählt: ${selectedDestination?.terminal} → Kaufort wählen`;
+    }
+    return `📋 Alternative Routes (${commodity})`;
+  };
+
+  const filteredTerminals = getFilteredTerminals();
+
   return (
     <div className="mt-4 border-t border-gray-600 pt-4">
       <button 
         onClick={handleToggle}
         className="w-full flex items-center justify-between text-left text-blue-400 hover:text-blue-300 transition-colors"
       >
-        <span className="font-semibold">📋 Alternative Routes ({commodity})</span>
+        <span className="font-semibold">{getWorkflowTitle()}</span>
         <span className={`transform transition-transform ${isOpen ? 'rotate-180' : ''}`}>▼</span>
       </button>
       
       {isOpen && (
         <div className="mt-3 bg-gray-800/50 rounded-lg p-3 max-h-96 overflow-y-auto">
+          {/* NEW: Back button for workflow navigation */}
+          {workflowStep !== 'overview' && (
+            <div className="mb-3">
+              <button 
+                onClick={handleBackToOverview}
+                className="text-yellow-400 hover:text-yellow-300 text-sm flex items-center transition-colors"
+              >
+                ← Zurück zur Gesamtübersicht
+              </button>
+            </div>
+          )}
+          
           {loading ? (
             <div className="text-center text-gray-400 py-4">
               <div className="animate-spin inline-block w-6 h-6 border-2 border-blue-400 border-t-transparent rounded-full mr-2"></div>
               Loading alternative routes...
             </div>
-          ) : terminals.length > 0 ? (
+          ) : filteredTerminals.length > 0 ? (
             <div className="overflow-x-auto">
               <table className="w-full text-xs">
                 <thead>
                   <tr className="border-b border-gray-600">
                     <th className="text-left text-gray-400 py-2 px-1">Terminal</th>
-                    <th className="text-right text-gray-400 py-2 px-1">Buy Price</th>
-                    <th className="text-right text-gray-400 py-2 px-1">Sell Price</th>
-                    <th className="text-right text-gray-400 py-2 px-1">Stock</th>
+                    <th className="text-right text-gray-400 py-2 px-1">Kaufpreis</th>
+                    <th className="text-right text-gray-400 py-2 px-1">Verkaufspreis</th>
+                    <th className="text-right text-gray-400 py-2 px-1">Lager</th>
                     <th className="text-center text-gray-400 py-2 px-1">System</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {terminals.map((terminal, idx) => (
+                  {filteredTerminals.map((terminal, idx) => (
                     <tr 
                       key={idx} 
                       className="border-b border-gray-700/50 hover:bg-gray-700/30 cursor-pointer transition-colors"
-                      onClick={() => handleAlternativeRouteClick(terminal)}
+                      onClick={() => handleTerminalClick(terminal)}
                     >
                       <td className="py-2 px-1">
                         <div className="text-white font-medium">{terminal.terminal}</div>
                       </td>
                       <td className="text-right py-2 px-1">
-                        <span className={terminal.buy_price > 0 ? 'text-red-400' : 'text-gray-500'}>
+                        <span className={terminal.buy_price > 0 ? 'text-red-400 font-semibold' : 'text-gray-500'}>
                           {formatPrice(terminal.buy_price)}
                         </span>
                       </td>
                       <td className="text-right py-2 px-1">
-                        <span className={terminal.sell_price > 0 ? 'text-green-400' : 'text-gray-500'}>
+                        <span className={terminal.sell_price > 0 ? 'text-green-400 font-semibold' : 'text-gray-500'}>
                           {formatPrice(terminal.sell_price)}
                         </span>
                       </td>
@@ -1439,12 +1531,23 @@ const AlternativeRoutesDropdown = ({ commodity, onRouteSelect, currentRoute }) =
                 </tbody>
               </table>
               <div className="mt-3 text-xs text-gray-400 text-center">
-                📊 Showing {terminals.length} terminals • {formatUpdateTimestamp(lastUpdated)}
+                📊 Showing {filteredTerminals.length} terminals • {formatUpdateTimestamp(lastUpdated)}
+                {workflowStep !== 'overview' && (
+                  <div className="mt-1 text-yellow-400">
+                    {workflowStep === 'buy_selected' ? 
+                      `Schritt 2: Verkaufsort für ${selectedOrigin?.terminal} wählen` : 
+                      `Schritt 2: Kaufort für ${selectedDestination?.terminal} wählen`
+                    }
+                  </div>
+                )}
               </div>
             </div>
           ) : (
             <div className="text-center text-gray-400 py-4">
-              No alternative routes found for {commodity}
+              {workflowStep === 'overview' ? 
+                `No alternative routes found for ${commodity}` :
+                `No ${workflowStep === 'buy_selected' ? 'sell' : 'buy'} terminals available`
+              }
             </div>
           )}
         </div>
