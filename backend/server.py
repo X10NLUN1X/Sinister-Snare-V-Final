@@ -140,9 +140,10 @@ class StarProfitClient:
                     "source": "web_parsed"
                 })
             
-            # If regex parsing doesn't work well, fall back to mock enhanced data
+            # If regex parsing doesn't work well, return empty - DO NOT generate fake data
             if len(commodities) < 50:
-                commodities = self._generate_enhanced_commodity_data()
+                logging.warning("Insufficient commodity data from web parsing - returning empty")
+                return []
             
             return commodities
             
