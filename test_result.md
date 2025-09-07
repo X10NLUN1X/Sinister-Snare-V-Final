@@ -483,10 +483,11 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Specific Bug Fixes Verification Complete"
-  stuck_tasks: []
+    - "Data Quality Fixes Verification"
+  stuck_tasks:
+    - "Data Quality Fixes Verification"
   test_all: false
-  test_priority: "specific_fixes_verified_production_ready"
+  test_priority: "critical_data_quality_issues"
 
 agent_communication:
     - agent: "main"
