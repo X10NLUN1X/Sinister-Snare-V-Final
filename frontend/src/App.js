@@ -1333,7 +1333,7 @@ const AlternativeRoutesDropdown = ({ commodity, onRouteSelect, currentRoute }) =
       // Create comprehensive new route object
       const newRoute = {
         ...currentRoute, // Preserve existing route properties
-        id: generateRouteId(), // Generate new unique ID
+        id: `route_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`, // Inline ID generation
         origin_name: newOrigin,
         destination_name: newDestination,
         buy_price: newBuyPrice,
