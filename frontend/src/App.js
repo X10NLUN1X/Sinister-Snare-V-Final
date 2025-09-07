@@ -1201,7 +1201,11 @@ const AlternativeRoutesDropdown = ({ commodity, onRouteSelect, currentRoute }) =
                 </thead>
                 <tbody>
                   {terminals.map((terminal, idx) => (
-                    <tr key={idx} className="border-b border-gray-700/50 hover:bg-gray-700/30">
+                    <tr 
+                      key={idx} 
+                      className="border-b border-gray-700/50 hover:bg-gray-700/30 cursor-pointer transition-colors"
+                      onClick={() => handleAlternativeRouteClick(terminal)}
+                    >
                       <td className="py-2 px-1">
                         <div className="text-white font-medium">{terminal.terminal}</div>
                       </td>
