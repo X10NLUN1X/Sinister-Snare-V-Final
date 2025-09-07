@@ -864,8 +864,13 @@ const TERMINAL_TO_SNAREPLAN_MAPPING = {
   // Landing Zones -> Planets (these are already compatible, but explicit mapping)
   "Area 18 IO Tower": "ArcCorp",
   "CBD Lorville": "Hurston",
-  "MTP New Babbage": "microTech", 
+  "MTP New Babbage": "Microtech", 
   "Orison Providence": "Crusader",
+  
+  // TDD (Trade & Development Division) Terminals -> Correct Planets
+  "TDD Area 18": "ArcCorp",      // Area 18 Landing Zone on ArcCorp
+  "TDD New Babbage": "Microtech", // New Babbage Landing Zone on microTech  
+  "TDD Orison": "Crusader",      // Orison Landing Zone on Crusader
   
   // Mining Stations -> Nearest Planet
   "ArcCorp 045": "ArcCorp",
