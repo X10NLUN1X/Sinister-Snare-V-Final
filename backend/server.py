@@ -1592,7 +1592,7 @@ async def manual_refresh(data_source: str = Query(default="web", description="Da
         refresh_logs.append({"timestamp": datetime.now(timezone.utc).isoformat(), "message": f"🔄 Starting manual refresh using {data_source.upper()} data source...", "type": "info"})
         
         # Fetch fresh commodity data using specified source
-        refresh_logs.append({"timestamp": datetime.now(timezone.utc).isoformat(), "message": f"📡 Connecting to Star Profit {data_source.upper()}...", "type": "info"})
+        refresh_logs.append({"timestamp": datetime.now(timezone.utc).isoformat(), "message": f"📡 Connection to UEXCorp...", "type": "info"})
         commodities_data = await star_profit_client.get_commodities(data_source)
         
         if not commodities_data.get('commodities'):
