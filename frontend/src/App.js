@@ -858,7 +858,7 @@ const TERMINAL_TO_SNAREPLAN_MAPPING = {
   // Orbital Stations -> Main Planets
   "Baijini Point": "ArcCorp",
   "Everus Harbor": "Hurston", 
-  "Port Tressler": "microTech",
+  "Port Tressler": "Microtech",
   "Seraphim": "Crusader",
   
   // Landing Zones -> Planets (these are already compatible, but explicit mapping)
