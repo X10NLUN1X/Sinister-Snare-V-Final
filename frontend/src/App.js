@@ -1113,13 +1113,22 @@ const AlternativeRoutesDropdown = ({ commodity }) => {
   const fetchAlternativeRoutes = async () => {
     if (!commodity || terminals.length > 0) return; // Don't fetch if already loaded
     
+    console.log(`[AlternativeRoutes] Fetching data for commodity: ${commodity}`); // Debug log
     setLoading(true);
     try {
-      const response = await fetch(`${import.meta.env.REACT_APP_BACKEND_URL || process.env.REACT_APP_BACKEND_URL}/api/commodity/terminals?commodity_name=${encodeURIComponent(commodity)}&data_source=web`);
+      const backendUrl = import.meta.env.REACT_APP_BACKEND_URL || process.env.REACT_APP_BACKEND_URL;
+      const url = `${backendUrl}/api/commodity/terminals?commodity_name=${encodeURIComponent(commodity)}&data_source=web`;
+      console.log(`[AlternativeRoutes] Request URL: ${url}`); // Debug log
+      
+      const response = await fetch(url);
+      console.log(`[AlternativeRoutes] Response status: ${response.status}`); // Debug log
+      
       const data = await response.json();
+      console.log(`[AlternativeRoutes] Response data:`, data); // Debug log
       
       if (data.status === 'success') {
         setTerminals(data.terminals || []);
+        console.log(`[AlternativeRoutes] Set ${data.terminals?.length || 0} terminals`); // Debug log
       } else {
         console.error('Failed to fetch alternative routes:', data.message);
         setTerminals([]);
