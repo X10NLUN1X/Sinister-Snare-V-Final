@@ -1572,9 +1572,15 @@ const AlternativeRoutesDropdown = ({ commodity, onRouteSelect, currentRoute }) =
   const filteredTerminals = getFilteredTerminals();
 
   return (
-    <div className="mt-4 border-t border-gray-600 pt-4">
+    <div 
+      className="mt-4 border-t border-gray-600 pt-4"
+      onClick={(e) => e.stopPropagation()} // CRITICAL FIX: Prevent route card click interference
+    >
       <button 
-        onClick={handleToggle}
+        onClick={(e) => {
+          e.stopPropagation(); // Stop event bubbling to route card
+          handleToggle();
+        }}
         className="w-full flex items-center justify-between text-left text-blue-400 hover:text-blue-300 transition-colors"
       >
         <span className="font-semibold">{getWorkflowTitle()}</span>
