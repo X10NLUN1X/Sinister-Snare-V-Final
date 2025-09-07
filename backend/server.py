@@ -454,7 +454,7 @@ class StarProfitClient:
             "z": random.uniform(coords["z_range"][0], coords["z_range"][1])
         }
 
-    async def get_trading_routes(self) -> Dict[str, Any]:
+    async def get_trading_routes_processed(self) -> Dict[str, Any]:
         """Process real commodity data into trading routes for piracy analysis"""
         try:
             commodities_data = await self.get_commodities()
