@@ -2032,39 +2032,109 @@ def calculate_average_route(routes: List[Dict]) -> Dict:
     return avg_route
 
 @api_router.get("/database/routes/{data_type}")
-async def get_routes_by_type(data_type: str = "current"):
-    """
-    Abrufen von Routen basierend auf Datentyp
-    data_type: 'current' für aktuelle Daten, 'averaged' für Durchschnittsdaten
-    """
+async def get_database_routes(data_type: str = "current"):
+    """Get routes from database - current data or averaged/median data"""
     try:
         if db is None:
-            return {"status": "error", "message": "Database not available"}
+            return {"status": "error", "message": "Database not available", "routes": []}
         
-        if data_type == "averaged":
-            # Durchschnittsdaten aus merged collection
-            routes = await db.route_analyses_merged.find({"is_averaged": True}).sort("piracy_rating", -1).to_list(100)
+        if data_type == "averaged" or data_type == "average":
+            # Calculate median values for averaged data view
+            routes = await db.route_analyses.find({}).to_list(1000)
+            
+            if not routes:
+                return {"status": "success", "routes": [], "data_type": "averaged", "message": "No historical data available"}
+            
+            # Group routes by commodity_name and calculate median values
+            commodity_groups = {}
+            for route in routes:
+                commodity = route.get('commodity_name', 'Unknown')
+                if commodity not in commodity_groups:
+                    commodity_groups[commodity] = []
+                commodity_groups[commodity].append(route)
+            
+            averaged_routes = []
+            for commodity_name, commodity_routes in commodity_groups.items():
+                if len(commodity_routes) < 2:  # Skip if only one data point
+                    continue
+                
+                # Calculate median values
+                profits = sorted([r.get('profit', 0) for r in commodity_routes])
+                rois = sorted([r.get('roi', 0) for r in commodity_routes])
+                piracy_ratings = sorted([r.get('piracy_rating', 0) for r in commodity_routes])
+                distances = sorted([r.get('distance', 0) for r in commodity_routes])
+                investments = sorted([r.get('investment', 0) for r in commodity_routes])
+                buy_prices = sorted([r.get('buy_price', 0) for r in commodity_routes if r.get('buy_price', 0) > 0])
+                sell_prices = sorted([r.get('sell_price', 0) for r in commodity_routes if r.get('sell_price', 0) > 0])
+                
+                def get_median(values):
+                    if not values:
+                        return 0
+                    n = len(values)
+                    if n % 2 == 0:
+                        return (values[n//2 - 1] + values[n//2]) / 2
+                    else:
+                        return values[n//2]
+                
+                # Use the most recent route as template and update with median values
+                template_route = commodity_routes[-1]  # Most recent
+                
+                averaged_route = {
+                    **template_route,
+                    'id': str(uuid.uuid4()),
+                    'route_code': f"MEDIAN-{commodity_name[:8].replace(' ', '').upper()}-AVG",
+                    'profit': get_median(profits),
+                    'roi': get_median(rois),
+                    'piracy_rating': get_median(piracy_ratings),
+                    'distance': get_median(distances),
+                    'investment': get_median(investments),
+                    'buy_price': get_median(buy_prices) if buy_prices else 0,
+                    'sell_price': get_median(sell_prices) if sell_prices else 0,
+                    'data_points': len(commodity_routes),
+                    'analysis_timestamp': datetime.now(timezone.utc).isoformat(),
+                    'data_type': 'median_averaged'
+                }
+                
+                averaged_routes.append(averaged_route)
+            
+            # Sort by profit descending
+            averaged_routes.sort(key=lambda x: x.get('profit', 0), reverse=True)
+            
+            return {
+                "status": "success", 
+                "routes": averaged_routes[:50],  # Limit to top 50
+                "data_type": "averaged",
+                "total_commodities": len(commodity_groups),
+                "message": f"Showing median values from {len(routes)} historical data points"
+            }
+        
         else:
-            # Aktuelle Daten aus original collection
-            routes = await db.route_analyses.find({}).sort("analysis_timestamp", -1).limit(100).to_list(100)
-        
-        # ObjectId fields entfernen für JSON serialization
-        clean_routes = []
-        for route in routes:
-            if '_id' in route:
-                del route['_id']
-            clean_routes.append(route)
-        
-        return {
-            "status": "success",
-            "data_type": data_type,
-            "routes": clean_routes,
-            "count": len(clean_routes)
-        }
-        
+            # Return current/latest data (one route per commodity)
+            pipeline = [
+                {"$sort": {"stored_at": -1}},  # Sort by newest first
+                {
+                    "$group": {
+                        "_id": "$commodity_name",  # Group by commodity
+                        "latest_route": {"$first": "$$ROOT"}  # Take the most recent route
+                    }
+                },
+                {"$replaceRoot": {"newRoot": "$latest_route"}},  # Replace root with the route data
+                {"$sort": {"profit": -1}},  # Sort by profit descending
+                {"$limit": 50}  # Limit to top 50
+            ]
+            
+            routes = await db.route_analyses.aggregate(pipeline).to_list(50)
+            
+            return {
+                "status": "success", 
+                "routes": routes,
+                "data_type": "current",
+                "message": f"Showing latest data for {len(routes)} commodities"
+            }
+            
     except Exception as e:
-        logging.error(f"Error getting routes by type: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        logging.error(f"Error fetching database routes: {e}")
+        return {"status": "error", "message": str(e), "routes": []}
 
 @api_router.get("/status")
 async def get_api_status():
