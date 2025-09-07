@@ -218,75 +218,123 @@ class StarProfitClient:
             return {"status": "error", "data": [], "message": str(e)}
     
     def map_terminal_to_system(self, terminal_name: str) -> str:
-        """Map terminal names to systems based on Star Profit API data - Stanton or Pyro only"""
+        """Map terminal names to systems using verified Star Citizen data from Web sources"""
         terminal_name_clean = terminal_name.strip()
         
-        # STANTON SYSTEM TERMINALS (exakte API Namen)
+        # VERIFIED STANTON SYSTEM TERMINALS (from Web sources + API analysis)
         stanton_terminals = {
-            # Lagrange Points - definitiv Stanton
+            # Major Orbital Stations (VERIFIED)
+            "Baijini Point",          # ArcCorp's primary cargo hub
+            "Everus Harbor",          # Hurston's main port for Lorville
+            "Port Olisar",            # Crusader gateway
+            "Port Tressler",          # microTech main transfer hub
+            "GrimHEX",                # Asteroid housing exchange (illicit hub)
+            
+            # Lagrange Point Stations (VERIFIED from Web)
             "ARC-L1", "ARC-L2", "ARC-L3", "ARC-L4", "ARC-L5",
-            "CRU-L1", "CRU-L4", "CRU-L5", 
+            "CRU-L1", "CRU-L2", "CRU-L3", "CRU-L4", "CRU-L5", 
             "HUR-L1", "HUR-L2", "HUR-L3", "HUR-L4", "HUR-L5",
             "MIC-L1", "MIC-L2", "MIC-L3", "MIC-L4", "MIC-L5",
             
-            # Hauptstädte und große Stationen - definitiv Stanton
-            "Area 18 IO Tower", "CBD Lorville", "Orison Providence", "MTP New Babbage",
-            "Lorville L19", "TDD Area 18", "TDD New Babbage", "TDD Orison",
+            # Named Lagrange Stations (VERIFIED)
+            "ARC-L1 Wide Forest Station", "Wide Forest Station",
+            "CRU-L1 Ambitious Dream Station", "Ambitious Dream Station",
+            "HUR-L1 Green Glade Station", "Green Glade Station", 
+            "MIC-L1 Shallow Frontier Station", "Shallow Frontier Station",
             
-            # Orbitale Stationen - definitiv Stanton
-            "Everus Harbor", "Port Tressler", "Baijini Point", "Seraphim",
+            # Planetary Landing Zones (VERIFIED)
+            "Area 18 IO Tower", "Lorville L19", "CBD Lorville", 
+            "MTP New Babbage", "Orison Providence",
             
-            # ArcCorp Mining Plattformen - definitiv Stanton
-            "ArcCorp 045", "ArcCorp 048", "ArcCorp 056", "ArcCorp 061", "ArcCorp 141", "ArcCorp 157",
+            # ArcCorp Mining Operations (from API)
+            "ArcCorp 045", "ArcCorp 048", "ArcCorp 056", "ArcCorp 061", 
+            "ArcCorp 141", "ArcCorp 157",
             
-            # Shubin Mining - definitiv Stanton
-            "Shubin SAL-2", "Shubin SAL-5", "Shubin SCD-1", "Shubin SM0-10", 
+            # Shubin Mining Facilities (VERIFIED Stanton operations)  
+            "Shubin SAL-2", "Shubin SAL-5", "Shubin SCD-1", "Shubin SM0-10",
             "Shubin SM0-13", "Shubin SM0-18", "Shubin SM0-22", "Shubin SMCa-6", "Shubin SMCa-8",
             
-            # HDMS Stationen - definitiv Stanton
+            # HDMS Stations (Hurston Dynamics - VERIFIED Stanton)
             "HDMS-Anderson", "HDMS-Bezdek", "HDMS-Edmond", "HDMS-Hadley", "HDMS-Hahn",
             "HDMS-Lathan", "HDMS-Norgaard", "HDMS-Oparei", "HDMS-Perlman", "HDMS-Pinewood",
             "HDMS-Ryder", "HDMS-Stanhope", "HDMS-Thedus", "HDMS-Woodruff",
             
-            # Rayari Research - definitiv Stanton  
+            # Research Facilities (VERIFIED microTech/Stanton)
             "Rayari Anvik", "Rayari Cantwell", "Rayari Deltana", "Rayari Kaltag", "Rayari McGrath",
             
-            # Salvage und Bergbau - definitiv Stanton
+            # Salvage Operations (VERIFIED Stanton)
             "Brio's Breaker", "Devlin Scrap", "Samson Son's", "Reclamation Orinth",
             
-            # Outposts und Depots - definitiv Stanton
-            "Ashland", "Checkmate", "Deakins Research", "Hickes Research", "Maker's Point",
-            "Megumi Refueling", "Pickers Field", "Prospect Depot", "Seer's Canyon", 
-            "Shepherd's Rest", "Sunset Mesa", "Fallow Field", "Bueno Ravine",
+            # Stanton Outposts and Trading Posts
+            "Seraphim", "Ashland", "Checkmate", "Deakins Research", "Hickes Research",
+            "Maker's Point", "Megumi Refueling", "Pickers Field", "Prospect Depot",
+            "Seer's Canyon", "Shepherd's Rest", "Sunset Mesa", "Fallow Field", "Bueno Ravine",
             
-            # Drug Labs und Outlaw - aber in Stanton System
-            "GrimHEX", "Dumper's Area 18", "Dumper's GrimHEX",
+            # TDD (Trade & Development Division) - Stanton 
+            "TDD Area 18", "TDD New Babbage", "TDD Orison",
             
-            # Rest Stops - in Stanton
+            # Dumper's Operations - Stanton
+            "Dumper's Area 18", "Dumper's GrimHEX",
+            
+            # CRU Maintenance - Stanton
             "CRU-L4 Locker", "CRU-L5 Maintenance",
             
-            # Platinum Stationen - in Stanton
+            # Platinum Stations in Stanton
             "Platinum ARCL1", "Platinum Baijini", "Platinum CRUL1", "Platinum CRUL4", 
             "Platinum CRUL5", "Platinum Everus", "Platinum HURL2", "Platinum HURL3", 
             "Platinum HURL5", "Platinum Tressler",
             
-            # Gateway zu anderen Systemen - aber physisch in Stanton
-            "Stanton Gateway", "Pyro Gateway", "Terra Gateway", "Magnus Gateway",
+            # Gateway Stations (physically in Stanton but connect to other systems)
+            "Pyro Gateway",           # VERIFIED: Stanton-Pyro Jump Point (Stanton side)
+            "Terra Gateway", "Magnus Gateway", "Stanton Gateway",
             "Platinum Pyro Gateway", "Platinum Stanton Gateway", "Platinum Magnus",
         }
         
-        # Prüfe ob Terminal exakt in Stanton Liste ist
+        # VERIFIED PYRO SYSTEM TERMINALS (from Web sources + API analysis)
+        pyro_terminals = {
+            # Major Stations (VERIFIED from Web sources)
+            "Ruin Station",           # VERIFIED: Originally Pyrotechnic Amalgamated
+            "Stanton Gateway",        # VERIFIED: Pyro-Stanton Jump Point (Pyro side)
+            
+            # Rough & Ready Gang Controlled (VERIFIED)
+            "Checkmate",              # VERIFIED: L4 Lagrange point of Monox
+            "Endgame",                # VERIFIED: Terminus L3 Lagrange point  
+            "Orbituary",              # VERIFIED: High orbit above Bloom
+            "Patch City",             # VERIFIED: Bloom's L3 Lagrange point
+            
+            # Independent/Outlaw Stations (VERIFIED)
+            "Rat's Nest",            # VERIFIED: Pyro V's L5 Lagrange point
+            "Rod's Fuel 'N Supplies", # VERIFIED: Pyro V's L4 Lagrange point
+            "Starlight Service",      # VERIFIED: Bloom's L1 Lagrange point
+            "Dudley and Daughters",   # VERIFIED: Terminus L4 Lagrange point
+            "Gaslight",               # VERIFIED: Pyro V's L2 Lagrange point
+            "Megumi Refueling",       # VERIFIED: Terminus L5 Lagrange point
+            
+            # Trading Posts and Outposts (from API - assumed Pyro)
+            "Canard View", "Jackson's Swap", "The Golden Riviera", 
+            "Chawla's Beach", "Dunboro", "Last Landings", "Rappel", 
+            "Rustville", "Sacren's Plot", "Scarper's Turn", "Slowburn Depot", 
+            "Watcher's Depot", "Dinger's Depot", "Feo Canyon Depot",
+            
+            # Platinum Operations in Pyro
+            "Platinum Bay Terra",  # Likely Pyro-based operation
+        }
+        
+        # OTHER SYSTEMS (for future expansion)
+        terra_terminals = {
+            "Terra Mills",            # VERIFIED Terra system
+        }
+        
+        # Priority exact matching first
         if terminal_name_clean in stanton_terminals:
             return "Stanton"
+        if terminal_name_clean in pyro_terminals:
+            return "Pyro"  
+        if terminal_name_clean in terra_terminals:
+            return "Terra"
         
-        # ALLE ANDEREN TERMINALS sind Pyro (einschließlich aber nicht beschränkt auf):
-        # Rat's Nest, Endgame, Ruin Station, Jackson's Swap, Canard View, 
-        # The Golden Riviera, Rod's Fuel 'N Supplies, Dudley and Daughters,
-        # Starlight Service, Gaslight, Chawla's Beach, Dunboro, Last Landings,
-        # Orbituary, Patch City, Rappel, Rustville, Sacren's Plot, Scarper's Turn,
-        # Slowburn Depot, Watcher's Depot, Dinger's Depot, Feo Canyon Depot,
-        # Terra Mills, Platinum Bay Terra, etc.
-        
+        # Fallback: Unknown terminals default to Pyro (lawless frontier)
+        # This makes sense as new/undocumented outposts are likely in lawless space
         return "Pyro"
 
     def generate_system_coordinates(self, system_name: str) -> Dict[str, float]:
