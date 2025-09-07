@@ -150,109 +150,28 @@ class StarProfitClient:
             logging.error(f"Web parsing error: {e}")
             return self._generate_enhanced_commodity_data()
     
-    def _generate_enhanced_commodity_data(self) -> List[Dict[str, Any]]:
-        """Generate comprehensive commodity data with 106+ commodities across 128+ terminals"""
-        commodities = []
-        
-        # Comprehensive Star Citizen commodity list
-        commodity_data = [
-            # Raw Materials
-            {"name": "Altruciatoxin", "category": "Medical", "base_price": 27.50, "volatility": 0.15},
-            {"name": "Astatine", "category": "Processed Materials", "base_price": 7.90, "volatility": 0.12},
-            {"name": "Borase", "category": "Metals", "base_price": 2.45, "volatility": 0.08},
-            {"name": "Compboard", "category": "Construction Materials", "base_price": 1.55, "volatility": 0.06},
-            {"name": "Corundum", "category": "Minerals", "base_price": 3.85, "volatility": 0.10},
-            {"name": "Diamond", "category": "Gems", "base_price": 6.25, "volatility": 0.18},
-            {"name": "Dolivine", "category": "Minerals", "base_price": 1.95, "volatility": 0.05},
-            {"name": "Fluorine", "category": "Gases", "base_price": 2.75, "volatility": 0.07},
-            {"name": "Gold", "category": "Precious Metals", "base_price": 6.04, "volatility": 0.14},
-            {"name": "Hephaestanite", "category": "Rare Minerals", "base_price": 3.40, "volatility": 0.11},
-            
-            # Agricultural Products
-            {"name": "Agricium", "category": "Agricultural", "base_price": 24.50, "volatility": 0.13},
-            {"name": "Maze", "category": "Food", "base_price": 1.20, "volatility": 0.04},
-            {"name": "Processed Food", "category": "Food", "base_price": 1.45, "volatility": 0.05},
-            {"name": "Stims", "category": "Medical", "base_price": 3.85, "volatility": 0.09},
-            {"name": "Medical Supplies", "category": "Medical", "base_price": 19.50, "volatility": 0.16},
-            
-            # Industrial Products
-            {"name": "Scrap", "category": "Salvage", "base_price": 1.80, "volatility": 0.06},
-            {"name": "Titanium", "category": "Metals", "base_price": 8.25, "volatility": 0.11},
-            {"name": "Tungsten", "category": "Metals", "base_price": 3.70, "volatility": 0.08},
-            {"name": "Aluminum", "category": "Metals", "base_price": 1.22, "volatility": 0.04},
-            {"name": "Beryl", "category": "Minerals", "base_price": 5.40, "volatility": 0.12},
-            
-            # Rare and Exotic Materials
-            {"name": "Quantanium", "category": "Rare Minerals", "base_price": 88.50, "volatility": 0.25},
-            {"name": "Laranite", "category": "Rare Minerals", "base_price": 28.75, "volatility": 0.19},
-            {"name": "Bexalite", "category": "Rare Minerals", "base_price": 35.20, "volatility": 0.21},
-            {"name": "Taranite", "category": "Rare Minerals", "base_price": 42.80, "volatility": 0.23},
-            {"name": "WiDoW", "category": "Narcotics", "base_price": 115.00, "volatility": 0.30},
-        ]
-        
-        # Expand to 106+ commodities by adding variations and additional items
-        base_commodities = len(commodity_data)
-        for i in range(106 - base_commodities):
-            variant_commodity = {
-                "name": f"Refined {commodity_data[i % base_commodities]['name']} Grade {i//base_commodities + 1}",
-                "category": f"Refined {commodity_data[i % base_commodities]['category']}",
-                "base_price": commodity_data[i % base_commodities]['base_price'] * (1.2 + i * 0.1),
-                "volatility": commodity_data[i % base_commodities]['volatility'] * 1.1
+    def _generate_fallback_commodity_data(self) -> List[Dict[str, Any]]:
+        """Generate minimal fallback data only when API is completely unavailable"""
+        # Only return minimal fallback data - DO NOT USE fake names or grades
+        logging.warning("Using minimal fallback data - API unavailable")
+        return [
+            {
+                "commodity_name": "Medical Supplies",
+                "terminal_name": "Port Olisar", 
+                "buy_price": 19.50,
+                "sell_price": 23.40,
+                "stock": 500,
+                "source": "minimal_fallback"
+            },
+            {
+                "commodity_name": "Food Rations", 
+                "terminal_name": "Lorville",
+                "buy_price": 1.45,
+                "sell_price": 1.75,
+                "stock": 1000,
+                "source": "minimal_fallback"
             }
-            commodity_data.append(variant_commodity)
-        
-        # 128+ Terminals across Star Citizen systems
-        terminals = [
-            # Stanton System
-            "Area18", "Lorville", "New Babbage", "Orison",
-            "Port Olisar", "Everus Harbor", "Baijini Point", "Port Tressler",
-            "ARC-L1", "ARC-L2", "ARC-L3", "ARC-L4", "ARC-L5",
-            "CRU-L1", "CRU-L2", "CRU-L3", "CRU-L4", "CRU-L5",
-            "HUR-L1", "HUR-L2", "HUR-L3", "HUR-L4", "HUR-L5", 
-            "MIC-L1", "MIC-L2", "MIC-L3", "MIC-L4", "MIC-L5",
-            
-            # Pyro System
-            "Rat's Nest", "Ruin Station", "Pyro Gateway",
-            "Spider", "Checkmate Co-op", "Shady Glen",
-            
-            # Additional Outposts and Mining Stations
-            "Brio's Breaker", "Shubin Mining SM0-10", "Shubin Mining SM0-13",
-            "Shubin Mining SM0-18", "Shubin Mining SM0-22",
-            "Rayari Anvik Research Outpost", "Rayari Cantwell Research Outpost",
-            "Rayari McGrath Research Outpost", "Rayari Kaltag Research Outpost",
-            "Covalex Shipping Hub", "Kareah Security Station",
-            
-            # More terminals to reach 128+
         ]
-        
-        # Extend terminals list to 128+
-        base_terminals = len(terminals)
-        for i in range(128 - base_terminals):
-            terminals.append(f"Outpost {chr(65 + i//26)}{i%26 + 1}")
-        
-        # Generate commodity entries
-        for commodity in commodity_data:
-            import random
-            terminal = random.choice(terminals)
-            
-            # Generate realistic price variations
-            base_buy = commodity["base_price"]
-            volatility = commodity["volatility"]
-            buy_price = base_buy * (1 + random.uniform(-volatility, volatility))
-            sell_price = buy_price * (1.1 + random.uniform(0.05, 0.4))  # 5-40% profit margin
-            
-            commodities.append({
-                "commodity_name": commodity["name"],
-                "category": commodity["category"],
-                "terminal": terminal,
-                "buy_price": round(buy_price, 2),
-                "sell_price": round(sell_price, 2),
-                "available": True,
-                "stock": random.randint(100, 10000),
-                "source": "enhanced_data"
-            })
-        
-        return commodities
     
     async def get_trading_routes(self, source_type: str = "api") -> Dict[str, Any]:
         """
