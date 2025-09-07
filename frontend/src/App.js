@@ -2673,11 +2673,18 @@ function App() {
         // Use real backend but with simplified error handling
         try {
           const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
+          
+          // Create manual timeout controller
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+          
           const response = await fetch(`${backendUrl}/api/routes/analyze?limit=5&min_score=10&include_coordinates=true&data_source=web`, {
             method: 'GET',
             headers: { 'Content-Type': 'application/json' },
-            signal: AbortSignal.timeout(5000) // 5 second timeout
+            signal: controller.signal
           });
+          
+          clearTimeout(timeoutId); // Clear timeout on successful response
           
           if (response.ok) {
             const data = await response.json();
