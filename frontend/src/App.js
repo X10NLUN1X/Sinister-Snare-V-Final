@@ -3067,17 +3067,10 @@ function App() {
             <div className="flex justify-between items-center mb-6">
               <div>
                 <h2 className="text-2xl font-bold text-white">🛣️ Trade Route Analysis</h2>
-                <p className="text-gray-400 text-sm mt-1">
-                  Realistischer Piracy Score V2.0 - Basierend auf echtem Spieler-Verhalten
-                </p>
-                <div className="flex items-center space-x-4 mt-2 text-xs">
-                  <span className="text-green-400">🏠 System-intern: TOP-Ziele (95% Traffic)</span>
-                  <span className="text-gray-400">🌌 Inter-System: Seltene Ziele (5% Traffic)</span>
-                </div>
               </div>
               <div className="text-right">
                 <p className="text-white font-semibold text-lg">{routes.length} Routen verfügbar</p>
-                <p className="text-gray-400 text-sm">Sortiert nach Realismus</p>
+                <p className="text-gray-400 text-sm">Sortiert nach Piracy Score</p>
                 <div className="flex space-x-2 mt-2">
                   <button 
                     onClick={handleSnareNow}
