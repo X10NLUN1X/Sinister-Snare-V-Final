@@ -956,9 +956,9 @@ const TERMINAL_TO_SNAREPLAN_MAPPING = {
   "Patch City": "PYR3 L3-A",                 // Bloom's L3 alternative point
   
   // Independent/Outlaw Stations mit korrekten Lagrange Points
-  "Endgame": "PYR5 L3",                      // Terminus L3 Lagrange point
-  "Rod's Fuel 'N Supplies": "PYR5 L4",       // Pyro V's L4 Lagrange point
-  "Gaslight": "PYR5 L2",                     // Pyro V's L2 Lagrange point
+  "Endgame": "Endgame",                      // Terminus L3 Lagrange point
+  "Rod's Fuel 'N Supplies": "Rods Fuel N Supplies",       // Pyro V's L4 Lagrange point
+  "Gaslight": "Gaslight",                     // Pyro V's L2 Lagrange point
   
   // Planeten-Mapping (Offizielle Namen)
   "Pyro I": "Pyro I",
