@@ -2910,12 +2910,12 @@ function App() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
           <StatusCard 
             title="Data Source" 
-            value={apiStatus?.primary_data_source === 'real' ? 'Live Data' : 'Mock Data'} 
+            value={apiStatus?.primary_data_source === 'real' ? 'Live Data' : 'Loading...'} 
             status={apiStatus?.primary_data_source === 'real' ? 'good' : 'warning'} 
             icon="🌐" 
             subtitle={apiStatus?.primary_data_source === 'real' ? 
               `${apiStatus?.data_sources?.star_profit_api?.records_available || 0} live records` : 
-              "Using simulation data"
+              'Fetching live trading data...'
             }
           />
           <StatusCard 
