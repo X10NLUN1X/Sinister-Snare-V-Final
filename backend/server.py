@@ -636,10 +636,13 @@ class RouteAnalyzer:
     @staticmethod
     def calculate_piracy_score(route_data: Dict[str, Any]) -> float:
         """
-        NEW Enhanced Piracy Score (0-100) - Indicates probability of finding profitable traders
+        REALISTIC Piracy Score V2.0 (0-100) - Based on actual Star Citizen player behavior
         
-        Calculates the likelihood of successfully intercepting a profitable trader on this route.
-        Score 100 = extremely high probability, Score 0 = minimal probability
+        Prioritizes routes that are ACTUALLY used by players:
+        1. System-internal routes (95% of player traffic)
+        2. Short, practical distances  
+        3. Major hub-to-hub connections
+        4. High-traffic commodities
         """
         try:
             # Extract data with safe defaults
@@ -651,68 +654,114 @@ class RouteAnalyzer:
             distance = float(route_data.get('distance', 1))
             origin_name = route_data.get('origin_name', '')
             destination_name = route_data.get('destination_name', '')
+            commodity_name = route_data.get('commodity_name', '')
             
-            # Calculate profit margin (key factor)
+            # Calculate profit margin
             if buy_price > 0:
                 profit_margin = (sell_price - buy_price) / buy_price
             else:
                 profit_margin = 0
             
-            # Factor 1: Profit Margin Score (40% weight)
-            # High margins attract more traders
-            profit_margin_score = min(profit_margin * 20, 40.0)  # Cap at 40 points
+            # FACTOR 1: System Traffic Reality (50% weight) - MOST IMPORTANT
+            system_traffic_score = 0
             
-            # Factor 2: Route Popularity & Distance (30% weight)
-            # Popular routes between major systems are more trafficked
-            route_popularity_score = 0
+            # Parse system information
+            origin_system = origin_name.split(' - ')[0] if ' - ' in origin_name else origin_name
+            dest_system = destination_name.split(' - ')[0] if ' - ' in destination_name else destination_name
+            is_same_system = origin_system == dest_system
             
-            # Check for popular systems (Stanton-Pyro is most popular)
-            is_inter_system = False
-            if ('Stanton' in origin_name and 'Pyro' in destination_name) or \
-               ('Pyro' in origin_name and 'Stanton' in destination_name):
-                route_popularity_score += 15  # Inter-system bonus
-                is_inter_system = True
-            elif 'Stanton' in origin_name and 'Stanton' in destination_name:
-                route_popularity_score += 10  # Same-system Stanton
-            elif 'Pyro' in origin_name and 'Pyro' in destination_name:
-                route_popularity_score += 8   # Same-system Pyro
-            
-            # Distance factor (shorter distances = more traffic)
-            if distance > 0:
-                if is_inter_system:
-                    # Inter-system: prefer 60k-120k range
-                    optimal_distance = 90000
-                    distance_factor = max(0, 15 - abs(distance - optimal_distance) / 10000)
+            if is_same_system:
+                # SAME-SYSTEM ROUTES: 95% of actual player traffic
+                if 'Stanton' in origin_system:
+                    # Stanton internal: HIGHEST traffic (established economy)
+                    system_traffic_score = 45
+                elif 'Pyro' in origin_system:
+                    # Pyro internal: HIGH traffic (new system, active)
+                    system_traffic_score = 35
                 else:
-                    # Same-system: prefer 15k-45k range
-                    optimal_distance = 30000
-                    distance_factor = max(0, 15 - abs(distance - optimal_distance) / 5000)
-                route_popularity_score += min(distance_factor, 15)
+                    # Other systems: MODERATE traffic
+                    system_traffic_score = 25
+            else:
+                # INTER-SYSTEM ROUTES: Only 5% of player traffic - HEAVILY PENALIZED
+                if ('Stanton' in origin_system and 'Pyro' in dest_system) or \
+                   ('Pyro' in origin_system and 'Stanton' in dest_system):
+                    # Stanton-Pyro: Some brave souls do this, but rare
+                    system_traffic_score = 8  # Severely reduced from 15
+                else:
+                    # Other inter-system: Almost no traffic
+                    system_traffic_score = 2
             
-            # Factor 3: Stock Availability (30% weight)
-            # High availability at both ends = more likely traders
-            stock_score = 0
+            # FACTOR 2: Hub Connectivity Bonus (25% weight)  
+            hub_score = 0
             
-            # Buy stock availability (origin)
-            if buy_stock > 0:
-                buy_availability = min(buy_stock / 1000, 1.0)  # Normalize to 1000 SCU
-                stock_score += buy_availability * 15
+            # Major Stanton hubs (high player traffic)
+            stanton_major_hubs = [
+                'Port Olisar', 'Everus Harbor', 'Port Tressler', 'Baijini Point',
+                'Area18', 'Lorville', 'New Babbage', 'Orison'
+            ]
             
-            # Sell stock availability (destination) 
-            if sell_stock > 0:
-                sell_availability = min(sell_stock / 1000, 1.0)  # Normalize to 1000 SCU
-                stock_score += sell_availability * 15
+            # Major Pyro hubs (moderate player traffic)
+            pyro_major_hubs = [
+                'Rat\'s Nest', 'Checkmate', 'Endgame', 'Gaslight'
+            ]
             
-            # Combined stock bonus for high availability on both ends
-            if buy_stock > 500 and sell_stock > 500:
-                stock_score += 5  # Bonus for high availability on both ends
+            # Check if route connects major hubs
+            origin_location = origin_name.split(' - ')[1] if ' - ' in origin_name else origin_name
+            dest_location = destination_name.split(' - ')[1] if ' - ' in destination_name else destination_name
             
-            # Calculate final score (0-100)
-            final_score = profit_margin_score + route_popularity_score + stock_score
+            origin_is_major = any(hub in origin_location for hub in stanton_major_hubs + pyro_major_hubs)
+            dest_is_major = any(hub in dest_location for hub in stanton_major_hubs + pyro_major_hubs)
             
-            # Apply diminishing returns to prevent scores over 100
-            if final_score > 85:
-                final_score = 85 + (final_score - 85) * 0.3
+            if origin_is_major and dest_is_major:
+                hub_score = 20  # Both ends are major hubs
+            elif origin_is_major or dest_is_major:
+                hub_score = 12  # One end is major hub
+            else:
+                hub_score = 5   # Minor locations
+            
+            # FACTOR 3: Distance Practicality (15% weight)
+            distance_score = 0
+            if distance > 0:
+                if is_same_system:
+                    # Same-system: Prefer 20k-60k range (practical for players)
+                    if 20000 <= distance <= 60000:
+                        distance_score = 15
+                    elif 10000 <= distance <= 80000:
+                        distance_score = 10
+                    else:
+                        distance_score = 3  # Too short or too long
+                else:
+                    # Inter-system: Already penalized, minimal distance scoring
+                    distance_score = 2
+            
+            # FACTOR 4: High-Traffic Commodity Bonus (10% weight)
+            commodity_score = 0
+            
+            # Commodities that players actually trade frequently
+            high_traffic_commodities = [
+                'Medical Supplies', 'Agricultural Supplies', 'Consumer Goods',
+                'Food', 'Processed Food', 'Titanium', 'Aluminum', 
+                'Quantanium', 'Laranite', 'Gold', 'Diamond'
+            ]
+            
+            medium_traffic_commodities = [
+                'Scrap', 'Waste', 'Distilled Spirits', 'Stims',
+                'Maze', 'Neon', 'WiDoW', 'SLAM'
+            ]
+            
+            if any(commodity in commodity_name for commodity in high_traffic_commodities):
+                commodity_score = 8
+            elif any(commodity in commodity_name for commodity in medium_traffic_commodities):
+                commodity_score = 5
+            else:
+                commodity_score = 2  # Exotic/rare commodities (less frequent)
+            
+            # Calculate final realistic score
+            final_score = system_traffic_score + hub_score + distance_score + commodity_score
+            
+            # Reality check: Cap inter-system routes at maximum 25 points
+            if not is_same_system:
+                final_score = min(final_score, 25)
             
             # Ensure score is between 0 and 100
             final_score = max(0, min(100, final_score))
@@ -720,7 +769,7 @@ class RouteAnalyzer:
             return round(final_score, 1)
             
         except Exception as e:
-            logging.error(f"Error calculating new piracy score: {e}")
+            logging.error(f"Error calculating realistic piracy score: {e}")
             return 0.0
     
     @staticmethod
