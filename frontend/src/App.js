@@ -939,7 +939,7 @@ const TERMINAL_TO_SNAREPLAN_MAPPING = {
   
 // === PYRO SYSTEM ===
   // Major Stations -> Correct Pyro Planets (Snareplan Compatible)
-  "Ruin Station": "PYAM-FARSTAT-1-3",        // Vermutlich die alte Pyrotechnic Station
+  "Ruin Station": "Ruin Station",        // Vermutlich die alte Pyrotechnic Station
   "Stanton Gateway": "Stanton Gateway",       // Pyro-Stanton Jump Point (Pyro side)
   
   // Korrekte Snareplan-Mappings
@@ -952,8 +952,8 @@ const TERMINAL_TO_SNAREPLAN_MAPPING = {
   "Dudley and Daughters": "Dudley and Daughters",  // Bereits korrekt
   
   // Rough & Ready Gang Controlled -> Pyro III (Bloom/Monox)
-  "Orbituary": "PYR3 L3",                    // High orbit above Bloom (Pyro III)
-  "Patch City": "PYR3 L3-A",                 // Bloom's L3 alternative point
+  "Orbituary": "Orbituary",                    // High orbit above Bloom (Pyro III)
+  "Patch City": "Patch City",                 // Bloom's L3 alternative point
   
   // Independent/Outlaw Stations mit korrekten Lagrange Points
   "Endgame": "Endgame",                      // Terminus L3 Lagrange point
