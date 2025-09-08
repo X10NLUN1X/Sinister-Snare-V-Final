@@ -2976,8 +2976,16 @@ function App() {
           ))}
         </div>
         
-        {/* Auto-refresh toggle */}
-        <div className="flex justify-end mt-2">
+        <div className="flex justify-between items-center mt-2">
+          {/* Snare Nuke Button */}
+          <button 
+            onClick={handleSnareNow}
+            className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-bold text-sm flex items-center transition-all duration-300 hover:scale-105 shadow-lg"
+          >
+            💀 SNARE NUKE
+          </button>
+          
+          {/* Auto-refresh toggle */}
           <label className="flex items-center space-x-2 text-sm text-gray-400">
             <input 
               type="checkbox" 
