@@ -335,7 +335,7 @@ class StarProfitClient:
             
             # Platinum Stations in Stanton
             "Platinum ARCL1", "Platinum Baijini", "Platinum CRUL1", "Platinum CRUL4", 
-            "Platinum CRUL5", "Platinum Everus", "Platinum HURL2", "Platinum HURL3", 
+            "Platinum CRUL5", "Platinum Everus", "Platinum HURL2", "Platinum HURL3",  # Platinum Everus is Hurston-based 
             "Platinum HURL5", "Platinum Tressler",
             
             # Gateway Stations (physically in Stanton but connect to other systems)
