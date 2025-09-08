@@ -2403,7 +2403,7 @@ function App() {
   const [trends, setTrends] = useState([]);
   const [loading, setLoading] = useState(true);
   const [apiStatus, setApiStatus] = useState(null);
-  const [activeTab, setActiveTab] = useState('routes'); // CHANGED: Start on routes tab instead of dashboard
+  const [activeTab, setActiveTab] = useState('dashboard'); // FIXED: Start on dashboard instead of routes
   const [trackingStatus, setTrackingStatus] = useState(null);
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [exportLoading, setExportLoading] = useState(false);
