@@ -2147,7 +2147,7 @@ const CommoditySnareModal = ({ isOpen, onClose, onSnare, onRouteSelect, onAltern
                     };
                     
                     return (
-                      <div key={routeData.id} className="transform scale-95">
+                      <div key={routeData.id} className="transform scale-50 origin-top-left">
                         <RouteCard 
                           route={routeData} 
                           onSelect={onRouteSelect}
