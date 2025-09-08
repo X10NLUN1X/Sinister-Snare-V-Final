@@ -2701,17 +2701,36 @@ function App() {
 
   const loadAllData = useCallback(async () => {
     setLoading(true);
-    await Promise.all([
-      fetchApiStatus(),
-      fetchRoutes(),
-      fetchTargets(),
-      fetchHourlyData(),
-      fetchAlerts(),
-      fetchTrends(),
-      fetchTrackingStatus(),
-      fetchDbStats()
-    ]);
-    setLoading(false);
+    
+    // Create individual API call promises with timeouts
+    const apiCalls = [
+      { name: 'fetchApiStatus', fn: fetchApiStatus },
+      { name: 'fetchRoutes', fn: fetchRoutes },
+      { name: 'fetchTargets', fn: fetchTargets },
+      { name: 'fetchHourlyData', fn: fetchHourlyData },
+      { name: 'fetchAlerts', fn: fetchAlerts },
+      { name: 'fetchTrends', fn: fetchTrends },
+      { name: 'fetchTrackingStatus', fn: fetchTrackingStatus },
+      { name: 'fetchDbStats', fn: fetchDbStats }
+    ];
+    
+    // Execute API calls with individual error handling
+    for (const { name, fn } of apiCalls) {
+      try {
+        console.log(`Loading ${name}...`);
+        await Promise.race([
+          fn(),
+          new Promise((_, reject) => setTimeout(() => reject(new Error(`${name} timeout`)), 5000))
+        ]);
+        console.log(`✅ ${name} completed`);
+      } catch (error) {
+        console.warn(`⚠️ ${name} failed:`, error.message, '- continuing with other API calls');
+        // Continue with other API calls even if one fails
+      }
+    }
+    
+    setLoading(false); // CRITICAL: Always set loading to false
+    console.log('🎉 Data loading completed (with any available data)');
   }, [fetchApiStatus, fetchRoutes, fetchTargets, fetchHourlyData, fetchAlerts, fetchTrends, fetchTrackingStatus, fetchDbStats]);
 
   useEffect(() => {
