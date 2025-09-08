@@ -1927,7 +1927,150 @@ const RouteDetailModal = ({ isOpen, onClose, route }) => {
   );
 };
 
-const CommoditySnareModal = ({ isOpen, onClose, onSnare, onRouteSelect, onAlternativeRouteSelect }) => {
+const FAQModal = ({ isOpen, onClose }) => {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-gray-800 rounded-lg p-6 max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto border border-blue-600">
+        <div className="flex justify-between items-center mb-6">
+          <h3 className="text-blue-400 text-2xl font-bold">❓ FAQ - Piracy Intelligence Guide</h3>
+          <button onClick={onClose} className="text-gray-400 hover:text-white text-xl">✕</button>
+        </div>
+
+        <div className="space-y-6">
+          {/* Risk Level */}
+          <div className="bg-gray-900/50 rounded-lg p-4 border border-gray-700">
+            <h4 className="text-red-400 text-lg font-bold mb-3">🎯 Risk Level</h4>
+            <p className="text-gray-300 mb-3">Indicates the <strong>profitability and danger classification</strong> of a trading route from a pirate's perspective.</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div className="bg-purple-900/30 p-3 rounded">
+                <div className="text-purple-300 font-bold">👑 LEGENDARY</div>
+                <div className="text-sm text-gray-400">Ultra-rare, extreme security, highest rewards</div>
+              </div>
+              <div className="bg-red-900/30 p-3 rounded">
+                <div className="text-red-300 font-bold">🔥 ELITE</div>
+                <div className="text-sm text-gray-400">Highest value, heavy security, premium cargo</div>
+              </div>
+              <div className="bg-orange-900/30 p-3 rounded">
+                <div className="text-orange-300 font-bold">⚠️ HIGH</div>
+                <div className="text-sm text-gray-400">Valuable targets, moderate security</div>
+              </div>
+              <div className="bg-yellow-900/30 p-3 rounded">
+                <div className="text-yellow-300 font-bold">🟡 MODERATE</div>
+                <div className="text-sm text-gray-400">Average value, light security</div>
+              </div>
+              <div className="bg-green-900/30 p-3 rounded">
+                <div className="text-green-300 font-bold">🟢 LOW</div>
+                <div className="text-sm text-gray-400">Low value, minimal security threat</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Piracy Rating */}
+          <div className="bg-gray-900/50 rounded-lg p-4 border border-gray-700">
+            <h4 className="text-red-400 text-lg font-bold mb-3">🏴‍☠️ Piracy Rating (0-100)</h4>
+            <p className="text-gray-300 mb-3">Realistic score based on <strong>actual Star Citizen player behavior</strong> indicating interception probability.</p>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <div className="bg-red-900/30 p-3 rounded text-center">
+                <div className="text-red-300 font-bold">70-100</div>
+                <div className="text-sm text-gray-400">TOP TARGET</div>
+                <div className="text-xs text-gray-500">95% player traffic</div>
+              </div>
+              <div className="bg-orange-900/30 p-3 rounded text-center">
+                <div className="text-orange-300 font-bold">50-69</div>
+                <div className="text-sm text-gray-400">GOOD TARGET</div>
+                <div className="text-xs text-gray-500">Frequent routes</div>
+              </div>
+              <div className="bg-yellow-900/30 p-3 rounded text-center">
+                <div className="text-yellow-300 font-bold">30-49</div>
+                <div className="text-sm text-gray-400">OK TARGET</div>
+                <div className="text-xs text-gray-500">Moderate traffic</div>
+              </div>
+              <div className="bg-gray-700/30 p-3 rounded text-center">
+                <div className="text-gray-400 font-bold">≤25</div>
+                <div className="text-sm text-gray-400">LOW TRAFFIC</div>
+                <div className="text-xs text-gray-500">5% player traffic</div>
+              </div>
+            </div>
+          </div>
+
+          {/* ROI */}
+          <div className="bg-gray-900/50 rounded-lg p-4 border border-gray-700">
+            <h4 className="text-yellow-400 text-lg font-bold mb-3">💰 ROI (Return on Investment)</h4>
+            <p className="text-gray-300 mb-3"><strong>Percentage profit</strong> relative to initial investment. Shows how much profit traders make per aUEC invested.</p>
+            <div className="bg-gray-800 p-3 rounded">
+              <div className="text-sm font-mono text-gray-300">
+                <div>Formula: <span className="text-yellow-400">ROI = (Sell Price - Buy Price) / Buy Price × 100</span></div>
+                <div className="mt-2">Example: Buy 100 aUEC, Sell 150 aUEC = <span className="text-green-400">50% ROI</span></div>
+              </div>
+            </div>
+          </div>
+
+          {/* Distance */}
+          <div className="bg-gray-900/50 rounded-lg p-4 border border-gray-700">
+            <h4 className="text-purple-400 text-lg font-bold mb-3">📏 Distance</h4>
+            <p className="text-gray-300 mb-3"><strong>Travel distance</strong> between origin and destination in kilometers. Affects travel time and fuel costs.</p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <div className="bg-green-900/30 p-3 rounded text-center">
+                <div className="text-green-300 font-bold">10k-30k km</div>
+                <div className="text-sm text-gray-400">Short Range</div>
+                <div className="text-xs text-gray-500">Quick trips</div>
+              </div>
+              <div className="bg-yellow-900/30 p-3 rounded text-center">
+                <div className="text-yellow-300 font-bold">30k-60k km</div>
+                <div className="text-sm text-gray-400">Medium Range</div>
+                <div className="text-xs text-gray-500">Standard routes</div>
+              </div>
+              <div className="bg-red-900/30 p-3 rounded text-center">
+                <div className="text-red-300 font-bold">60k+ km</div>
+                <div className="text-sm text-gray-400">Long Range</div>
+                <div className="text-xs text-gray-500">Extended journeys</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Traffic */}
+          <div className="bg-gray-900/50 rounded-lg p-4 border border-gray-700">
+            <h4 className="text-blue-400 text-lg font-bold mb-3">🚦 Traffic Score</h4>
+            <p className="text-gray-300 mb-3"><strong>Estimated player activity</strong> on this route. Higher scores indicate more frequent trader activity.</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div className="bg-blue-900/30 p-3 rounded">
+                <div className="text-blue-300 font-bold">Score 70+</div>
+                <div className="text-sm text-gray-400">High Traffic - Multiple traders per hour</div>
+              </div>
+              <div className="bg-gray-700/30 p-3 rounded">
+                <div className="text-gray-400 font-bold">Score <30</div>
+                <div className="text-sm text-gray-400">Low Traffic - Occasional traders</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Investment */}
+          <div className="bg-gray-900/50 rounded-lg p-4 border border-gray-700">
+            <h4 className="text-green-400 text-lg font-bold mb-3">💎 Investment</h4>
+            <p className="text-gray-300 mb-3"><strong>Total capital required</strong> to fully load cargo bay with this commodity. Indicates cargo value pirates can steal.</p>
+            <div className="bg-gray-800 p-3 rounded">
+              <div className="text-sm font-mono text-gray-300">
+                <div>Formula: <span className="text-green-400">Investment = Buy Price × Cargo Capacity</span></div>
+                <div className="mt-2">Higher investment = <span className="text-yellow-400">More valuable cargo to steal</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-6 text-center">
+          <button 
+            onClick={onClose}
+            className="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded text-white font-bold"
+          >
+            Got it! 🏴‍☠️
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
   const [selectedCommodity, setSelectedCommodity] = useState('');
   const [snareResults, setSnareResults] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
