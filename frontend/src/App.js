@@ -634,17 +634,55 @@ const InterceptionMap = ({ routes, targets }) => {
   
   const getSystemRoutes = () => {
     if (selectedSystem === 'All Systems') return routes;
-    return routes.filter(route => 
-      route.origin_name.includes(selectedSystem) || route.destination_name.includes(selectedSystem)
-    );
+    
+    // FIXED: Better system filtering for Stanton and other systems
+    return routes.filter(route => {
+      const originSystem = route.origin_name?.split(' - ')[0] || '';
+      const destSystem = route.destination_name?.split(' - ')[0] || '';
+      return originSystem.toLowerCase().includes(selectedSystem.toLowerCase()) || 
+             destSystem.toLowerCase().includes(selectedSystem.toLowerCase());
+    });
   };
 
   const systemRoutes = getSystemRoutes();
+  
+  // Calculate system-specific statistics
+  const getSystemStats = () => {
+    const stats = {
+      totalRoutes: systemRoutes.length,
+      avgProfit: 0,
+      avgPiracyScore: 0,
+      highRiskRoutes: 0,
+      systemInternalRoutes: 0,
+      interSystemRoutes: 0
+    };
+    
+    if (systemRoutes.length === 0) return stats;
+    
+    stats.avgProfit = systemRoutes.reduce((sum, r) => sum + (r.profit || 0), 0) / systemRoutes.length;
+    stats.avgPiracyScore = systemRoutes.reduce((sum, r) => sum + (r.piracy_rating || 0), 0) / systemRoutes.length;
+    stats.highRiskRoutes = systemRoutes.filter(r => ['ELITE', 'LEGENDARY', 'HIGH'].includes(r.risk_level)).length;
+    
+    // Count system-internal vs inter-system routes
+    systemRoutes.forEach(route => {
+      const originSystem = route.origin_name?.split(' - ')[0] || '';
+      const destSystem = route.destination_name?.split(' - ')[0] || '';
+      if (originSystem === destSystem) {
+        stats.systemInternalRoutes++;
+      } else {
+        stats.interSystemRoutes++;
+      }
+    });
+    
+    return stats;
+  };
+  
+  const stats = getSystemStats();
 
   return (
     <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
       <div className="flex justify-between items-center mb-4">
-        <h3 className="text-white text-lg font-semibold">🗺️ Interception Map Analysis</h3>
+        <h3 className="text-white text-lg font-semibold">🗺️ Snareplan Analysis</h3>
         <select 
           value={selectedSystem} 
           onChange={(e) => setSelectedSystem(e.target.value)}
@@ -658,47 +696,76 @@ const InterceptionMap = ({ routes, targets }) => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="bg-black/30 rounded p-4">
-          <h4 className="text-yellow-400 font-medium mb-3">📊 System Analysis</h4>
+          <h4 className="text-yellow-400 font-medium mb-3">📊 {selectedSystem} System Analysis</h4>
           <div className="space-y-2">
             <div className="flex justify-between text-sm">
               <span className="text-gray-400">Active Routes:</span>
-              <span className="text-white font-medium">{systemRoutes.length}</span>
+              <span className="text-white font-medium">{stats.totalRoutes}</span>
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-gray-400">Avg Profit:</span>
               <span className="text-green-400 font-medium">
-                {systemRoutes.length > 0 ? (systemRoutes.reduce((sum, r) => sum + r.profit, 0) / systemRoutes.length / 1000000).toFixed(2) + 'M' : '0M'}
+                {(stats.avgProfit / 1000000).toFixed(2)}M aUEC
+              </span>
+            </div>
+            <div className="flex justify-between text-sm">
+              <span className="text-gray-400">Avg Piracy Score:</span>
+              <span className="text-red-400 font-medium">
+                {stats.avgPiracyScore.toFixed(1)}
               </span>
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-gray-400">High Risk Routes:</span>
-              <span className="text-red-400 font-medium">
-                {systemRoutes.filter(r => ['ELITE', 'LEGENDARY', 'HIGH'].includes(r.risk_level)).length}
-              </span>
+              <span className="text-red-400 font-medium">{stats.highRiskRoutes}</span>
             </div>
+            {selectedSystem !== 'All Systems' && (
+              <>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-400">System-intern:</span>
+                  <span className="text-green-400 font-medium">{stats.systemInternalRoutes}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-400">Inter-System:</span>
+                  <span className="text-gray-400 font-medium">{stats.interSystemRoutes}</span>
+                </div>
+              </>
+            )}
           </div>
         </div>
 
         <div className="bg-black/30 rounded p-4">
-          <h4 className="text-red-400 font-medium mb-3">🎯 Hot Zones</h4>
+          <h4 className="text-red-400 font-medium mb-3">🎯 Top Snare Zones</h4>
           <div className="space-y-3">
-            {systemRoutes.slice(0, 4).map((route, idx) => (
-              <div key={idx} className="flex items-center justify-between">
-                <div>
-                  <p className="text-white text-sm font-medium">{route.commodity_name}</p>
-                  <p className="text-gray-400 text-xs">{route.route_code}</p>
-                </div>
-                <div className="text-right">
-                  <div className="flex items-center space-x-1">
-                    <div className={`w-2 h-2 rounded-full ${
-                      route.piracy_rating >= 80 ? 'bg-red-500' : 
-                      route.piracy_rating >= 60 ? 'bg-yellow-500' : 'bg-green-500'
-                    }`}></div>
-                    <span className="text-xs text-gray-300">{route.piracy_rating.toFixed(0)}</span>
+            {systemRoutes.length > 0 ? (
+              systemRoutes
+                .sort((a, b) => (b.piracy_rating || 0) - (a.piracy_rating || 0))
+                .slice(0, 4)
+                .map((route, idx) => (
+                  <div key={idx} className="flex items-center justify-between">
+                    <div>
+                      <p className="text-white text-sm font-medium">{route.commodity_name}</p>
+                      <p className="text-gray-400 text-xs">
+                        {route.origin_name?.split(' - ')[1] || 'Unknown'} → {route.destination_name?.split(' - ')[1] || 'Unknown'}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <div className="flex items-center space-x-1">
+                        <div className={`w-2 h-2 rounded-full ${
+                          (route.piracy_rating || 0) >= 70 ? 'bg-red-500' : 
+                          (route.piracy_rating || 0) >= 50 ? 'bg-orange-500' :
+                          (route.piracy_rating || 0) >= 30 ? 'bg-yellow-500' : 'bg-gray-500'
+                        }`}></div>
+                        <span className="text-xs text-gray-300">{(route.piracy_rating || 0).toFixed(0)}</span>
+                      </div>
+                    </div>
                   </div>
-                </div>
+                ))
+            ) : (
+              <div className="text-center py-4">
+                <p className="text-gray-400 text-sm">Keine Routen für {selectedSystem} verfügbar</p>
+                <p className="text-gray-500 text-xs mt-1">Bitte andere System wählen oder Daten aktualisieren</p>
               </div>
-            ))}
+            )}
           </div>
         </div>
       </div>
