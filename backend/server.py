@@ -286,7 +286,7 @@ class StarProfitClient:
             
             # Lagrange Point Stations (VERIFIED from Web)
             "ARC-L1", "ARC-L2", "ARC-L3", "ARC-L4", "ARC-L5",
-            "CRU-L1", "CRU-L2", "CRU-L3", "CRU-L4", "CRU-L5", 
+            "CRU-L1", "CRU-L2", "CRU-L3", "CRU-L4", "CRU-L5 Beautiful Glen Station",  # CRU-L5 full name 
             "HUR-L1", "HUR-L2", "HUR-L3", "HUR-L4", "HUR-L5",
             "MIC-L1", "MIC-L2", "MIC-L3", "MIC-L4", "MIC-L5",
             
