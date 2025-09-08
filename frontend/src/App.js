@@ -2961,45 +2961,52 @@ function App() {
         </div>
       </div>
 
-      {/* Enhanced Navigation */}
-      <div className="container mx-auto px-6">
-        <div className="flex flex-wrap gap-1 bg-gray-800 rounded-lg p-1">
+      {/* Kachel-Navigation */}
+      <div className="container mx-auto px-6 py-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
           {[
-            { id: 'dashboard', label: '🎛️ Dashboard', desc: 'Overview' },
-            { id: 'routes', label: '🛣️ Routes', desc: 'Trade Analysis' },
-            { id: 'targets', label: '🎯 Targets', desc: 'Priority Hits' },
-            { id: 'map', label: '🗺️ Map', desc: 'Interception' },
-            { id: 'alerts', label: '🚨 Alerts', desc: 'Notifications' },
-            { id: 'trends', label: '📈 Trends', desc: 'Historical' },
-            { id: 'database', label: '💾 Database', desc: 'Lokale Daten' },
-            { id: 'export', label: '📁 Export', desc: 'Data Export' }
+            { id: 'dashboard', label: 'Dashboard', icon: '📊', desc: 'Overview', color: 'bg-blue-600 hover:bg-blue-700' },
+            { id: 'routes', label: 'Routes', icon: '🛣️', desc: 'Trade Analysis', color: 'bg-green-600 hover:bg-green-700' },
+            { id: 'targets', label: 'Targets', icon: '🎯', desc: 'Priority Hits', color: 'bg-orange-600 hover:bg-orange-700' },
+            { id: 'alerts', label: 'Alerts', icon: '🚨', desc: 'Notifications', color: 'bg-red-600 hover:bg-red-700' },
+            { id: 'map', label: 'Map', icon: '🗺️', desc: 'Interception', color: 'bg-purple-600 hover:bg-purple-700' },
+            { id: 'database', label: 'Database', icon: '💾', desc: 'Lokale Daten', color: 'bg-gray-600 hover:bg-gray-700' },
+            { id: 'export', label: 'Export', icon: '📁', desc: 'Data Export', color: 'bg-indigo-600 hover:bg-indigo-700' },
+            { id: 'trends', label: 'Trends', icon: '📈', desc: 'Historical', color: 'bg-teal-600 hover:bg-teal-700' }
           ].map(tab => (
             <button 
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`px-4 py-2 rounded-md transition-all duration-200 ${
+              className={`p-4 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg ${
                 activeTab === tab.id 
-                  ? 'bg-red-600 text-white shadow-lg' 
-                  : 'text-gray-400 hover:text-white hover:bg-gray-700'
+                  ? `${tab.color} shadow-2xl scale-105 ring-2 ring-white` 
+                  : 'bg-gray-800 hover:bg-gray-700 text-gray-400 hover:text-white'
               }`}
             >
-              <div className="text-sm font-medium">{tab.label}</div>
-              <div className="text-xs opacity-75">{tab.desc}</div>
+              <div className="text-center">
+                <div className="text-3xl mb-2">{tab.icon}</div>
+                <div className="text-sm font-bold text-white">{tab.label}</div>
+                <div className="text-xs opacity-75 text-gray-300">{tab.desc}</div>
+              </div>
             </button>
           ))}
-        </div>
-        
-        <div className="flex justify-between items-center mt-2">
-          {/* Snare Nuke Button */}
+          
+          {/* Snare Nuke Kachel */}
           <button 
             onClick={handleSnareNuke}
-            className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-bold text-sm flex items-center transition-all duration-300 hover:scale-105 shadow-lg"
+            className="p-4 rounded-xl bg-red-600 hover:bg-red-700 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-2xl"
           >
-            💀 SNARE NUKE
+            <div className="text-center">
+              <div className="text-3xl mb-2">💀</div>
+              <div className="text-sm font-bold text-white">SNARE NUKE</div>
+              <div className="text-xs opacity-75 text-gray-300">ELITE Only</div>
+            </div>
           </button>
-          
-          {/* Auto-refresh toggle */}
-          <label className="flex items-center space-x-2 text-sm text-gray-400">
+        </div>
+        
+        {/* Auto-refresh toggle */}
+        <div className="flex justify-end mt-4">
+          <label className="flex items-center space-x-2 text-sm text-gray-400 bg-gray-800 px-4 py-2 rounded-lg">
             <input 
               type="checkbox" 
               checked={autoRefresh} 
