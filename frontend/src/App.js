@@ -2798,71 +2798,61 @@ function App() {
 
   useEffect(() => {
     const initializeApp = async () => {
-      console.log('🚀 QUICK LOAD: Starting immediate load...');
-      setLoading(true);
+      console.log('🚀 CACHE-CLEAR STARTUP: Force clearing all cached data...');
       
-      // Emergency timeout: Force load after 3 seconds
-      const forceLoadTimeout = setTimeout(() => {
-        console.warn('🚨 FORCING FRONTEND LOAD - Performance emergency timeout');
+      // STEP 1: Clear browser cache data immediately
+      try {
+        localStorage.clear();
+        sessionStorage.clear();
+        console.log('✅ Browser storage cleared');
+      } catch (e) {
+        console.warn('Browser storage clear failed:', e);
+      }
+      
+      // STEP 2: Force clear IndexedDB
+      try {
+        await sinisterDB.init();
+        await sinisterDB.clearAllData();
+        console.log('✅ IndexedDB cleared completely');
+      } catch (e) {
+        console.warn('IndexedDB clear failed:', e);
+      }
+      
+      // STEP 3: Force emergency timeout (2 seconds)
+      const emergencyTimeout = setTimeout(() => {
+        console.warn('🚨 EMERGENCY: Forcing app load after 2 seconds');
         setLoading(false);
-        setApiStatus({ status: 'forced_load', message: 'Loaded with timeout' });
-      }, 3000);
+        setApiStatus({ status: 'emergency_loaded' });
+      }, 2000);
       
       try {
-        // Initialize database quickly
-        try {
-          await Promise.race([
-            sinisterDB.init(),
-            new Promise((_, reject) => setTimeout(() => reject(new Error('DB timeout')), 1000))
-          ]);
-          console.log('✅ Database initialized');
-        } catch (error) {
-          console.warn('⚠️ Database init failed, continuing:', error.message);
-        }
+        // STEP 4: Load ONLY essential routes data with cache busting
+        console.log('Loading fresh routes with cache busting...');
+        const timestamp = Date.now();
+        const response = await axios.get(`${API}/routes/analyze?limit=10&t=${timestamp}&cachebust=${Math.random()}`);
+        const freshRoutes = response.data.routes || [];
         
-        // Load ONLY essential data for immediate display
-        try {
-          console.log('Loading essential APIs only...');
-          await Promise.race([
-            Promise.all([
-              fetchApiStatus(),
-              fetchRoutes()  // Only load routes for immediate display
-            ]),
-            new Promise((_, reject) => setTimeout(() => reject(new Error('Essential APIs timeout')), 2000))
-          ]);
-          
-          clearTimeout(forceLoadTimeout);
-          console.log('✅ Essential data loaded successfully');
-          setLoading(false);
-          
-          // Load remaining data in background (non-blocking)
-          console.log('Loading remaining data in background...');
-          setTimeout(async () => {
-            try {
-              await Promise.allSettled([
-                fetchTargets(),
-                fetchHourlyData(),
-                fetchAlerts(),
-                fetchTrends(),
-                fetchTrackingStatus(),
-                fetchDbStats()
-              ]);
-              console.log('✅ Background data loaded');
-            } catch (error) {
-              console.warn('⚠️ Background loading failed:', error);
-            }
-          }, 100);
-          
-        } catch (error) {
-          console.warn('⚠️ Essential API loading failed:', error.message);
-          clearTimeout(forceLoadTimeout);
-          setLoading(false);
-        }
+        // CRITICAL DEBUG: Log exact scores from API
+        console.log('🐛 FRESH API DATA:', freshRoutes.slice(0,2).map(r => ({
+          commodity: r.commodity_name,
+          origin: r.origin_name,
+          destination: r.destination_name,
+          piracy_rating: r.piracy_rating,
+          inter_system: (r.origin_name?.split(' - ')[0] !== r.destination_name?.split(' - ')[0])
+        })));
+        
+        setRoutes(freshRoutes);
+        clearTimeout(emergencyTimeout);
+        setLoading(false);
+        setApiStatus({ status: 'fresh_loaded', routes: freshRoutes.length });
+        
+        console.log('🎉 CACHE-CLEAR: Fresh data loaded successfully!');
         
       } catch (error) {
-        console.error('❌ App initialization error:', error);
-        clearTimeout(forceLoadTimeout);
+        console.error('❌ EMERGENCY ERROR:', error);
+        clearTimeout(emergencyTimeout);
         setLoading(false);
+        setRoutes([]);
       }
     };
 
