@@ -3071,22 +3071,22 @@ function App() {
               <div className="text-right">
                 <p className="text-white font-semibold text-lg">{routes.length} Routen verfügbar</p>
                 <p className="text-gray-400 text-sm">Sortiert nach Piracy Score</p>
-                <div className="flex space-x-2 mt-2">
+                <div className="flex space-x-3 mt-2">
                   <button 
                     onClick={handleSnareNow}
-                    className="bg-red-600 hover:bg-red-700 px-3 py-1 rounded text-xs transition-colors font-medium flex items-center"
+                    className="bg-red-600 hover:bg-red-700 px-4 py-2 rounded text-sm transition-colors font-medium flex items-center"
                   >
                     🎯 SNARE NOW
                   </button>
                   <button 
                     onClick={() => setCommoditySnareModal(true)}
-                    className="bg-yellow-600 hover:bg-yellow-700 px-3 py-1 rounded text-xs transition-colors font-medium flex items-center"
+                    className="bg-yellow-600 hover:bg-yellow-700 px-4 py-2 rounded text-sm transition-colors font-medium flex items-center"
                   >
                     💎 Commodity Snare
                   </button>
                   <button 
                     onClick={handleManualRefresh}
-                    className="bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded text-xs transition-colors font-medium flex items-center"
+                    className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded text-sm transition-colors font-medium flex items-center"
                   >
                     🔄 Erneut laden
                   </button>
