@@ -3148,7 +3148,7 @@ function App() {
               <h2 className="text-2xl font-bold text-white">🎯 Priority Piracy Targets</h2>
               <button 
                 onClick={fetchTargets}
-                className="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-md transition-colors font-medium"
+                className="bg-red-600 hover:bg-red-700 px-6 py-3 rounded-md transition-colors font-medium text-white"
               >
                 🔄 Refresh Targets
               </button>
