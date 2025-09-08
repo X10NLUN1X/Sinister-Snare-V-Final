@@ -922,7 +922,7 @@ const TERMINAL_TO_SNAREPLAN_MAPPING = {
   
   // Outposts -> Nearest Planet
   "Ashland": "Hurston",
-  "Checkmate": "Hurston", 
+  // "Checkmate": moved to Pyro system (see Pyro section below)
   "Deakins Research": "Microtech",
   "Hickes Research": "Microtech",
   "Maker's Point": "ArcCorp",
