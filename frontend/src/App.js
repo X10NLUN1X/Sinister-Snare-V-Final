@@ -1390,78 +1390,12 @@ const AlternativeRoutesDropdown = ({ commodity, onRouteSelect, currentRoute }) =
       }
       
     } catch (error) {
-      console.warn(`[AlternativeRoutes] REAL API failed: ${error.message}, using fallback mock data`);
+      console.warn(`[AlternativeRoutes] REAL API failed: ${error.message}, showing info message instead of mock data`);
       
-      // Fallback to mock data if real API fails
-      const mockTerminals = [
-        {
-          terminal: 'Rat\'s Nest',
-          system: 'Pyro',
-          buy_price: 2.21,
-          sell_price: 0,
-          stock: 20000,
-          buy_available: true,
-          sell_available: false
-        },
-        {
-          terminal: 'Everus Harbor',
-          system: 'Stanton',
-          buy_price: 0,
-          sell_price: 3.22,
-          stock: 1935,
-          buy_available: false,
-          sell_available: true
-        },
-        {
-          terminal: 'Magnus Gateway',
-          system: 'Stanton',
-          buy_price: 1.95,
-          sell_price: 3.15,
-          stock: 4608,
-          buy_available: true,
-          sell_available: true
-        },
-        {
-          terminal: 'Checkmate',
-          system: 'Pyro',
-          buy_price: 2.18,
-          sell_price: 0,
-          stock: 39000,
-          buy_available: true,
-          sell_available: false
-        },
-        {
-          terminal: 'Port Tressler',
-          system: 'Stanton',
-          buy_price: 0,
-          sell_price: 3.99,
-          stock: 2267,
-          buy_available: false,
-          sell_available: true
-        },
-        {
-          terminal: 'Daymar Shubin Mining',
-          system: 'Stanton',
-          buy_price: 2.05,
-          sell_price: 0,
-          stock: 15000,
-          buy_available: true,
-          sell_available: false
-        },
-        {
-          terminal: 'Area18 Trade District',
-          system: 'Stanton',
-          buy_price: 0,
-          sell_price: 3.45,
-          stock: 3200,
-          buy_available: false,
-          sell_available: true
-        }
-      ];
-      
-      setTerminals(mockTerminals);
+      // NO MORE MOCK DATA - Show informative message instead
+      setTerminals([]);
       setLastUpdated(new Date());
-      console.log(`[AlternativeRoutes] FALLBACK: Set ${mockTerminals.length} mock terminals`);
+      console.log(`[AlternativeRoutes] API ERROR: No terminals loaded due to API failure`);
       
     } finally {
       setLoading(false);
