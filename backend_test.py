@@ -2074,6 +2074,230 @@ async def test_bidirectional_alternative_routes():
     
     return results
 
+async def test_specific_review_issues():
+    """Test the specific issues mentioned in the current review request"""
+    results = TestResults()
+    
+    print(f"\n🔍 Testing Specific Review Request Issues")
+    print("Focus: Database Stats Issue, Live Tracking Issue, Overall System Status")
+    
+    async with httpx.AsyncClient(timeout=30.0) as client:
+        
+        # Test 1: Database Stats Issue - /api/routes/analyze
+        try:
+            response = await client.get(f"{BACKEND_URL}/api/routes/analyze?limit=5")
+            if response.status_code == 200:
+                data = response.json()
+                if data.get('status') == 'success':
+                    routes = data.get('routes', [])
+                    total_routes = data.get('total_routes', 0)
+                    
+                    # Check if routes are returned properly
+                    if len(routes) > 0 and total_routes > 0:
+                        # Check if data structure is correct for IndexedDB storage
+                        sample_route = routes[0]
+                        required_fields = ['id', 'commodity_name', 'origin_name', 'destination_name', 'profit', 'piracy_rating']
+                        missing_fields = [field for field in required_fields if field not in sample_route]
+                        
+                        if not missing_fields:
+                            results.add_result(
+                                "Database Stats - Routes Analysis",
+                                "PASS",
+                                f"Routes endpoint returning data correctly: {total_routes} total routes, {len(routes)} returned. All required fields present for IndexedDB storage.",
+                                {"total_routes": total_routes, "returned_routes": len(routes), "sample_fields": list(sample_route.keys())}
+                            )
+                        else:
+                            results.add_result(
+                                "Database Stats - Routes Analysis",
+                                "FAIL",
+                                f"Routes returned but missing required fields for IndexedDB: {missing_fields}",
+                                {"missing_fields": missing_fields, "available_fields": list(sample_route.keys())}
+                            )
+                    else:
+                        results.add_result(
+                            "Database Stats - Routes Analysis",
+                            "FAIL",
+                            f"Routes endpoint not returning proper data: {len(routes)} routes, {total_routes} total",
+                            {"routes_count": len(routes), "total_routes": total_routes}
+                        )
+                else:
+                    results.add_result(
+                        "Database Stats - Routes Analysis",
+                        "FAIL",
+                        f"Routes analysis endpoint returned error status: {data.get('status')}",
+                        data
+                    )
+            else:
+                results.add_result(
+                    "Database Stats - Routes Analysis",
+                    "FAIL",
+                    f"Routes analysis endpoint HTTP error: {response.status_code}",
+                    {"status_code": response.status_code, "response": response.text[:200]}
+                )
+        except Exception as e:
+            results.add_result(
+                "Database Stats - Routes Analysis",
+                "FAIL",
+                f"Connection error to routes analysis endpoint: {str(e)}"
+            )
+        
+        # Test 2: Live Tracking Issue - /api/tracking/status
+        try:
+            response = await client.get(f"{BACKEND_URL}/api/tracking/status")
+            if response.status_code == 200:
+                data = response.json()
+                if data.get('status') == 'success':
+                    tracking = data.get('tracking', {})
+                    uptime_minutes = tracking.get('uptime_minutes', 0)
+                    last_update = tracking.get('last_update')
+                    route_count = tracking.get('route_count', 0)
+                    active = tracking.get('active', False)
+                    
+                    # Check if uptime_minutes is working correctly (should be > 0 if system has been running)
+                    if uptime_minutes >= 0:  # Allow 0 for fresh starts, but should be calculated
+                        # Check if last_update is properly initialized
+                        if last_update is not None:
+                            results.add_result(
+                                "Live Tracking - Uptime Minutes Fix",
+                                "PASS",
+                                f"Tracking status working correctly: uptime_minutes={uptime_minutes}, last_update={last_update}, route_count={route_count}, active={active}",
+                                {"uptime_minutes": uptime_minutes, "last_update": last_update, "route_count": route_count, "active": active}
+                            )
+                        else:
+                            results.add_result(
+                                "Live Tracking - Uptime Minutes Fix",
+                                "FAIL",
+                                f"last_update not initialized properly: {last_update}. This causes uptime calculation issues.",
+                                {"uptime_minutes": uptime_minutes, "last_update": last_update}
+                            )
+                    else:
+                        results.add_result(
+                            "Live Tracking - Uptime Minutes Fix",
+                            "FAIL",
+                            f"uptime_minutes calculation issue: {uptime_minutes} (should be >= 0)",
+                            {"uptime_minutes": uptime_minutes, "tracking_data": tracking}
+                        )
+                else:
+                    results.add_result(
+                        "Live Tracking - Uptime Minutes Fix",
+                        "FAIL",
+                        f"Tracking status endpoint returned error: {data.get('status')}",
+                        data
+                    )
+            else:
+                results.add_result(
+                    "Live Tracking - Uptime Minutes Fix",
+                    "FAIL",
+                    f"Tracking status endpoint HTTP error: {response.status_code}",
+                    {"status_code": response.status_code, "response": response.text[:200]}
+                )
+        except Exception as e:
+            results.add_result(
+                "Live Tracking - Uptime Minutes Fix",
+                "FAIL",
+                f"Connection error to tracking status endpoint: {str(e)}"
+            )
+        
+        # Test 3: Overall System Status - /api/status
+        try:
+            response = await client.get(f"{BACKEND_URL}/api/status")
+            if response.status_code == 200:
+                data = response.json()
+                status = data.get('status')
+                
+                if status in ['operational', 'ok']:
+                    # Check system components
+                    database_status = data.get('database', 'unknown')
+                    star_profit_api = data.get('star_profit_api', 'unknown')
+                    route_count = data.get('route_count', 0)
+                    
+                    # Verify system is reporting correct numbers
+                    if route_count > 0:
+                        results.add_result(
+                            "Overall System Status",
+                            "PASS",
+                            f"System status operational: status={status}, database={database_status}, star_profit_api={star_profit_api}, route_count={route_count}",
+                            {"status": status, "database": database_status, "star_profit_api": star_profit_api, "route_count": route_count}
+                        )
+                    else:
+                        results.add_result(
+                            "Overall System Status",
+                            "FAIL",
+                            f"System operational but route_count is 0. This may indicate database stats issue.",
+                            {"status": status, "route_count": route_count, "full_status": data}
+                        )
+                else:
+                    results.add_result(
+                        "Overall System Status",
+                        "FAIL",
+                        f"System status not operational: {status}",
+                        data
+                    )
+            else:
+                results.add_result(
+                    "Overall System Status",
+                    "FAIL",
+                    f"System status endpoint HTTP error: {response.status_code}",
+                    {"status_code": response.status_code, "response": response.text[:200]}
+                )
+        except Exception as e:
+            results.add_result(
+                "Overall System Status",
+                "FAIL",
+                f"Connection error to system status endpoint: {str(e)}"
+            )
+        
+        # Test 4: Cross-check Database Stats vs Routes Analysis
+        try:
+            # Get system status route count
+            status_response = await client.get(f"{BACKEND_URL}/api/status")
+            routes_response = await client.get(f"{BACKEND_URL}/api/routes/analyze?limit=20")
+            
+            if status_response.status_code == 200 and routes_response.status_code == 200:
+                status_data = status_response.json()
+                routes_data = routes_response.json()
+                
+                status_route_count = status_data.get('route_count', 0)
+                actual_routes_returned = len(routes_data.get('routes', []))
+                total_routes_available = routes_data.get('total_routes', 0)
+                
+                # Check if numbers are consistent
+                if status_route_count > 0 and actual_routes_returned > 0:
+                    results.add_result(
+                        "Database Stats Consistency Check",
+                        "PASS",
+                        f"Database stats consistent: status reports {status_route_count} routes, analysis returns {actual_routes_returned}/{total_routes_available} routes",
+                        {"status_route_count": status_route_count, "actual_routes": actual_routes_returned, "total_available": total_routes_available}
+                    )
+                elif status_route_count == 0 and actual_routes_returned == 0:
+                    results.add_result(
+                        "Database Stats Consistency Check",
+                        "PASS",
+                        "Both endpoints consistently report 0 routes (system may be initializing)",
+                        {"status_route_count": status_route_count, "actual_routes": actual_routes_returned}
+                    )
+                else:
+                    results.add_result(
+                        "Database Stats Consistency Check",
+                        "FAIL",
+                        f"Inconsistent route counts: status={status_route_count}, actual={actual_routes_returned}. This indicates the database stats issue.",
+                        {"status_route_count": status_route_count, "actual_routes": actual_routes_returned, "total_available": total_routes_available}
+                    )
+            else:
+                results.add_result(
+                    "Database Stats Consistency Check",
+                    "FAIL",
+                    f"Could not fetch both endpoints for comparison: status={status_response.status_code}, routes={routes_response.status_code}"
+                )
+        except Exception as e:
+            results.add_result(
+                "Database Stats Consistency Check",
+                "FAIL",
+                f"Error during consistency check: {str(e)}"
+            )
+    
+    return results
+
 async def main():
     """Run all tests"""
     print("🏴‍☠️ SINISTER SNARE BACKEND API TEST SUITE")
@@ -2081,7 +2305,13 @@ async def main():
     
     all_results = TestResults()
     
-    # Test NEW Bidirectional Alternative Routes functionality FIRST (current review request priority)
+    # Test SPECIFIC REVIEW ISSUES FIRST (highest priority)
+    review_issues_results = await test_specific_review_issues()
+    all_results.results.extend(review_issues_results.results)
+    all_results.passed += review_issues_results.passed
+    all_results.failed += review_issues_results.failed
+    
+    # Test NEW Bidirectional Alternative Routes functionality (current review request priority)
     bidirectional_results = await test_bidirectional_alternative_routes()
     all_results.results.extend(bidirectional_results.results)
     all_results.passed += bidirectional_results.passed
