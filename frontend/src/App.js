@@ -3241,6 +3241,8 @@ function App() {
       <CommoditySnareModal 
         isOpen={commoditySnareModal}
         onClose={() => setCommoditySnareModal(false)}
+        onRouteSelect={handleRouteClick}
+        onAlternativeRouteSelect={handleAlternativeRouteSelect}
       />
     </div>
   );
