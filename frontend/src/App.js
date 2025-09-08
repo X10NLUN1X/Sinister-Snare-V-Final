@@ -2104,7 +2104,7 @@ const CommoditySnareModal = ({ isOpen, onClose, onSnare, onRouteSelect, onAltern
                   </div>
                 </div>
                 
-                <div className="space-y-3 max-h-[60vh] overflow-y-auto">
+                <div className="grid grid-cols-2 gap-4 max-h-[60vh] overflow-y-auto">
                   {(snareResults.snare_opportunities || []).slice(0, 10).map((opportunity, idx) => {
                     // Convert opportunity to route format for RouteCard compatibility
                     const routeData = {
@@ -2129,10 +2129,13 @@ const CommoditySnareModal = ({ isOpen, onClose, onSnare, onRouteSelect, onAltern
                     };
                     
                     return (
-                      <div key={routeData.id} className="transform scale-50 origin-top-left">
+                      <div key={routeData.id} className="transform scale-75">
                         <RouteCard 
                           route={routeData} 
-                          onSelect={onRouteSelect}
+                          onSelect={(route) => {
+                            onRouteSelect(route);
+                            onClose(); // FIX 3: Close modal when route is clicked
+                          }}
                           onAlternativeRouteSelect={onAlternativeRouteSelect}
                         />
                       </div>
