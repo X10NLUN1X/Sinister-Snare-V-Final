@@ -1080,10 +1080,10 @@ const SNAREPLAN_LOCATIONS = {
   // PYRO SYSTEM  
   'Pyro': {
     'Pyro Gateway': 'Pyro Gateway',
-    'Rat\'s Nest': 'Pyro V',
-    'Ruin Station': 'Pyro I',
-    'Endgame': 'Pyro IV',
-    'Orbituary': 'Pyro III',
+    'Rat\'s Nest': 'Rats Nest',
+    'Ruin Station': 'Ruin Station',
+    'Endgame': 'Endgame',
+    'Orbituary': 'Orbituary',
     'Pyro I': 'Pyro I',
     'Pyro II': 'Pyro II', 
     'Pyro III': 'Pyro III',
