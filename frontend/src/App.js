@@ -1945,7 +1945,7 @@ const RouteDetailModal = ({ isOpen, onClose, route }) => {
   );
 };
 
-const CommoditySnareModal = ({ isOpen, onClose, onSnare }) => {
+const CommoditySnareModal = ({ isOpen, onClose, onSnare, onRouteSelect, onAlternativeRouteSelect }) => {
   const [selectedCommodity, setSelectedCommodity] = useState('');
   const [snareResults, setSnareResults] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
