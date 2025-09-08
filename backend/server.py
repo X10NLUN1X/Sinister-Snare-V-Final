@@ -372,6 +372,9 @@ class StarProfitClient:
             "Rustville", "Sacren's Plot", "Scarper's Turn", "Slowburn Depot", 
             "Watcher's Depot", "Dinger's Depot", "Feo Canyon Depot",
             
+            # CORRECTED: Moved from Stanton (incorrect) to Pyro (correct)
+            "Ashland", "Seer's Canyon", "Shepherd's Rest",
+            
             # Platinum Operations in Pyro
             "Platinum Bay Terra",  # Likely Pyro-based operation
         }
