@@ -769,24 +769,6 @@ const InterceptionMap = ({ routes, targets }) => {
           </div>
         </div>
       </div>
-
-      <div className="mt-6 bg-black/20 rounded p-4">
-        <h4 className="text-purple-400 font-medium mb-3">🚀 Recommended Ship Classes</h4>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          {[
-            { name: 'Light Fighter', routes: systemRoutes.filter(r => r.profit < 2000000).length, icon: '🛩️' },
-            { name: 'Heavy Fighter', routes: systemRoutes.filter(r => r.profit >= 2000000 && r.profit < 4000000).length, icon: '🚀' },
-            { name: 'Interceptor', routes: systemRoutes.filter(r => r.distance < 30000).length, icon: '⚡' },
-            { name: 'Multi-crew', routes: systemRoutes.filter(r => r.profit >= 4000000).length, icon: '🛸' }
-          ].map((shipClass, idx) => (
-            <div key={idx} className="text-center bg-gray-700/30 rounded p-3">
-              <div className="text-2xl mb-1">{shipClass.icon}</div>
-              <p className="text-white text-sm font-medium">{shipClass.name}</p>
-              <p className="text-gray-400 text-xs">{shipClass.routes} suitable routes</p>
-            </div>
-          ))}
-        </div>
-      </div>
     </div>
   );
 };
