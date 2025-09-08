@@ -2026,7 +2026,7 @@ const CommoditySnareModal = ({ isOpen, onClose, onSnare, onRouteSelect, onAltern
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-gray-800 rounded-lg p-4 max-w-6xl w-full mx-4 max-h-[90vh] overflow-y-auto border border-yellow-600">
+      <div className="bg-gray-800 rounded-lg p-4 max-w-[95vw] w-full mx-4 max-h-[95vh] overflow-y-auto border border-yellow-600">
         <div className="flex justify-between items-center mb-3">
           <h3 className="text-yellow-400 text-lg font-bold">💎 COMMODITY SNARE</h3>
           <button onClick={handleClose} className="text-gray-400 hover:text-white text-xl">✕</button>
