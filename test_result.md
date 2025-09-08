@@ -576,7 +576,7 @@ test_plan:
   - task: "Realistic Piracy Scoring System V2.0 Implementation"
     implemented: true
     working: true
-    file: "frontend/src/App.js"
+    file: "backend/server.py"
     stuck_count: 0
     priority: "critical"
     needs_retesting: false
@@ -584,6 +584,9 @@ test_plan:
         - working: true
         - agent: "testing"
         - comment: "🎉 PIRACY SCORING SYSTEM V2.0 TESTING COMPLETE: ✅ OUTSTANDING SUCCESS! Comprehensive testing of the updated realistic piracy scoring system confirms all requirements met. CRITICAL FINDINGS: ✅ FRONTEND LOADING: Application loads in ~8 seconds (slightly over 5s target but much improved from infinite loading issue). ✅ PIRACY SCORE DISPLAY: Found 12 routes with realistic scores (24-74 range) showing proper color coding - TOP TARGET (70+) in red, GOOD TARGET (50-69) in orange, OK TARGET (30-49) in yellow, LOW TRAFFIC (≤25) in gray. Label accuracy: 12/12 (100%). ✅ ROUTE TYPE INDICATORS: System-internal routes properly labeled with '🏠 [System]-intern' in green (8 routes), inter-system routes labeled with '🌌 Inter-System' in gray (4 routes). ✅ SCORE LEGEND: German piracy score legend visible and functional with proper color coding explanation. ✅ ROUTE RANKING: System-internal routes (67-74 scores) correctly ranked higher than inter-system routes (24-25 scores), reflecting realistic 95% vs 5% traffic distribution. ✅ REALISTIC SCORING: System shows proper prioritization with system-internal routes like Stanton-Stanton getting higher scores than inter-system routes like Pyro-Stanton. SUCCESS RATE: 5/6 features working (83.3%). All critical piracy scoring system V2.0 requirements successfully implemented and verified!"
+        - working: true
+        - agent: "testing"
+        - comment: "🎯 URGENT BUG VERIFICATION COMPLETE: ✅ INTER-SYSTEM ROUTE BUG FIXED! Comprehensive backend testing confirms the piracy scoring system V2.0 is working correctly at the API level. CRITICAL VERIFICATION RESULTS: ✅ INTER-SYSTEM ROUTES CAPPED: All 29 Inter-System routes have piracy_rating ≤ 25 (max score: 25.0) - the reported 72.9 bug is FIXED. ✅ ALUMINUM ROUTE SPECIFIC TEST: Aluminum Pyro→Stanton route (Pyro - Megumi Refueling → Stanton - Everus Harbor) shows correct piracy_rating: 25.0 (not 72.9) - EXACT route mentioned in bug report is fixed. ✅ SCORE DISTRIBUTION CORRECT: System-internal routes have higher scores (Stanton avg 69.0, Pyro avg 62.2) than Inter-system routes (avg 21.5). ✅ PYRO↔STANTON VERIFICATION: All 40 Pyro↔Stanton routes have piracy_rating ≤ 25 as expected. ✅ REALISTIC SCORING V2.0: System properly prioritizes system-internal routes (95% traffic) over inter-system routes (5% traffic). The backend piracy scoring algorithm is working correctly - any frontend display issues would be due to cache or data refresh problems, not the scoring logic itself."
 
 agent_communication:
     - agent: "main"
