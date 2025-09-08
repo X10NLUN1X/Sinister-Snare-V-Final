@@ -2735,51 +2735,59 @@ function App() {
 
   useEffect(() => {
     const initializeApp = async () => {
-      setLoading(true);
+      console.log('🎯 EMERGENCY FAST LOAD: Starting with 8-second timeout...');
       
-      // Initialize database with error handling
-      try {
-        await sinisterDB.init();
-        console.log('✅ Sinister Database initialized successfully');
-        await fetchDbStats();
-      } catch (error) {
-        console.error('❌ Error initializing database:', error);
-        // Set default stats if database fails
-        setDbStats({
-          routes: 0,
-          commodities: 0,
-          interceptions: 0,
-          totalRecords: 0,
-          sizeBytes: 0,
-          sizeFormatted: '0 B',
-          lastUpdate: null
-        });
-      }
-      
-      // DIRECT LIVE DATA LOADING with timeout and error handling
-      console.log('🎯 LIVE: Loading real data directly from API with timeout protection...');
+      // Set immediate timeout to prevent infinite loading
+      const emergencyTimeout = setTimeout(() => {
+        console.warn('⚠️ EMERGENCY: Forcing app to load after 8 seconds');
+        setLoading(false);
+        setApiStatus({ status: 'loaded_with_timeout' });
+      }, 8000);
       
       try {
-        console.log('Step 1: Loading all live data with 15-second timeout...');
+        // Initialize database with error handling
+        try {
+          await sinisterDB.init();
+          console.log('✅ Sinister Database initialized successfully');
+          await fetchDbStats();
+        } catch (error) {
+          console.error('❌ Error initializing database:', error);
+          setDbStats({
+            routes: 0,
+            commodities: 0,
+            interceptions: 0,
+            totalRecords: 0,
+            sizeBytes: 0,
+            sizeFormatted: '0 B',
+            lastUpdate: null
+          });
+        }
         
-        // Create a timeout promise that resolves after 15 seconds
-        const timeoutPromise = new Promise((_, reject) =>
-          setTimeout(() => reject(new Error('API timeout after 15 seconds')), 15000)
-        );
+        // Try to load data with quick timeout
+        try {
+          await Promise.race([
+            loadAllData(),
+            new Promise((_, reject) => setTimeout(() => reject(new Error('Quick timeout')), 6000))
+          ]);
+          clearTimeout(emergencyTimeout); // Cancel emergency timeout if successful
+          console.log('🎉 EMERGENCY: Data loaded successfully within 6 seconds!');
+        } catch (error) {
+          console.warn('⚠️ EMERGENCY: Loading with partial data after timeout');
+          // Load minimal essential data only
+          try {
+            await fetchApiStatus();
+            await fetchRoutes();
+          } catch (e) {
+            console.warn('Even minimal loading failed, using defaults');
+          }
+          clearTimeout(emergencyTimeout);
+          setLoading(false);
+        }
         
-        // Race the data loading against the timeout
-        await Promise.race([
-          loadAllData(),
-          timeoutPromise
-        ]);
-        
-        console.log('🎉 LIVE: Real data loaded successfully within timeout!');
       } catch (error) {
-        console.error('❌ LIVE DATA ERROR or TIMEOUT:', error);
-        // Set minimal operational state and continue loading
-        setApiStatus({ status: 'error', error: error.message });
-        setRoutes([]);
-        setLoading(false); // CRITICAL: Always set loading to false
+        console.error('❌ EMERGENCY ERROR:', error);
+        clearTimeout(emergencyTimeout);
+        setLoading(false);
       }
     };
 
