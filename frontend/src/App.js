@@ -206,11 +206,18 @@ class SinisterDatabase {
     
     const transaction = this.db.transaction(['routes', 'commodities', 'interceptions'], 'readwrite');
     
-    await Promise.all([
-      transaction.objectStore('routes').clear(),
-      transaction.objectStore('commodities').clear(),
-      transaction.objectStore('interceptions').clear()
-    ]);
+    // Clear all stores
+    transaction.objectStore('routes').clear();
+    transaction.objectStore('commodities').clear();
+    transaction.objectStore('interceptions').clear();
+    
+    return new Promise((resolve, reject) => {
+      transaction.oncomplete = () => {
+        console.log('🗑️ CLEARED: All old data removed from IndexedDB');
+        resolve();
+      };
+      transaction.onerror = () => reject(transaction.error);
+    });
   }
 
   async clearOldData(weeks) {
