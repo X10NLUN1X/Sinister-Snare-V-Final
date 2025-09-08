@@ -2799,42 +2799,35 @@ function App() {
 
   useEffect(() => {
     const initializeApp = async () => {
-      console.log('🚀 CACHE-CLEAR STARTUP: Force clearing all cached data...');
+      console.log('🚀 AUTO-START: Loading app with immediate database query...');
       
-      // STEP 1: Clear browser cache data immediately
-      try {
-        localStorage.clear();
-        sessionStorage.clear();
-        console.log('✅ Browser storage cleared');
-      } catch (e) {
-        console.warn('Browser storage clear failed:', e);
-      }
-      
-      // STEP 2: Force clear IndexedDB
-      try {
-        await sinisterDB.init();
-        await sinisterDB.clearAllData();
-        console.log('✅ IndexedDB cleared completely');
-      } catch (e) {
-        console.warn('IndexedDB clear failed:', e);
-      }
-      
-      // STEP 3: Force emergency timeout (2 seconds)
+      // Force emergency timeout (3 seconds)
       const emergencyTimeout = setTimeout(() => {
-        console.warn('🚨 EMERGENCY: Forcing app load after 2 seconds');
+        console.warn('🚨 EMERGENCY: Forcing app load after 3 seconds');
         setLoading(false);
         setApiStatus({ status: 'emergency_loaded' });
-      }, 2000);
+      }, 3000);
       
       try {
-        // STEP 4: Load ONLY essential routes data with cache busting
-        console.log('Loading fresh routes with cache busting...');
+        // STEP 1: Clear any cached data
+        try {
+          localStorage.clear();
+          sessionStorage.clear();
+          await sinisterDB.init();
+          await sinisterDB.clearAllData();
+          console.log('✅ Cache cleared');
+        } catch (e) {
+          console.warn('Cache clear failed:', e);
+        }
+        
+        // STEP 2: IMMEDIATE DATABASE QUERY - Load fresh routes with cache busting
+        console.log('🎯 AUTO-START: Making immediate database query...');
         const timestamp = Date.now();
-        const response = await axios.get(`${API}/routes/analyze?limit=10&t=${timestamp}&cachebust=${Math.random()}`);
+        const response = await axios.get(`${API}/routes/analyze?limit=15&t=${timestamp}&cachebust=${Math.random()}`);
         const freshRoutes = response.data.routes || [];
         
         // CRITICAL DEBUG: Log exact scores from API
-        console.log('🐛 FRESH API DATA:', freshRoutes.slice(0,2).map(r => ({
+        console.log('🎯 AUTO-START DATABASE QUERY RESULT:', freshRoutes.slice(0,3).map(r => ({
           commodity: r.commodity_name,
           origin: r.origin_name,
           destination: r.destination_name,
@@ -2845,12 +2838,28 @@ function App() {
         setRoutes(freshRoutes);
         clearTimeout(emergencyTimeout);
         setLoading(false);
-        setApiStatus({ status: 'fresh_loaded', routes: freshRoutes.length });
+        setApiStatus({ status: 'auto_loaded', routes: freshRoutes.length });
         
-        console.log('🎉 CACHE-CLEAR: Fresh data loaded successfully!');
+        console.log('🎉 AUTO-START: Database query completed successfully!');
+        
+        // STEP 3: Load other essential data in background
+        console.log('Loading additional data in background...');
+        setTimeout(async () => {
+          try {
+            await Promise.allSettled([
+              fetchApiStatus(),
+              fetchTargets(),
+              fetchTrackingStatus(),
+              fetchDbStats()
+            ]);
+            console.log('✅ Background data loaded');
+          } catch (error) {
+            console.warn('⚠️ Background loading failed:', error);
+          }
+        }, 500);
         
       } catch (error) {
-        console.error('❌ EMERGENCY ERROR:', error);
+        console.error('❌ AUTO-START ERROR:', error);
         clearTimeout(emergencyTimeout);
         setLoading(false);
         setRoutes([]);
