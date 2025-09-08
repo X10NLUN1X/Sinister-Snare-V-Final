@@ -2562,7 +2562,7 @@ function App() {
     } catch (error) {
       console.error('Error fetching routes:', error);
     }
-  }, [dataSource, showAverageData, fetchDbStats]);
+  }, [dataSource, showAverageData]);
 
   const fetchTargets = useCallback(async () => {
     try {
@@ -2996,7 +2996,7 @@ function App() {
     };
 
     initializeApp();
-  }, []);
+  }, [fetchDbStats]);
 
   // Auto-refresh effect
   useEffect(() => {
