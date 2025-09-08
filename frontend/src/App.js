@@ -1927,7 +1927,7 @@ const RouteDetailModal = ({ isOpen, onClose, route }) => {
   );
 };
 
-const FAQModal = ({ isOpen, onClose }) => {
+const CommoditySnareModal = ({ isOpen, onClose, onSnare, onRouteSelect, onAlternativeRouteSelect }) => {
   if (!isOpen) return null;
 
   return (
