@@ -617,11 +617,11 @@ const PirateTargetCard = ({ target, onTrack }) => (
     <div className="flex space-x-2">
       <button 
         onClick={() => onTrack && onTrack(target)}
-        className="flex-1 bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded text-sm font-medium transition-colors"
+        className="flex-1 bg-red-600 hover:bg-red-700 text-white px-4 py-3 rounded text-sm font-medium transition-colors"
       >
         🔍 Track Route
       </button>
-      <button className="bg-gray-600 hover:bg-gray-700 text-white px-3 py-2 rounded text-sm transition-colors">
+      <button className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-3 rounded text-sm transition-colors font-medium">
         📍 View Map
       </button>
     </div>
