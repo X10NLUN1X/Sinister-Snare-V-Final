@@ -2895,14 +2895,6 @@ function App() {
         >
           🔄 REFRESH DATA
         </button>
-        {activeTab === 'routes' && (
-          <button 
-            onClick={handleSnareNow}
-            className="bg-red-600 hover:bg-red-700 text-white px-4 py-3 rounded-full shadow-xl transition-all duration-300 hover:scale-105 font-bold text-sm flex items-center justify-center min-w-[180px] border border-red-500"
-          >
-            🎯 SNARE NOW
-          </button>
-        )}
       </div>
       
       <Header 
