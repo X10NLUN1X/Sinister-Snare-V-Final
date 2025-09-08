@@ -2298,6 +2298,343 @@ async def test_specific_review_issues():
     
     return results
 
+async def test_piracy_scoring_system():
+    """Test the Realistic Piracy Scoring System V2.0 - Inter-System Route Bug Verification"""
+    results = TestResults()
+    
+    print(f"\n🎯 Testing Piracy Scoring System V2.0 - Inter-System Route Bug Verification")
+    print("URGENT BUG VERIFICATION: Testing Inter-System route piracy scoring caps")
+    print("Expected: Inter-System routes ≤ 25, System-internal routes 30-80+")
+    
+    async with httpx.AsyncClient(timeout=60.0) as client:
+        
+        # Test 1: Backend API Verification - Inter-System Routes Capped at 25
+        try:
+            response = await client.get(f"{BACKEND_URL}/api/routes/analyze?limit=50")
+            if response.status_code == 200:
+                data = response.json()
+                if data.get('status') == 'success':
+                    routes = data.get('routes', [])
+                    
+                    if routes:
+                        inter_system_routes = []
+                        same_system_routes = []
+                        
+                        for route in routes:
+                            origin_name = route.get('origin_name', '')
+                            destination_name = route.get('destination_name', '')
+                            piracy_rating = route.get('piracy_rating', 0)
+                            
+                            # Parse system information
+                            origin_system = origin_name.split(' - ')[0] if ' - ' in origin_name else origin_name
+                            dest_system = destination_name.split(' - ')[0] if ' - ' in destination_name else destination_name
+                            
+                            route_info = {
+                                'route_code': route.get('route_code', 'unknown'),
+                                'commodity_name': route.get('commodity_name', 'unknown'),
+                                'origin_name': origin_name,
+                                'destination_name': destination_name,
+                                'origin_system': origin_system,
+                                'dest_system': dest_system,
+                                'piracy_rating': piracy_rating,
+                                'is_inter_system': origin_system != dest_system
+                            }
+                            
+                            if origin_system != dest_system:
+                                inter_system_routes.append(route_info)
+                            else:
+                                same_system_routes.append(route_info)
+                        
+                        # Check Inter-System routes have piracy_rating ≤ 25
+                        inter_system_violations = [r for r in inter_system_routes if r['piracy_rating'] > 25]
+                        
+                        # Check System-internal routes have higher scores (30-80+)
+                        same_system_low_scores = [r for r in same_system_routes if r['piracy_rating'] < 30]
+                        
+                        if len(inter_system_violations) == 0 and len(inter_system_routes) > 0:
+                            results.add_result(
+                                "Inter-System Routes Piracy Cap (≤25)",
+                                "PASS",
+                                f"✅ All {len(inter_system_routes)} Inter-System routes have piracy_rating ≤ 25. Max score: {max([r['piracy_rating'] for r in inter_system_routes]) if inter_system_routes else 0}"
+                            )
+                        elif len(inter_system_routes) == 0:
+                            results.add_result(
+                                "Inter-System Routes Piracy Cap (≤25)",
+                                "PASS",
+                                "No Inter-System routes found in current data (acceptable)"
+                            )
+                        else:
+                            violation_details = []
+                            for violation in inter_system_violations[:3]:  # Show first 3 violations
+                                violation_details.append(f"{violation['origin_system']}→{violation['dest_system']}: {violation['piracy_rating']}")
+                            
+                            results.add_result(
+                                "Inter-System Routes Piracy Cap (≤25)",
+                                "FAIL",
+                                f"❌ {len(inter_system_violations)}/{len(inter_system_routes)} Inter-System routes exceed 25 points. Violations: {'; '.join(violation_details)}"
+                            )
+                        
+                        # Verify System-internal routes have higher scores
+                        if len(same_system_routes) > 0:
+                            avg_same_system_score = sum(r['piracy_rating'] for r in same_system_routes) / len(same_system_routes)
+                            avg_inter_system_score = sum(r['piracy_rating'] for r in inter_system_routes) / len(inter_system_routes) if inter_system_routes else 0
+                            
+                            if avg_same_system_score > avg_inter_system_score and len(same_system_low_scores) < len(same_system_routes) * 0.3:
+                                results.add_result(
+                                    "System-Internal vs Inter-System Score Distribution",
+                                    "PASS",
+                                    f"✅ System-internal routes have higher scores. Avg same-system: {avg_same_system_score:.1f}, Avg inter-system: {avg_inter_system_score:.1f}"
+                                )
+                            else:
+                                results.add_result(
+                                    "System-Internal vs Inter-System Score Distribution",
+                                    "FAIL",
+                                    f"❌ Score distribution incorrect. Avg same-system: {avg_same_system_score:.1f}, Avg inter-system: {avg_inter_system_score:.1f}, Low same-system scores: {len(same_system_low_scores)}"
+                                )
+                        
+                    else:
+                        results.add_result(
+                            "Inter-System Routes Piracy Cap (≤25)",
+                            "FAIL",
+                            "No routes returned from API"
+                        )
+                else:
+                    results.add_result(
+                        "Inter-System Routes Piracy Cap (≤25)",
+                        "FAIL",
+                        f"API returned status: {data.get('status')}"
+                    )
+            else:
+                results.add_result(
+                    "Inter-System Routes Piracy Cap (≤25)",
+                    "FAIL",
+                    f"HTTP {response.status_code}: {response.text[:200]}"
+                )
+        except Exception as e:
+            results.add_result(
+                "Inter-System Routes Piracy Cap (≤25)",
+                "FAIL",
+                f"Connection error: {str(e)}"
+            )
+        
+        # Test 2: Aluminum Route Specific Test - Pyro → Stanton should be 25 (not 72.9)
+        try:
+            response = await client.get(f"{BACKEND_URL}/api/routes/analyze?limit=100")
+            if response.status_code == 200:
+                data = response.json()
+                if data.get('status') == 'success':
+                    routes = data.get('routes', [])
+                    
+                    # Look for Aluminum routes from Pyro to Stanton
+                    aluminum_pyro_stanton_routes = []
+                    
+                    for route in routes:
+                        commodity_name = route.get('commodity_name', '').lower()
+                        origin_name = route.get('origin_name', '')
+                        destination_name = route.get('destination_name', '')
+                        piracy_rating = route.get('piracy_rating', 0)
+                        
+                        # Check if it's Aluminum commodity
+                        if 'aluminum' in commodity_name or 'aluminium' in commodity_name:
+                            # Check if it's Pyro → Stanton
+                            if 'pyro' in origin_name.lower() and 'stanton' in destination_name.lower():
+                                aluminum_pyro_stanton_routes.append({
+                                    'route_code': route.get('route_code', 'unknown'),
+                                    'commodity_name': route.get('commodity_name', 'unknown'),
+                                    'origin_name': origin_name,
+                                    'destination_name': destination_name,
+                                    'piracy_rating': piracy_rating
+                                })
+                            
+                            # Also check for the specific route mentioned: Megumi Refueling → Everus Harbor
+                            if ('megumi' in origin_name.lower() and 'everus' in destination_name.lower()) or \
+                               ('megumi' in destination_name.lower() and 'everus' in origin_name.lower()):
+                                aluminum_pyro_stanton_routes.append({
+                                    'route_code': route.get('route_code', 'unknown'),
+                                    'commodity_name': route.get('commodity_name', 'unknown'),
+                                    'origin_name': origin_name,
+                                    'destination_name': destination_name,
+                                    'piracy_rating': piracy_rating,
+                                    'is_specific_route': True
+                                })
+                    
+                    if aluminum_pyro_stanton_routes:
+                        # Check if all Aluminum Pyro→Stanton routes have piracy_rating = 25 (not 72.9)
+                        correct_scores = [r for r in aluminum_pyro_stanton_routes if r['piracy_rating'] == 25]
+                        high_scores = [r for r in aluminum_pyro_stanton_routes if r['piracy_rating'] > 50]  # Like the reported 72.9
+                        
+                        if len(correct_scores) > 0 and len(high_scores) == 0:
+                            specific_route = next((r for r in aluminum_pyro_stanton_routes if r.get('is_specific_route')), aluminum_pyro_stanton_routes[0])
+                            results.add_result(
+                                "Aluminum Pyro→Stanton Route Specific Test",
+                                "PASS",
+                                f"✅ Aluminum Pyro→Stanton route shows correct piracy_rating: {specific_route['piracy_rating']} (not 72.9). Route: {specific_route['origin_name']} → {specific_route['destination_name']}"
+                            )
+                        else:
+                            problem_routes = []
+                            for route in high_scores[:2]:  # Show first 2 problem routes
+                                problem_routes.append(f"{route['origin_name']} → {route['destination_name']}: {route['piracy_rating']}")
+                            
+                            results.add_result(
+                                "Aluminum Pyro→Stanton Route Specific Test",
+                                "FAIL",
+                                f"❌ Aluminum Pyro→Stanton routes still show high scores. Problem routes: {'; '.join(problem_routes)}"
+                            )
+                    else:
+                        results.add_result(
+                            "Aluminum Pyro→Stanton Route Specific Test",
+                            "PASS",
+                            "No Aluminum Pyro→Stanton routes found in current data (acceptable - depends on market conditions)"
+                        )
+                else:
+                    results.add_result(
+                        "Aluminum Pyro→Stanton Route Specific Test",
+                        "FAIL",
+                        f"API returned status: {data.get('status')}"
+                    )
+            else:
+                results.add_result(
+                    "Aluminum Pyro→Stanton Route Specific Test",
+                    "FAIL",
+                    f"HTTP {response.status_code}: {response.text[:200]}"
+                )
+        except Exception as e:
+            results.add_result(
+                "Aluminum Pyro→Stanton Route Specific Test",
+                "FAIL",
+                f"Connection error: {str(e)}"
+            )
+        
+        # Test 3: Score Distribution Verification - Detailed Analysis
+        try:
+            response = await client.get(f"{BACKEND_URL}/api/routes/analyze?limit=100")
+            if response.status_code == 200:
+                data = response.json()
+                if data.get('status') == 'success':
+                    routes = data.get('routes', [])
+                    
+                    if routes:
+                        # Categorize routes by system type
+                        stanton_internal = []
+                        pyro_internal = []
+                        inter_system = []
+                        
+                        for route in routes:
+                            origin_name = route.get('origin_name', '')
+                            destination_name = route.get('destination_name', '')
+                            piracy_rating = route.get('piracy_rating', 0)
+                            
+                            origin_system = origin_name.split(' - ')[0] if ' - ' in origin_name else origin_name
+                            dest_system = destination_name.split(' - ')[0] if ' - ' in destination_name else destination_name
+                            
+                            route_info = {
+                                'commodity_name': route.get('commodity_name', 'unknown'),
+                                'origin_name': origin_name,
+                                'destination_name': destination_name,
+                                'piracy_rating': piracy_rating
+                            }
+                            
+                            if origin_system == dest_system:
+                                if 'stanton' in origin_system.lower():
+                                    stanton_internal.append(route_info)
+                                elif 'pyro' in origin_system.lower():
+                                    pyro_internal.append(route_info)
+                            else:
+                                inter_system.append(route_info)
+                        
+                        # Calculate statistics
+                        stanton_avg = sum(r['piracy_rating'] for r in stanton_internal) / len(stanton_internal) if stanton_internal else 0
+                        pyro_avg = sum(r['piracy_rating'] for r in pyro_internal) / len(pyro_internal) if pyro_internal else 0
+                        inter_avg = sum(r['piracy_rating'] for r in inter_system) / len(inter_system) if inter_system else 0
+                        
+                        stanton_max = max([r['piracy_rating'] for r in stanton_internal]) if stanton_internal else 0
+                        pyro_max = max([r['piracy_rating'] for r in pyro_internal]) if pyro_internal else 0
+                        inter_max = max([r['piracy_rating'] for r in inter_system]) if inter_system else 0
+                        
+                        # Verify expected score distribution
+                        expected_distribution = True
+                        issues = []
+                        
+                        # Inter-system routes should be ≤ 25
+                        if inter_max > 25:
+                            expected_distribution = False
+                            issues.append(f"Inter-system max {inter_max} > 25")
+                        
+                        # System-internal routes should be 30-80+
+                        if stanton_internal and stanton_avg < 30:
+                            expected_distribution = False
+                            issues.append(f"Stanton internal avg {stanton_avg:.1f} < 30")
+                        
+                        if pyro_internal and pyro_avg < 30:
+                            expected_distribution = False
+                            issues.append(f"Pyro internal avg {pyro_avg:.1f} < 30")
+                        
+                        # System-internal should have higher scores than inter-system
+                        if inter_system and (stanton_internal or pyro_internal):
+                            max_internal_avg = max(stanton_avg, pyro_avg)
+                            if inter_avg >= max_internal_avg:
+                                expected_distribution = False
+                                issues.append(f"Inter-system avg {inter_avg:.1f} >= internal avg {max_internal_avg:.1f}")
+                        
+                        if expected_distribution:
+                            results.add_result(
+                                "Score Distribution Verification",
+                                "PASS",
+                                f"✅ Correct score distribution: Stanton-internal avg {stanton_avg:.1f} (max {stanton_max}), Pyro-internal avg {pyro_avg:.1f} (max {pyro_max}), Inter-system avg {inter_avg:.1f} (max {inter_max})"
+                            )
+                        else:
+                            results.add_result(
+                                "Score Distribution Verification",
+                                "FAIL",
+                                f"❌ Incorrect score distribution. Issues: {'; '.join(issues)}"
+                            )
+                        
+                        # Additional verification: Check specific route types
+                        pyro_stanton_routes = [r for r in inter_system if 
+                                             ('pyro' in r['origin_name'].lower() and 'stanton' in r['destination_name'].lower()) or
+                                             ('stanton' in r['origin_name'].lower() and 'pyro' in r['destination_name'].lower())]
+                        
+                        if pyro_stanton_routes:
+                            pyro_stanton_violations = [r for r in pyro_stanton_routes if r['piracy_rating'] > 25]
+                            if len(pyro_stanton_violations) == 0:
+                                results.add_result(
+                                    "Pyro↔Stanton Routes Verification",
+                                    "PASS",
+                                    f"✅ All {len(pyro_stanton_routes)} Pyro↔Stanton routes have piracy_rating ≤ 25"
+                                )
+                            else:
+                                results.add_result(
+                                    "Pyro↔Stanton Routes Verification",
+                                    "FAIL",
+                                    f"❌ {len(pyro_stanton_violations)}/{len(pyro_stanton_routes)} Pyro↔Stanton routes exceed 25 points"
+                                )
+                    else:
+                        results.add_result(
+                            "Score Distribution Verification",
+                            "FAIL",
+                            "No routes returned for distribution analysis"
+                        )
+                else:
+                    results.add_result(
+                        "Score Distribution Verification",
+                        "FAIL",
+                        f"API returned status: {data.get('status')}"
+                    )
+            else:
+                results.add_result(
+                    "Score Distribution Verification",
+                    "FAIL",
+                    f"HTTP {response.status_code}: {response.text[:200]}"
+                )
+        except Exception as e:
+            results.add_result(
+                "Score Distribution Verification",
+                "FAIL",
+                f"Connection error: {str(e)}"
+            )
+    
+    return results
+
 async def main():
     """Run all tests"""
     print("🏴‍☠️ SINISTER SNARE BACKEND API TEST SUITE")
@@ -2305,7 +2642,13 @@ async def main():
     
     all_results = TestResults()
     
-    # Test SPECIFIC REVIEW ISSUES FIRST (highest priority)
+    # Test URGENT PIRACY SCORING SYSTEM FIRST (highest priority)
+    piracy_results = await test_piracy_scoring_system()
+    all_results.results.extend(piracy_results.results)
+    all_results.passed += piracy_results.passed
+    all_results.failed += piracy_results.failed
+    
+    # Test SPECIFIC REVIEW ISSUES (high priority)
     review_issues_results = await test_specific_review_issues()
     all_results.results.extend(review_issues_results.results)
     all_results.passed += review_issues_results.passed
