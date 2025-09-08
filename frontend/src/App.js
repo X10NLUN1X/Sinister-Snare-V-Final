@@ -3094,31 +3094,14 @@ function App() {
           <div>
             <div className="flex justify-between items-center mb-6">
               <div>
-                <h2 className="text-2xl font-bold text-white">🛣️ Trade Route Analysis</h2>
+                <h2 className="text-3xl font-bold text-white flex items-center">
+                  🛣️ <span className="ml-3">Trade Route Analysis</span>
+                </h2>
+                <p className="text-gray-400 mt-2">Professional piracy intelligence dashboard</p>
               </div>
               <div className="text-right">
-                <p className="text-white font-semibold text-lg">{routes.length} Routen verfügbar</p>
-                <p className="text-gray-400 text-sm">Sortiert nach Piracy Score</p>
-                <div className="flex space-x-3 mt-2">
-                  <button 
-                    onClick={handleSnareNow}
-                    className="bg-red-600 hover:bg-red-700 px-4 py-2 rounded text-sm transition-colors font-medium flex items-center"
-                  >
-                    🎯 SNARE NOW
-                  </button>
-                  <button 
-                    onClick={() => setCommoditySnareModal(true)}
-                    className="bg-yellow-600 hover:bg-yellow-700 px-4 py-2 rounded text-sm transition-colors font-medium flex items-center"
-                  >
-                    💎 Commodity Snare
-                  </button>
-                  <button 
-                    onClick={handleManualRefresh}
-                    className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded text-sm transition-colors font-medium flex items-center"
-                  >
-                    🔄 Erneut laden
-                  </button>
-                </div>
+                <div className="text-white font-bold text-2xl">{routes.length}</div>
+                <p className="text-gray-400 text-sm">Active Routes</p>
               </div>
             </div>
             
