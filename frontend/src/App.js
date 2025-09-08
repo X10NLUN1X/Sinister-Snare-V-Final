@@ -3012,59 +3012,81 @@ function App() {
         {activeTab === 'routes' && (
           <div>
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold text-white">🛣️ Trade Route Analysis</h2>
-              <div className="flex space-x-3">
-                <button 
-                  onClick={handleSnareNow}
-                  className="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-md transition-colors font-medium flex items-center"
-                >
-                  🎯 SNARE NOW
-                </button>
-                <button 
-                  onClick={handleManualRefresh}
-                  className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-md transition-colors font-medium flex items-center"
-                >
-                  🔄 Manual Refresh
-                </button>
-                <button 
-                  onClick={() => setCommoditySnareModal(true)}
-                  className="bg-yellow-600 hover:bg-yellow-700 px-4 py-2 rounded-md transition-colors font-medium flex items-center"
-                >
-                  💎 Commodity Snare
-                </button>
-                <button 
-                  onClick={loadAllData}
-                  className="bg-gray-600 hover:bg-gray-700 px-4 py-2 rounded-md transition-colors font-medium"
-                >
-                  ↻ Quick Refresh
-                </button>
-                <button 
-                  onClick={trackingStatus?.active ? stopTracking : startTracking}
-                  className={`px-4 py-2 rounded-md transition-colors font-medium ${
-                    trackingStatus?.active 
-                      ? 'bg-yellow-600 hover:bg-yellow-700' 
-                      : 'bg-green-600 hover:bg-green-700'
-                  }`}
-                >
-                  {trackingStatus?.active ? '⏹️ Stop Tracking' : '▶️ Start Tracking'}
-                </button>
+              <div>
+                <h2 className="text-2xl font-bold text-white">🛣️ Trade Route Analysis</h2>
+                <p className="text-gray-400 text-sm mt-1">
+                  Realistischer Piracy Score V2.0 - Basierend auf echtem Spieler-Verhalten
+                </p>
+                <div className="flex items-center space-x-4 mt-2 text-xs">
+                  <span className="text-green-400">🏠 System-intern: TOP-Ziele (95% Traffic)</span>
+                  <span className="text-gray-400">🌌 Inter-System: Seltene Ziele (5% Traffic)</span>
+                </div>
+              </div>
+              <div className="text-right">
+                <p className="text-white font-semibold text-lg">{routes.length} Routen verfügbar</p>
+                <p className="text-gray-400 text-sm">Sortiert nach Realismus</p>
+                <div className="flex space-x-2 mt-2">
+                  <button 
+                    onClick={handleSnareNow}
+                    className="bg-red-600 hover:bg-red-700 px-3 py-1 rounded text-xs transition-colors font-medium flex items-center"
+                  >
+                    🎯 SNARE NOW
+                  </button>
+                  <button 
+                    onClick={handleManualRefresh}
+                    className="bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded text-xs transition-colors font-medium flex items-center"
+                  >
+                    🔄 Erneut laden
+                  </button>
+                </div>
               </div>
             </div>
+            
+            {/* NEW: Score Legend */}
+            <div className="bg-gray-800/50 rounded-lg p-4 mb-6 border border-gray-700">
+              <h3 className="text-white text-sm font-semibold mb-2">📊 Piracy Score Legende:</h3>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+                <div className="flex items-center space-x-2">
+                  <div className="w-3 h-3 bg-red-500 rounded"></div>
+                  <span className="text-gray-300">70+: TOP TARGET (Häufig befahren)</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <div className="w-3 h-3 bg-orange-500 rounded"></div>
+                  <span className="text-gray-300">50-69: GOOD TARGET (Gut befahren)</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <div className="w-3 h-3 bg-yellow-500 rounded"></div>
+                  <span className="text-gray-300">30-49: OK TARGET (Mäßig befahren)</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <div className="w-3 h-3 bg-gray-500 rounded"></div>
+                  <span className="text-gray-300">≤25: LOW TRAFFIC (Selten befahren)</span>
+                </div>
+              </div>
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {routes.map((route, index) => (
-                <RouteCard 
-                  key={route.id || index} 
-                  route={route} 
-                  onSelect={handleRouteClick}
-                  onAlternativeRouteSelect={handleAlternativeRouteSelect}
-                />
-              ))}
+              {routes.length > 0 ? (
+                routes.map((route, index) => (
+                  <RouteCard 
+                    key={route.id || index} 
+                    route={route} 
+                    onSelect={handleRouteClick}
+                    onAlternativeRouteSelect={handleAlternativeRouteSelect}
+                  />
+                ))
+              ) : (
+                <div className="col-span-full text-center py-12">
+                  <p className="text-gray-400 text-lg">Keine Routen verfügbar. API-Verbindung prüfen.</p>
+                  <button 
+                    onClick={handleManualRefresh}
+                    className="mt-4 bg-red-600 hover:bg-red-700 px-4 py-2 rounded text-white"
+                  >
+                    🔄 Erneut laden
+                  </button>
+                </div>
+              )}
             </div>
-            {routes.length === 0 && (
-              <div className="text-center py-12">
-                <p className="text-gray-400 text-lg">No routes available. Check API connection.</p>
-              </div>
-            )}
           </div>
         )}
 
