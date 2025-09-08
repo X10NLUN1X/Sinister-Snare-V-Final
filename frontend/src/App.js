@@ -2735,58 +2735,70 @@ function App() {
 
   useEffect(() => {
     const initializeApp = async () => {
-      console.log('🎯 EMERGENCY FAST LOAD: Starting with 8-second timeout...');
+      console.log('🚀 QUICK LOAD: Starting immediate load...');
+      setLoading(true);
       
-      // Set immediate timeout to prevent infinite loading
-      const emergencyTimeout = setTimeout(() => {
-        console.warn('⚠️ EMERGENCY: Forcing app to load after 8 seconds');
+      // Emergency timeout: Force load after 3 seconds
+      const forceLoadTimeout = setTimeout(() => {
+        console.warn('🚨 FORCING FRONTEND LOAD - Performance emergency timeout');
         setLoading(false);
-        setApiStatus({ status: 'loaded_with_timeout' });
-      }, 8000);
+        setApiStatus({ status: 'forced_load', message: 'Loaded with timeout' });
+      }, 3000);
       
       try {
-        // Initialize database with error handling
-        try {
-          await sinisterDB.init();
-          console.log('✅ Sinister Database initialized successfully');
-          await fetchDbStats();
-        } catch (error) {
-          console.error('❌ Error initializing database:', error);
-          setDbStats({
-            routes: 0,
-            commodities: 0,
-            interceptions: 0,
-            totalRecords: 0,
-            sizeBytes: 0,
-            sizeFormatted: '0 B',
-            lastUpdate: null
-          });
-        }
-        
-        // Try to load data with quick timeout
+        // Initialize database quickly
         try {
           await Promise.race([
-            loadAllData(),
-            new Promise((_, reject) => setTimeout(() => reject(new Error('Quick timeout')), 6000))
+            sinisterDB.init(),
+            new Promise((_, reject) => setTimeout(() => reject(new Error('DB timeout')), 1000))
           ]);
-          clearTimeout(emergencyTimeout); // Cancel emergency timeout if successful
-          console.log('🎉 EMERGENCY: Data loaded successfully within 6 seconds!');
+          console.log('✅ Database initialized');
         } catch (error) {
-          console.warn('⚠️ EMERGENCY: Loading with partial data after timeout');
-          // Load minimal essential data only
-          try {
-            await fetchApiStatus();
-            await fetchRoutes();
-          } catch (e) {
-            console.warn('Even minimal loading failed, using defaults');
-          }
-          clearTimeout(emergencyTimeout);
+          console.warn('⚠️ Database init failed, continuing:', error.message);
+        }
+        
+        // Load ONLY essential data for immediate display
+        try {
+          console.log('Loading essential APIs only...');
+          await Promise.race([
+            Promise.all([
+              fetchApiStatus(),
+              fetchRoutes()  // Only load routes for immediate display
+            ]),
+            new Promise((_, reject) => setTimeout(() => reject(new Error('Essential APIs timeout')), 2000))
+          ]);
+          
+          clearTimeout(forceLoadTimeout);
+          console.log('✅ Essential data loaded successfully');
+          setLoading(false);
+          
+          // Load remaining data in background (non-blocking)
+          console.log('Loading remaining data in background...');
+          setTimeout(async () => {
+            try {
+              await Promise.allSettled([
+                fetchTargets(),
+                fetchHourlyData(),
+                fetchAlerts(),
+                fetchTrends(),
+                fetchTrackingStatus(),
+                fetchDbStats()
+              ]);
+              console.log('✅ Background data loaded');
+            } catch (error) {
+              console.warn('⚠️ Background loading failed:', error);
+            }
+          }, 100);
+          
+        } catch (error) {
+          console.warn('⚠️ Essential API loading failed:', error.message);
+          clearTimeout(forceLoadTimeout);
           setLoading(false);
         }
         
       } catch (error) {
-        console.error('❌ EMERGENCY ERROR:', error);
-        clearTimeout(emergencyTimeout);
+        console.error('❌ App initialization error:', error);
+        clearTimeout(forceLoadTimeout);
         setLoading(false);
       }
     };
