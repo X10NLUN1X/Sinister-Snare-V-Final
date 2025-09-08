@@ -2123,50 +2123,38 @@ const CommoditySnareModal = ({ isOpen, onClose, onSnare }) => {
                 </div>
                 
                 <div className="space-y-4 max-h-96 overflow-y-auto">
-                  {(snareResults.snare_opportunities || []).slice(0, 10).map((opportunity, idx) => (
-                    <div key={idx} className="bg-black/30 rounded p-4 border border-gray-600">
-                      <div className="flex justify-between items-start mb-2">
-                        <div>
-                          <h5 className="text-white font-semibold">{opportunity.route_code || 'Unknown Route'}</h5>
-                          <p className="text-yellow-400 text-sm">{opportunity.strategy || 'No strategy available'}</p>
-                        </div>
-                        <div className="text-right">
-                          <span className={`px-2 py-1 rounded text-xs font-medium ${
-                            opportunity.risk_level === 'ELITE' ? 'bg-purple-900 text-purple-400' :
-                            opportunity.risk_level === 'HIGH' ? 'bg-red-900 text-red-400' :
-                            'bg-yellow-900 text-yellow-400'
-                          }`}>
-                            {opportunity.risk_level || 'UNKNOWN'}
-                          </span>
-                        </div>
-                      </div>
-                      
-                      <div className="grid grid-cols-2 gap-4 text-sm mb-3">
-                        <div>
-                          <p className="text-gray-400">Buying Point:</p>
-                          <p className="text-white">{opportunity.buying_point || 'Unknown'}</p>
-                        </div>
-                        <div>
-                          <p className="text-gray-400">Selling Point:</p>
-                          <p className="text-white">{opportunity.selling_point || 'Unknown'}</p>
-                        </div>
-                      </div>
-                      
-                      <div className="bg-gray-700/30 rounded p-2">
-                        <p className={`text-sm font-medium ${
-                          (opportunity.warning || '').includes('⚠️') ? 'text-orange-400' : 'text-green-400'
-                        }`}>
-                          {opportunity.warning || 'No additional information'}
-                        </p>
-                      </div>
-                      
-                      <div className="flex justify-between items-center mt-3 text-sm">
-                        <span className="text-green-400 font-semibold">{((opportunity.profit || 0) / 1000000).toFixed(2)}M aUEC</span>
-                        <span className="text-red-400 font-semibold">Score: {(opportunity.piracy_rating || 0).toFixed(1)}</span>
-                        <span className="text-blue-400">{opportunity.estimated_traders || 0} traders/hour</span>
-                      </div>
-                    </div>
-                  ))}
+                  {(snareResults.snare_opportunities || []).slice(0, 10).map((opportunity, idx) => {
+                    // Convert opportunity to route format for RouteCard compatibility
+                    const routeData = {
+                      id: `commodity-${idx}`,
+                      commodity_name: snareResults.commodity,
+                      origin_name: opportunity.buying_point || 'Unknown Origin',
+                      destination_name: opportunity.selling_point || 'Unknown Destination', 
+                      route_code: opportunity.route_code || `${snareResults.commodity}-${idx}`,
+                      profit: opportunity.profit || 0,
+                      piracy_rating: opportunity.piracy_rating || 0,
+                      risk_level: opportunity.risk_level || 'UNKNOWN',
+                      roi: opportunity.roi || 0,
+                      distance: opportunity.distance || 0,
+                      score: opportunity.score || 0,
+                      investment: opportunity.investment || 0,
+                      buy_price: opportunity.buy_price || 0,
+                      sell_price: opportunity.sell_price || 0,
+                      buy_stock: opportunity.buy_stock || 0,
+                      sell_stock: opportunity.sell_stock || 0,
+                      interception_zones: opportunity.interception_zones || [],
+                      last_seen: new Date().toISOString()
+                    };
+                    
+                    return (
+                      <RouteCard 
+                        key={routeData.id} 
+                        route={routeData} 
+                        onSelect={handleRouteClick}
+                        onAlternativeRouteSelect={handleAlternativeRouteSelect}
+                      />
+                    );
+                  })}
                 </div>
                 
                 {(!snareResults.snare_opportunities || snareResults.snare_opportunities.length === 0) && (
