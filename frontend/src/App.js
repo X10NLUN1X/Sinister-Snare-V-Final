@@ -394,6 +394,38 @@ const RouteCard = ({ route, onSelect, onAlternativeRouteSelect }) => {
     }
   };
 
+  // NEW: Enhanced piracy score color and labeling
+  const getPiracyScoreColor = (score) => {
+    if (score >= 70) return 'text-red-300 bg-red-900/30'; // High traffic routes
+    if (score >= 50) return 'text-orange-300 bg-orange-900/30'; // Good routes
+    if (score >= 30) return 'text-yellow-300 bg-yellow-900/30'; // Moderate routes
+    if (score <= 25) return 'text-gray-400 bg-gray-800/30'; // Inter-system (low traffic)
+    return 'text-gray-400 bg-gray-800/30';
+  };
+
+  // NEW: Route type indicator (System-internal vs Inter-system)
+  const getRouteTypeIndicator = () => {
+    const originSystem = route.origin_name?.split(' - ')[0] || '';
+    const destSystem = route.destination_name?.split(' - ')[0] || '';
+    const isInterSystem = originSystem !== destSystem;
+    
+    if (isInterSystem) {
+      return {
+        label: '🌌 Inter-System',
+        color: 'text-gray-400 text-xs',
+        tooltip: 'Selten befahren - nur 5% des Traffics'
+      };
+    } else {
+      return {
+        label: `🏠 ${originSystem}-intern`,
+        color: 'text-green-400 text-xs font-medium',
+        tooltip: 'Häufig befahren - 95% des Traffics'
+      };
+    }
+  };
+
+  const routeType = getRouteTypeIndicator();
+
   const formatTime = (timestamp) => {
     if (!timestamp) return 'Unknown';
     const date = new Date(timestamp);
@@ -412,6 +444,12 @@ const RouteCard = ({ route, onSelect, onAlternativeRouteSelect }) => {
           <h3 className="text-white text-lg font-semibold mb-1">{route.commodity_name}</h3>
           <p className="text-gray-400 text-sm font-mono">{route.route_code}</p>
           <p className="text-gray-500 text-xs mt-1">Last seen: {formatTime(route.last_seen)}</p>
+          {/* NEW: Route type indicator */}
+          <div className="mt-2">
+            <span className={routeType.color} title={routeType.tooltip}>
+              {routeType.label}
+            </span>
+          </div>
         </div>
         <span className={`px-3 py-1 rounded-full text-xs font-medium border ${getRiskColor(route.risk_level)}`}>
           {route.risk_level}
@@ -458,9 +496,14 @@ const RouteCard = ({ route, onSelect, onAlternativeRouteSelect }) => {
           <p className="text-2xl font-bold text-green-400">{(route.profit / 1000000).toFixed(2)}M</p>
           <p className="text-gray-400 text-xs">Profit (aUEC)</p>
         </div>
-        <div className="text-center bg-black/30 rounded p-3">
-          <p className="text-2xl font-bold text-red-400">{route.piracy_rating}</p>
-          <p className="text-gray-400 text-xs">Piracy Score</p>
+        {/* NEW: Enhanced Piracy Score display */}
+        <div className={`text-center rounded p-3 ${getPiracyScoreColor(route.piracy_rating)}`}>
+          <p className="text-2xl font-bold">{route.piracy_rating}</p>
+          <p className="text-xs font-medium">
+            {route.piracy_rating >= 70 ? 'TOP TARGET' : 
+             route.piracy_rating >= 50 ? 'GOOD TARGET' :
+             route.piracy_rating >= 30 ? 'OK TARGET' : 'LOW TRAFFIC'}
+          </p>
         </div>
       </div>
       
