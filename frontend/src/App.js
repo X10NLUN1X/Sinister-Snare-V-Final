@@ -3001,19 +3001,20 @@ function App() {
               </div>
             </div>
             
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <div>
+            <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+              <div className="lg:col-span-3">
                 <h3 className="text-xl font-bold text-white mb-4">🎯 Top 3 Piracy Targets (Live Routes)</h3>
                 <p className="text-gray-400 text-sm mb-4">Die besten Routen mit realistischen Piracy Scores</p>
-                <div className="space-y-4">
+                <div className="space-y-3">
                   {routes.length > 0 ? (
                     routes.slice(0, 3).map((route, index) => (
-                      <RouteCard 
-                        key={route.id || index} 
-                        route={route} 
-                        onSelect={handleRouteClick}
-                        onAlternativeRouteSelect={handleAlternativeRouteSelect}
-                      />
+                      <div key={route.id || index} className="transform scale-90">
+                        <RouteCard 
+                          route={route} 
+                          onSelect={handleRouteClick}
+                          onAlternativeRouteSelect={handleAlternativeRouteSelect}
+                        />
+                      </div>
                     ))
                   ) : (
                     <div className="bg-gray-800/30 rounded-lg p-6 border border-gray-700 text-center">
@@ -3037,7 +3038,7 @@ function App() {
                   )}
                 </div>
               </div>
-              <div>
+              <div className="lg:col-span-2">
                 <InterceptionMap routes={routes} targets={targets} />
               </div>
             </div>
