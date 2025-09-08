@@ -500,7 +500,7 @@ const RouteCard = ({ route, onSelect, onAlternativeRouteSelect }) => {
       
       <div className="grid grid-cols-2 gap-4 mb-4">
         <div className="text-center bg-black/30 rounded p-3">
-          <p className="text-2xl font-bold text-green-400">{(route.profit / 1000000).toFixed(2)}M</p>
+          <p className="text-2xl font-bold text-green-400">{((route.profit || 0) / 1000000).toFixed(2)}M</p>
           <p className="text-gray-400 text-xs">Profit (aUEC)</p>
         </div>
         {/* NEW: Enhanced Piracy Score display */}
