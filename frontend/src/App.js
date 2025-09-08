@@ -3046,7 +3046,7 @@ function App() {
                             setActiveTab('routes');
                             fetchRoutes();
                           }}
-                          className="bg-red-600 hover:bg-red-700 px-4 py-2 rounded text-white text-sm"
+                          className="bg-red-600 hover:bg-red-700 px-6 py-3 rounded text-white text-sm font-medium"
                         >
                           🔄 Routen manuell laden
                         </button>
