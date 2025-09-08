@@ -2878,70 +2878,112 @@ function App() {
 
   return (
     <div className="min-h-screen bg-black text-white">
-      {/* Apple-Inspired Clean Navigation with Integrated Actions */}
-      <div className="bg-gray-900 border-b border-gray-800">
-        <div className="container mx-auto px-6 py-4">
-          <div className="flex items-center justify-center space-x-8">
-            {/* Core Navigation - Apple Style */}
-            <div className="flex items-center space-x-1 bg-gray-800 rounded-full p-1">
-              {[
-                { id: 'dashboard', icon: '📊', label: 'Dashboard' },
-                { id: 'routes', icon: '🛣️', label: 'Routes' },
-                { id: 'targets', icon: '🎯', label: 'Targets' },
-                { id: 'alerts', icon: '🚨', label: 'Alerts' }
-              ].map(tab => (
-                <button 
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`px-6 py-3 rounded-full transition-all duration-300 font-medium ${
-                    activeTab === tab.id 
-                      ? 'bg-white text-black shadow-lg transform scale-105' 
-                      : 'text-gray-400 hover:text-white hover:bg-gray-700'
-                  }`}
-                >
-                  <span className="mr-2">{tab.icon}</span>
-                  {tab.label}
-                </button>
-              ))}
+      {/* Professional Fixed Action Panel */}
+      <div className="fixed right-6 top-1/2 transform -translate-y-1/2 z-40 flex flex-col space-y-3">
+        <button 
+          onClick={() => setCommoditySnareModal(true)}
+          className="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-3 rounded-full shadow-xl transition-all duration-300 hover:scale-105 font-bold text-sm flex items-center justify-center min-w-[180px] border border-yellow-500"
+        >
+          💎 COMMODITY SNARE
+        </button>
+        <button 
+          onClick={handleManualRefresh}
+          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-full shadow-xl transition-all duration-300 hover:scale-105 font-bold text-sm flex items-center justify-center min-w-[180px] border border-blue-500"
+        >
+          🔄 REFRESH DATA
+        </button>
+        {activeTab === 'routes' && (
+          <button 
+            onClick={handleSnareNow}
+            className="bg-red-600 hover:bg-red-700 text-white px-4 py-3 rounded-full shadow-xl transition-all duration-300 hover:scale-105 font-bold text-sm flex items-center justify-center min-w-[180px] border border-red-500"
+          >
+            🎯 SNARE NOW
+          </button>
+        )}
+      </div>
+      
+      <Header 
+        dataSource={dataSource}
+        setDataSource={setDataSource}
+        showAverageData={showAverageData}
+        setShowAverageData={setShowAverageData}
+      />
+      
+      {/* Professional Status Bar - Compact */}
+      <div className="bg-gray-900 border-b border-gray-700">
+        <div className="container mx-auto px-6 py-3">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+            <div className="bg-gray-800 rounded-lg px-3 py-2 text-center border border-gray-700">
+              <div className={`text-lg font-bold ${apiStatus?.primary_data_source === 'real' ? 'text-green-400' : 'text-yellow-400'}`}>
+                {apiStatus?.primary_data_source === 'real' ? 'LIVE' : 'LOADING'}
+              </div>
+              <div className="text-gray-400 text-xs">Data Source</div>
             </div>
-            
-            {/* Quick Actions - Clean Design */}
-            <div className="flex items-center space-x-3">
-              <button 
-                onClick={() => setCommoditySnareModal(true)}
-                className="bg-yellow-600 hover:bg-yellow-700 text-white px-6 py-3 rounded-full font-bold transition-all duration-300 hover:scale-105 shadow-lg"
-              >
-                💎 Commodity Snare
-              </button>
-              <button 
-                onClick={handleManualRefresh}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-full font-bold transition-all duration-300 hover:scale-105 shadow-lg"
-              >
-                🔄 Refresh
-              </button>
+            <div className="bg-gray-800 rounded-lg px-3 py-2 text-center border border-gray-700">
+              <div className="text-green-400 text-lg font-bold">{routes.length}</div>
+              <div className="text-gray-400 text-xs">Active Routes</div>
             </div>
-            
-            {/* Secondary Navigation */}
-            <div className="flex items-center space-x-2">
-              {[
-                { id: 'map', icon: '🗺️' },
-                { id: 'database', icon: '💾' },
-                { id: 'export', icon: '📤' }
-              ].map(tab => (
-                <button 
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`p-3 rounded-full transition-all duration-300 ${
-                    activeTab === tab.id 
-                      ? 'bg-red-600 text-white shadow-lg' 
-                      : 'text-gray-400 hover:text-white hover:bg-gray-700'
-                  }`}
-                >
-                  {tab.icon}
-                </button>
-              ))}
+            <div className="bg-gray-800 rounded-lg px-3 py-2 text-center border border-gray-700">
+              <div className={`text-lg font-bold ${alerts.filter(a => !a.acknowledged).length > 0 ? 'text-red-400' : 'text-green-400'}`}>
+                {alerts.filter(a => !a.acknowledged).length}
+              </div>
+              <div className="text-gray-400 text-xs">Live Alerts</div>
+            </div>
+            <div className="bg-gray-800 rounded-lg px-3 py-2 text-center border border-gray-700">
+              <div className={`text-lg font-bold ${trackingStatus?.active ? 'text-green-400' : 'text-gray-400'}`}>
+                {trackingStatus?.active ? 'ON' : 'OFF'}
+              </div>
+              <div className="text-gray-400 text-xs">Tracking</div>
+            </div>
+            <div className="bg-gray-800 rounded-lg px-3 py-2 text-center border border-gray-700">
+              <div className={`text-lg font-bold ${apiStatus?.database === 'connected' ? 'text-green-400' : 'text-red-400'}`}>
+                {apiStatus?.database === 'connected' ? 'OK' : 'ERR'}
+              </div>
+              <div className="text-gray-400 text-xs">Database</div>
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* Enhanced Navigation */}
+      <div className="container mx-auto px-6">
+        <div className="flex flex-wrap gap-1 bg-gray-800 rounded-lg p-1">
+          {[
+            { id: 'dashboard', label: '🎛️ Dashboard', desc: 'Overview' },
+            { id: 'routes', label: '🛣️ Routes', desc: 'Trade Analysis' },
+            { id: 'targets', label: '🎯 Targets', desc: 'Priority Hits' },
+            { id: 'map', label: '🗺️ Map', desc: 'Interception' },
+            { id: 'alerts', label: '🚨 Alerts', desc: 'Notifications' },
+            { id: 'trends', label: '📈 Trends', desc: 'Historical' },
+            { id: 'database', label: '💾 Database', desc: 'Lokale Daten' },
+            { id: 'export', label: '📁 Export', desc: 'Data Export' }
+          ].map(tab => (
+            <button 
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`px-4 py-2 rounded-md transition-all duration-200 ${
+                activeTab === tab.id 
+                  ? 'bg-red-600 text-white shadow-lg' 
+                  : 'text-gray-400 hover:text-white hover:bg-gray-700'
+              }`}
+            >
+              <div className="text-sm font-medium">{tab.label}</div>
+              <div className="text-xs opacity-75">{tab.desc}</div>
+            </button>
+          ))}
+        </div>
+        
+        {/* Auto-refresh toggle */}
+        <div className="flex justify-end mt-2">
+          <label className="flex items-center space-x-2 text-sm text-gray-400">
+            <input 
+              type="checkbox" 
+              checked={autoRefresh} 
+              onChange={(e) => setAutoRefresh(e.target.checked)}
+              className="rounded"
+            />
+            <span>Auto-refresh (60 min)</span>
+          </label>
         </div>
       </div>
 
