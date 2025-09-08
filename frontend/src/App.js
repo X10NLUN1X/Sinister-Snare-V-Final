@@ -516,19 +516,19 @@ const RouteCard = ({ route, onSelect, onAlternativeRouteSelect }) => {
       
       <div className="grid grid-cols-4 gap-2 text-xs">
         <div className="text-center">
-          <p className="text-white font-medium">{route.roi.toFixed(1)}%</p>
+          <p className="text-white font-medium">{(route.roi || 0).toFixed(1)}%</p>
           <p className="text-gray-400">ROI</p>
         </div>
         <div className="text-center">
-          <p className="text-white font-medium">{(route.distance / 1000).toFixed(0)}k</p>
+          <p className="text-white font-medium">{((route.distance || 0) / 1000).toFixed(0)}k</p>
           <p className="text-gray-400">Distance</p>
         </div>
         <div className="text-center">
-          <p className="text-white font-medium">{route.score}</p>
+          <p className="text-white font-medium">{route.score || 0}</p>
           <p className="text-gray-400">Traffic</p>
         </div>
         <div className="text-center">
-          <p className="text-white font-medium">{(route.investment / 1000000).toFixed(1)}M</p>
+          <p className="text-white font-medium">{((route.investment || 0) / 1000000).toFixed(1)}M</p>
           <p className="text-gray-400">Investment</p>
         </div>
       </div>
