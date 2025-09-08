@@ -2341,8 +2341,18 @@ async def get_api_status():
         except:
             db_status = "error"
         
-        # Get counts
-        route_count = await db.route_analyses.count_documents({})
+        # Get dynamic route count from Star Profit API
+        try:
+            routes_data = await star_profit_client.get_trading_routes_processed()
+            if routes_data.get('status') == 'ok':
+                live_route_count = len(routes_data.get('data', []))
+            else:
+                live_route_count = 0
+        except:
+            live_route_count = 0
+            
+        # Get database counts for historical data
+        stored_route_count = await db.route_analyses.count_documents({})
         alert_count = await db.alerts.count_documents({"acknowledged": False})
         trend_count = await db.historical_trends.count_documents({})
         
@@ -2353,14 +2363,15 @@ async def get_api_status():
             "data_sources": {
                 "star_profit_api": {
                     "status": star_profit_status,
-                    "records_available": star_profit_records,
+                    "records_available": live_route_count,  # FIX: Use live route count
                     "description": "Real Star Citizen commodity data (primary)"
                 }
             },
             "database": db_status,
             "api_configured": star_profit_status == "connected",
             "statistics": {
-                "total_routes_analyzed": route_count,
+                "total_routes_analyzed": live_route_count,  # FIX: Use live route count instead of database count
+                "stored_routes": stored_route_count,  # Add separate field for stored routes
                 "active_alerts": alert_count,
                 "historical_data_points": trend_count,
                 "tracking_active": tracking_state.get('active', False)
