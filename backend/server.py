@@ -1996,18 +1996,28 @@ async def snare_commodity(commodity_name: str = Query(description="Commodity nam
         average_profit = sum(r.get('profit', 0) for r in profitable_routes) / max(len(profitable_routes), 1)
         max_piracy_rating = max((r.get('piracy_rating', 0) for r in commodity_routes), default=0)
         
-        # Generate snare opportunities
+        # Generate snare opportunities with COMPLETE route data
         snare_opportunities = []
         for route in sorted(commodity_routes, key=lambda x: x.get('piracy_rating', 0), reverse=True)[:10]:
             opportunity = {
+                # FIXED: Include ALL required fields that frontend expects
                 "route_code": route.get('route_code', 'UNKNOWN'),
                 "strategy": f"Intercept {route.get('commodity_name', commodity_name)} traders on {route.get('route_code', 'this route')}",
                 "risk_level": route.get('risk_level', 'MODERATE'),
                 "buying_point": route.get('origin_name', 'Unknown'),
                 "selling_point": route.get('destination_name', 'Unknown'),
                 "profit": route.get('profit', 0),
+                "investment": route.get('investment', 0),  # ADDED: Missing investment field
+                "roi": route.get('roi', 0),  # ADDED: Missing ROI field
+                "buy_price": route.get('buy_price', 0),  # ADDED: Missing buy_price field
+                "sell_price": route.get('sell_price', 0),  # ADDED: Missing sell_price field
+                "buy_stock": route.get('buy_stock', 0),  # ADDED: Missing buy_stock field
+                "sell_stock": route.get('sell_stock', 0),  # ADDED: Missing sell_stock field
+                "distance": route.get('distance', 0),  # ADDED: Missing distance field
+                "score": route.get('score', 0),  # ADDED: Missing score field
                 "piracy_rating": route.get('piracy_rating', 0),
                 "estimated_traders": max(1, int(route.get('score', 0) / 10)),
+                "interception_zones": route.get('interception_zones', []),  # ADDED: Missing interception_zones
                 "warning": f"⚠️ Inter-system route - expect security patrols" if route in inter_system_routes else "✅ Same-system route - lower security risk"
             }
             snare_opportunities.append(opportunity)
