@@ -2737,21 +2737,30 @@ function App() {
         });
       }
       
-      // DIRECT LIVE DATA LOADING: Load real data immediately instead of mock data
-      console.log('🎯 LIVE: Loading real data directly from API...');
+      // DIRECT LIVE DATA LOADING with timeout and error handling
+      console.log('🎯 LIVE: Loading real data directly from API with timeout protection...');
       
       try {
-        console.log('Step 1: Loading all live data immediately...');
-        // Load all data directly from API instead of using mock data
-        await loadAllData();
+        console.log('Step 1: Loading all live data with 15-second timeout...');
         
-        console.log('🎉 LIVE: Real data loaded successfully - no mock data displayed!');
+        // Create a timeout promise that resolves after 15 seconds
+        const timeoutPromise = new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('API timeout after 15 seconds')), 15000)
+        );
+        
+        // Race the data loading against the timeout
+        await Promise.race([
+          loadAllData(),
+          timeoutPromise
+        ]);
+        
+        console.log('🎉 LIVE: Real data loaded successfully within timeout!');
       } catch (error) {
-        console.error('❌ LIVE DATA ERROR:', error);
-        // Only fall back to basic state if API completely fails
+        console.error('❌ LIVE DATA ERROR or TIMEOUT:', error);
+        // Set minimal operational state and continue loading
         setApiStatus({ status: 'error', error: error.message });
         setRoutes([]);
-        setLoading(false);
+        setLoading(false); // CRITICAL: Always set loading to false
       }
     };
 
