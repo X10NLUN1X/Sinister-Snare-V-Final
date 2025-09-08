@@ -2708,16 +2708,37 @@ function App() {
     }
   };
 
-  const handleSnareNow = async () => {
+  const handleSnareNuke = useCallback(async () => {
     try {
-      const response = await axios.get(`${API}/snare/now`);
-      if (response.data.status === 'success') {
-        setSnareModal({ open: true, data: response.data.snare_data });
+      console.log('🔥 SNARE NUKE: Filtering for ELITE routes with highest interception probability...');
+      
+      // Filter routes for ELITE risk level and sort by interception probability
+      const eliteRoutes = routes
+        .filter(route => route.risk_level === 'ELITE')
+        .sort((a, b) => {
+          // Sort by piracy_rating (highest interception probability first)
+          const aPiracy = parseFloat(a.piracy_rating) || 0;
+          const bPiracy = parseFloat(b.piracy_rating) || 0;
+          return bPiracy - aPiracy;
+        })
+        .slice(0, 10); // Top 10 ELITE routes
+      
+      if (eliteRoutes.length === 0) {
+        alert('⚠️ No ELITE routes found with high interception probability!');
+        return;
       }
+      
+      // Set filtered routes and switch to routes tab
+      setRoutes(eliteRoutes);
+      setActiveTab('routes');
+      
+      console.log(`🎯 SNARE NUKE: Found ${eliteRoutes.length} ELITE routes with highest interception rates`);
+      
     } catch (error) {
-      console.error('Error getting snare data:', error);
+      console.error('❌ SNARE NUKE error:', error);
+      alert('Error filtering ELITE routes. Please try again.');
     }
-  };
+  }, [routes, setActiveTab]);
 
   const startTracking = async () => {
     try {
