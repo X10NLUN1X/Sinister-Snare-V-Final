@@ -1818,7 +1818,7 @@ const RouteDetailModal = ({ isOpen, onClose, route }) => {
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-400">ROI:</span>
-                <span className="text-yellow-400">{route.roi?.toFixed(1)}%</span>
+                <span className="text-yellow-400">{(route.roi || 0).toFixed(1)}%</span>
               </div>
               {route.buy_price > 0 && (
                 <div className="flex justify-between">
