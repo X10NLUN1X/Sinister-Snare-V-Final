@@ -2450,16 +2450,29 @@ function App() {
         setRoutes(routes);
         console.log(`✅ Fetched ${routes.length} ${dataTypeParam} routes`);
       } else {
-        // Fetch current data with specified data source
-        response = await axios.get(`${API}/routes/analyze?limit=20&min_score=10&include_coordinates=true&data_source=${dataSource}`);
+        // FORCE FRESH DATA: Add timestamp to prevent caching
+        const timestamp = Date.now();
+        response = await axios.get(`${API}/routes/analyze?limit=20&min_score=10&include_coordinates=true&data_source=${dataSource}&t=${timestamp}`);
         const newRoutes = response.data.routes || [];
+        
+        // CRITICAL DEBUG: Log the actual API response
+        console.log('🐛 DEBUG: Raw API response routes:', newRoutes.slice(0,3).map(r => ({
+          commodity: r.commodity_name,
+          origin: r.origin_name,
+          destination: r.destination_name,
+          piracy_rating: r.piracy_rating,
+          route_code: r.route_code
+        })));
+        
         setRoutes(newRoutes);
         
         // ENABLED: Store routes in local database for historical analysis
         if (newRoutes.length > 0) {
           try {
+            // CLEAR OLD DATA FIRST to prevent mixing old/new scores
+            await sinisterDB.clearAllData();
             await sinisterDB.addRoutes(newRoutes);
-            console.log(`✅ Stored ${newRoutes.length} routes from ${dataSource} in local database`);
+            console.log(`✅ Stored ${newRoutes.length} FRESH routes from ${dataSource} (old data cleared)`);
             // Update database stats in background (don't wait for it)
             fetchDbStats().catch(e => console.warn('Database stats update failed:', e.message));
           } catch (dbError) {
