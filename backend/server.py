@@ -319,10 +319,10 @@ class StarProfitClient:
             # Salvage Operations (VERIFIED Stanton)
             "Brio's Breaker", "Devlin Scrap", "Samson Son's", "Reclamation Orinth",
             
-            # Stanton Outposts and Trading Posts (corrected based on web research)
-            "Seraphim", "Ashland", "Deakins Research", "Hickes Research",
+            # Stanton Outposts and Trading Posts (CORRECTED Star Citizen Geography)
+            "Seraphim", "Deakins Research", "Hickes Research",  # Ashland moved to Pyro
             "Maker's Point", "Pickers Field", "Prospect Depot",
-            "Seer's Canyon", "Shepherd's Rest", "Sunset Mesa", "Fallow Field", "Bueno Ravine",
+            "Sunset Mesa", "Fallow Field", "Bueno Ravine",  # Seer's Canyon & Shepherd's Rest moved to Pyro
             
             # TDD (Trade & Development Division) - Stanton 
             "TDD Area 18", "TDD New Babbage", "TDD Orison",
