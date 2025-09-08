@@ -313,7 +313,7 @@ class StarProfitClient:
             "HDMS-Lathan", "HDMS-Norgaard", "HDMS-Oparei", "HDMS-Perlman", "HDMS-Pinewood",
             "HDMS-Ryder", "HDMS-Stanhope", "HDMS-Thedus", "HDMS-Woodruff",
             
-            # Research Facilities (VERIFIED Microtech/Stanton)
+            # Research Facilities (CORRECTED: Deakins Research is on Yela, not Microtech)
             "Rayari Anvik", "Rayari Cantwell", "Rayari Deltana", "Rayari Kaltag", "Rayari McGrath",
             
             # Salvage Operations (VERIFIED Stanton)
