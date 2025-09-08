@@ -3128,7 +3128,7 @@ function App() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
               {routes.length > 0 ? (
                 routes.map((route, index) => (
                   <RouteCard 
@@ -3139,14 +3139,15 @@ function App() {
                   />
                 ))
               ) : (
-                <div className="col-span-full text-center py-12">
-                  <p className="text-gray-400 text-lg">Keine Routen verfügbar. API-Verbindung prüfen.</p>
-                  <button 
-                    onClick={handleManualRefresh}
-                    className="mt-4 bg-red-600 hover:bg-red-700 px-6 py-3 rounded text-white font-medium"
-                  >
-                    🔄 Erneut laden
-                  </button>
+                <div className="col-span-full bg-gray-800/50 rounded-lg p-12 border border-gray-700 text-center">
+                  <div className="text-8xl mb-6">📡</div>
+                  <h3 className="text-white font-bold text-2xl mb-4">No Routes Available</h3>
+                  <p className="text-gray-400 text-lg mb-6">
+                    Trade route data is being analyzed. Please check your API connection.
+                  </p>
+                  <div className="text-sm text-gray-500">
+                    Use the REFRESH DATA button on the right to reload manually
+                  </div>
                 </div>
               )}
             </div>
