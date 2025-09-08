@@ -2896,6 +2896,30 @@ function App() {
 
   return (
     <div className="min-h-screen bg-black text-white">
+      {/* Professional Fixed Action Panel */}
+      <div className="fixed right-6 top-1/2 transform -translate-y-1/2 z-40 flex flex-col space-y-3">
+        <button 
+          onClick={() => setCommoditySnareModal(true)}
+          className="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-3 rounded-full shadow-xl transition-all duration-300 hover:scale-105 font-bold text-sm flex items-center justify-center min-w-[180px] border border-yellow-500"
+        >
+          💎 COMMODITY SNARE
+        </button>
+        <button 
+          onClick={handleManualRefresh}
+          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-full shadow-xl transition-all duration-300 hover:scale-105 font-bold text-sm flex items-center justify-center min-w-[180px] border border-blue-500"
+        >
+          🔄 REFRESH DATA
+        </button>
+        {activeTab === 'routes' && (
+          <button 
+            onClick={handleSnareNow}
+            className="bg-red-600 hover:bg-red-700 text-white px-4 py-3 rounded-full shadow-xl transition-all duration-300 hover:scale-105 font-bold text-sm flex items-center justify-center min-w-[180px] border border-red-500"
+          >
+            🎯 SNARE NOW
+          </button>
+        )}
+      </div>
+      
       <Header 
         dataSource={dataSource}
         setDataSource={setDataSource}
@@ -2903,47 +2927,39 @@ function App() {
         setShowAverageData={setShowAverageData}
       />
       
-      {/* Enhanced Status Bar */}
-      <div className="container mx-auto px-6 py-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-          <StatusCard 
-            title="Data Source" 
-            value={apiStatus?.primary_data_source === 'real' ? 'Live Data' : 'Loading...'} 
-            status={apiStatus?.primary_data_source === 'real' ? 'good' : 'warning'} 
-            icon="🌐" 
-            subtitle={apiStatus?.primary_data_source === 'real' ? 
-              `${apiStatus?.data_sources?.star_profit_api?.records_available || 0} live records` : 
-              'Fetching live trading data...'
-            }
-          />
-          <StatusCard 
-            title="Database" 
-            value={apiStatus?.database === 'connected' ? 'Online' : 'Error'} 
-            status={apiStatus?.database === 'connected' ? 'good' : 'error'} 
-            icon="💾" 
-            subtitle={`${apiStatus?.statistics?.total_routes_analyzed || 0} routes analyzed`}
-          />
-          <StatusCard 
-            title="Active Routes" 
-            value={routes.length} 
-            status="good" 
-            icon="🛣️" 
-            subtitle={`${routes.filter(r => ['ELITE', 'LEGENDARY'].includes(r.risk_level)).length} high-value`}
-          />
-          <StatusCard 
-            title="Live Alerts" 
-            value={alerts.filter(a => !a.acknowledged).length} 
-            status={alerts.filter(a => !a.acknowledged).length > 0 ? 'warning' : 'good'} 
-            icon="🚨" 
-            subtitle={`${alerts.filter(a => a.priority === 'CRITICAL').length} critical`}
-          />
-          <StatusCard 
-            title="Tracking" 
-            value={trackingStatus?.active ? 'Active' : 'Inactive'} 
-            status={trackingStatus?.active ? 'good' : 'warning'} 
-            icon="📡" 
-            subtitle={trackingStatus?.active ? `${trackingStatus.uptime_minutes}m uptime` : 'Click to start'}
-          />
+      {/* Professional Status Bar - Compact */}
+      <div className="bg-gray-900 border-b border-gray-700">
+        <div className="container mx-auto px-6 py-3">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+            <div className="bg-gray-800 rounded-lg px-3 py-2 text-center border border-gray-700">
+              <div className={`text-lg font-bold ${apiStatus?.primary_data_source === 'real' ? 'text-green-400' : 'text-yellow-400'}`}>
+                {apiStatus?.primary_data_source === 'real' ? 'LIVE' : 'LOADING'}
+              </div>
+              <div className="text-gray-400 text-xs">Data Source</div>
+            </div>
+            <div className="bg-gray-800 rounded-lg px-3 py-2 text-center border border-gray-700">
+              <div className="text-green-400 text-lg font-bold">{routes.length}</div>
+              <div className="text-gray-400 text-xs">Active Routes</div>
+            </div>
+            <div className="bg-gray-800 rounded-lg px-3 py-2 text-center border border-gray-700">
+              <div className={`text-lg font-bold ${alerts.filter(a => !a.acknowledged).length > 0 ? 'text-red-400' : 'text-green-400'}`}>
+                {alerts.filter(a => !a.acknowledged).length}
+              </div>
+              <div className="text-gray-400 text-xs">Live Alerts</div>
+            </div>
+            <div className="bg-gray-800 rounded-lg px-3 py-2 text-center border border-gray-700">
+              <div className={`text-lg font-bold ${trackingStatus?.active ? 'text-green-400' : 'text-gray-400'}`}>
+                {trackingStatus?.active ? 'ON' : 'OFF'}
+              </div>
+              <div className="text-gray-400 text-xs">Tracking</div>
+            </div>
+            <div className="bg-gray-800 rounded-lg px-3 py-2 text-center border border-gray-700">
+              <div className={`text-lg font-bold ${apiStatus?.database === 'connected' ? 'text-green-400' : 'text-red-400'}`}>
+                {apiStatus?.database === 'connected' ? 'OK' : 'ERR'}
+              </div>
+              <div className="text-gray-400 text-xs">Database</div>
+            </div>
+          </div>
         </div>
       </div>
 
