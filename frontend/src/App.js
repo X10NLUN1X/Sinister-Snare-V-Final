@@ -3018,44 +3018,72 @@ function App() {
               </div>
             </div>
             
-            <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-              <div className="lg:col-span-3">
-                <h3 className="text-xl font-bold text-white mb-4">🎯 Top 3 Piracy Targets (Live Routes)</h3>
-                <p className="text-gray-400 text-sm mb-4">Die besten Routen mit realistischen Piracy Scores</p>
-                <div className="space-y-3">
+            <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+              <div className="xl:col-span-2">
+                <h3 className="text-2xl font-bold text-white mb-6 flex items-center">
+                  🎯 <span className="ml-3">Top Priority Routes</span>
+                </h3>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                   {routes.length > 0 ? (
-                    routes.slice(0, 3).map((route, index) => (
-                      <div key={route.id || index} className="transform scale-90">
-                        <RouteCard 
-                          route={route} 
-                          onSelect={handleRouteClick}
-                          onAlternativeRouteSelect={handleAlternativeRouteSelect}
-                        />
+                    routes.slice(0, 4).map((route, index) => (
+                      <div key={route.id || index} className="bg-gray-800 rounded-lg p-4 border border-gray-700 hover:border-red-500 transition-all duration-300 cursor-pointer" onClick={() => handleRouteClick(route)}>
+                        <div className="flex justify-between items-start mb-3">
+                          <div>
+                            <h4 className="text-white font-bold text-lg">{route.commodity_name}</h4>
+                            <p className="text-gray-400 text-sm">#{index + 1} Priority Target</p>
+                          </div>
+                          <div className="text-right">
+                            <div className={`text-2xl font-bold ${
+                              route.piracy_rating >= 70 ? 'text-red-400' : 
+                              route.piracy_rating >= 50 ? 'text-orange-400' :
+                              route.piracy_rating >= 30 ? 'text-yellow-400' : 'text-gray-400'
+                            }`}>
+                              {route.piracy_rating}
+                            </div>
+                            <p className="text-gray-400 text-xs">Piracy Score</p>
+                          </div>
+                        </div>
+                        
+                        <div className="space-y-2 mb-3">
+                          <div className="flex justify-between text-sm">
+                            <span className="text-blue-400">From:</span>
+                            <span className="text-white">{route.origin_name?.split(' - ')[1] || route.origin_name}</span>
+                          </div>
+                          <div className="flex justify-between text-sm">
+                            <span className="text-green-400">To:</span>
+                            <span className="text-white">{route.destination_name?.split(' - ')[1] || route.destination_name}</span>
+                          </div>
+                        </div>
+                        
+                        <div className="grid grid-cols-3 gap-3 text-center text-sm">
+                          <div>
+                            <div className="text-green-400 font-bold">{(route.profit / 1000000).toFixed(1)}M</div>
+                            <div className="text-gray-400 text-xs">Profit</div>
+                          </div>
+                          <div>
+                            <div className="text-yellow-400 font-bold">{route.roi?.toFixed(1)}%</div>
+                            <div className="text-gray-400 text-xs">ROI</div>
+                          </div>
+                          <div>
+                            <div className="text-purple-400 font-bold">{(route.distance / 1000).toFixed(0)}k</div>
+                            <div className="text-gray-400 text-xs">Distance</div>
+                          </div>
+                        </div>
                       </div>
                     ))
                   ) : (
-                    <div className="bg-gray-800/30 rounded-lg p-6 border border-gray-700 text-center">
-                      <div className="text-4xl mb-3">📡</div>
-                      <h4 className="text-white font-semibold mb-2">Live-Routen werden geladen...</h4>
-                      <p className="text-gray-400 text-sm">
-                        Aktuelle Piracy-Ziele werden von der Star Citizen API abgerufen.
+                    <div className="col-span-2 bg-gray-800/50 rounded-lg p-8 border border-gray-700 text-center">
+                      <div className="text-6xl mb-4">📡</div>
+                      <h4 className="text-white font-bold text-xl mb-2">Loading Priority Routes...</h4>
+                      <p className="text-gray-400 mb-4">
+                        Scanning Star Citizen universe for optimal piracy targets
                       </p>
-                      <div className="mt-4">
-                        <button 
-                          onClick={() => {
-                            setActiveTab('routes');
-                            fetchRoutes();
-                          }}
-                          className="bg-red-600 hover:bg-red-700 px-6 py-3 rounded text-white text-sm font-medium"
-                        >
-                          🔄 Routen manuell laden
-                        </button>
-                      </div>
                     </div>
                   )}
                 </div>
               </div>
-              <div className="lg:col-span-2">
+              
+              <div className="xl:col-span-1">
                 <InterceptionMap routes={routes} targets={targets} />
               </div>
             </div>
