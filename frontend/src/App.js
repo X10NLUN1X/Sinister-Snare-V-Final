@@ -2122,7 +2122,7 @@ const CommoditySnareModal = ({ isOpen, onClose, onSnare, onRouteSelect, onAltern
                   </div>
                 </div>
                 
-                <div className="space-y-4 max-h-96 overflow-y-auto">
+                <div className="space-y-3 max-h-[60vh] overflow-y-auto">
                   {(snareResults.snare_opportunities || []).slice(0, 10).map((opportunity, idx) => {
                     // Convert opportunity to route format for RouteCard compatibility
                     const routeData = {
@@ -2147,12 +2147,13 @@ const CommoditySnareModal = ({ isOpen, onClose, onSnare, onRouteSelect, onAltern
                     };
                     
                     return (
-                      <RouteCard 
-                        key={routeData.id} 
-                        route={routeData} 
-                        onSelect={onRouteSelect}
-                        onAlternativeRouteSelect={onAlternativeRouteSelect}
-                      />
+                      <div key={routeData.id} className="transform scale-95">
+                        <RouteCard 
+                          route={routeData} 
+                          onSelect={onRouteSelect}
+                          onAlternativeRouteSelect={onAlternativeRouteSelect}
+                        />
+                      </div>
                     );
                   })}
                 </div>
