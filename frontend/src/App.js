@@ -2150,8 +2150,8 @@ const CommoditySnareModal = ({ isOpen, onClose, onSnare, onRouteSelect, onAltern
                       <RouteCard 
                         key={routeData.id} 
                         route={routeData} 
-                        onSelect={handleRouteClick}
-                        onAlternativeRouteSelect={handleAlternativeRouteSelect}
+                        onSelect={onRouteSelect}
+                        onAlternativeRouteSelect={onAlternativeRouteSelect}
                       />
                     );
                   })}
