@@ -2939,11 +2939,53 @@ function App() {
             
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <div>
-                <h3 className="text-xl font-bold text-white mb-4">🔥 Top Priority Targets</h3>
+                <h3 className="text-xl font-bold text-white mb-4">🎯 Top 3 Piracy Targets (Live Routes)</h3>
+                <p className="text-gray-400 text-sm mb-4">Die besten Routen mit realistischen Piracy Scores</p>
                 <div className="space-y-4">
-                  {targets.slice(0, 3).map((target, index) => (
-                    <PirateTargetCard key={target.id || index} target={target} />
-                  ))}
+                  {routes.length > 0 ? (
+                    routes.slice(0, 3).map((route, index) => (
+                      <div key={route.id || index} className="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
+                        <div className="flex justify-between items-start mb-2">
+                          <div>
+                            <h4 className="text-white font-semibold">{route.commodity_name}</h4>
+                            <p className="text-gray-400 text-sm">#{index + 1} Top Route</p>
+                          </div>
+                          <div className="text-right">
+                            <span className="text-red-400 text-lg font-bold">{route.piracy_rating}</span>
+                            <p className="text-gray-400 text-xs">Piracy Score</p>
+                          </div>
+                        </div>
+                        <div className="text-sm text-gray-300 mb-2">
+                          <p><span className="text-blue-400">From:</span> {route.origin_name}</p>
+                          <p><span className="text-green-400">To:</span> {route.destination_name}</p>
+                        </div>
+                        <div className="flex justify-between text-xs">
+                          <span className="text-green-400">{(route.profit / 1000000).toFixed(2)}M aUEC</span>
+                          <span className="text-yellow-400">{route.roi?.toFixed(1)}% ROI</span>
+                          <span className="text-purple-400">{(route.distance / 1000).toFixed(0)}k km</span>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="bg-gray-800/30 rounded-lg p-6 border border-gray-700 text-center">
+                      <div className="text-4xl mb-3">📡</div>
+                      <h4 className="text-white font-semibold mb-2">Live-Routen werden geladen...</h4>
+                      <p className="text-gray-400 text-sm">
+                        Aktuelle Piracy-Ziele werden von der Star Citizen API abgerufen.
+                      </p>
+                      <div className="mt-4">
+                        <button 
+                          onClick={() => {
+                            setActiveTab('routes');
+                            fetchRoutes();
+                          }}
+                          className="bg-red-600 hover:bg-red-700 px-4 py-2 rounded text-white text-sm"
+                        >
+                          🔄 Routen manuell laden
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
               <div>
