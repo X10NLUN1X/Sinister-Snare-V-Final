@@ -355,16 +355,44 @@ class StarProfitClient:
             "Patch City",             # VERIFIED: Bloom's L3 Lagrange point
             
             # Independent/Outlaw Stations (VERIFIED)
-            "Rat's Nest",            # VERIFIED: Pyro V's L5 Lagrange point
+            "Rat's Nest",            # VERIFIED: Pyro V's L5 Lagrange point (in-game name)
+            "Rats Nest",             # OFFICIAL: Pyro V's L5 Lagrange point (official designation)
             "Rod's Fuel 'N Supplies", # VERIFIED: Pyro V's L4 Lagrange point  
             "Starlight Service",      # VERIFIED: Bloom's L1 Lagrange point
+            "Starlight Service Station", # OFFICIAL: Bloom's L1 Lagrange point
             "Dudley and Daughters",   # VERIFIED: Terminus L4 Lagrange point
             "Gaslight",               # VERIFIED: Pyro V's L2 Lagrange point
             
             # NOTE: Some terminals moved to correct systems based on web research
             "Endgame",                # VERIFIED: Terminus L3 Lagrange point (Pyro)
             "Checkmate",              # MOVED: This is actually in Pyro system  
+            "Checkmate Station",      # OFFICIAL: Pyro system designation
             "Megumi Refueling",       # MOVED: This is Terminus L5 (Pyro system)
+            
+            # Additional Official Pyro Terminals
+            "Adir", "CAJ-445", "CAJ‑445", "DLO-486", "DLO‑486", "EMM-567", "EMM‑567",
+            "HJS-232", "HJS‑232", "Ignis", "KKE-717", "KKE‑717", "MNK-833", "MNK‑833",
+            "Monox", "RSC-340", "RSC‑340", "Terminus", "Vatra", "YKA-011", "YKA‑011",
+            
+            # PYAM Stations
+            "PYAM-EXHANG-0-1", "PYAM‑EXHANG‑0‑1", "PYAM-FARSTAT-1-3", "PYAM‑FARSTAT‑1‑3",
+            "PYAM-SUPVISR-3-5", "PYAM‑SUPVISR‑3‑5",
+            
+            # Lagrange Points (both dash variants)
+            "PYR1 L1", "PYR1 L2", "PYR1 L3", "PYR1 L3-A", "PYR1 L3‑A", "PYR1 L4",
+            "PYR2 L1", "PYR2 L2", "PYR2 L4", "PYR2 L5",
+            "PYR3 L1", "PYR3 L2", "PYR3 L3",
+            "PYR5 L1", "PYR5 L2", "PYR5 L3", "PYR5 L4", "PYR5 L5",
+            
+            # RAB Stations (Rough and Ready Boys) - both dash variants
+            "RAB-Alpha", "RAB‑Alpha", "RAB-Bravo", "RAB‑Bravo", "RAB-Charlie", "RAB‑Charlie",
+            "RAB-Cook", "RAB‑Cook", "RAB-Delta", "RAB‑Delta", "RAB-Echo", "RAB‑Echo",
+            "RAB-Foxtrot", "RAB‑Foxtrot", "RAB-Gulf", "RAB‑Gulf", "RAB-Helio", "RAB‑Helio",
+            "RAB-Ignition", "RAB‑Ignition", "RAB-Ion", "RAB‑Ion", "RAB-Iung", "RAB‑Iung",
+            "RAB-Lynx", "RAB‑Lynx", "RAB-Mat", "RAB‑Mat", "RAB-November", "RAB‑November",
+            "RAB-Point", "RAB‑Point", "RAB-Quagmire", "RAB‑Quagmire", "RAB-Roth", "RAB‑Roth",
+            "RAB-Sierra", "RAB‑Sierra", "RAB-Ultra", "RAB‑Ultra", "RAB-Victory", "RAB‑Victory",
+            "RAB-Whiskey", "RAB‑Whiskey", "RAB-York", "RAB‑York",
             
             # Trading Posts and Outposts (from API - assumed Pyro)
             "Canard View", "Jackson's Swap", "The Golden Riviera", 
