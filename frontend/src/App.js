@@ -3070,15 +3070,15 @@ function App() {
                         
                         <div className="grid grid-cols-3 gap-3 text-center text-sm">
                           <div>
-                            <div className="text-green-400 font-bold">{(route.profit / 1000000).toFixed(1)}M</div>
+                            <div className="text-green-400 font-bold">{((route.profit || 0) / 1000000).toFixed(1)}M</div>
                             <div className="text-gray-400 text-xs">Profit</div>
                           </div>
                           <div>
-                            <div className="text-yellow-400 font-bold">{route.roi?.toFixed(1)}%</div>
+                            <div className="text-yellow-400 font-bold">{(route.roi || 0).toFixed(1)}%</div>
                             <div className="text-gray-400 text-xs">ROI</div>
                           </div>
                           <div>
-                            <div className="text-purple-400 font-bold">{(route.distance / 1000).toFixed(0)}k</div>
+                            <div className="text-purple-400 font-bold">{((route.distance || 0) / 1000).toFixed(0)}k</div>
                             <div className="text-gray-400 text-xs">Distance</div>
                           </div>
                         </div>
