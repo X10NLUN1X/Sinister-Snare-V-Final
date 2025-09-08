@@ -3086,6 +3086,12 @@ function App() {
                     🎯 SNARE NOW
                   </button>
                   <button 
+                    onClick={() => setCommoditySnareModal(true)}
+                    className="bg-yellow-600 hover:bg-yellow-700 px-3 py-1 rounded text-xs transition-colors font-medium flex items-center"
+                  >
+                    💎 Commodity Snare
+                  </button>
+                  <button 
                     onClick={handleManualRefresh}
                     className="bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded text-xs transition-colors font-medium flex items-center"
                   >
