@@ -937,27 +937,42 @@ const TERMINAL_TO_SNAREPLAN_MAPPING = {
   // GrimHEX -> Crusader (Yela moon)
   "GrimHEX": "Crusader",
   
-  // === PYRO SYSTEM ===
+// === PYRO SYSTEM ===
   // Major Stations -> Correct Pyro Planets (Snareplan Compatible)
-  "Ruin Station": "Pyro I",           // Pyrotechnic Amalgamated, Pyro I orbit
-  "Stanton Gateway": "Pyro I",        // Pyro-Stanton Jump Point (Pyro side)
+  "Ruin Station": "Ruin Station",        // Vermutlich die alte Pyrotechnic Station
+  "Stanton Gateway": "Stanton Gateway",       // Pyro-Stanton Jump Point (Pyro side)
   
-  // Rough & Ready Gang Controlled -> Pyro III (Bloom)
-  "Orbituary": "Pyro III",            // High orbit above Bloom (Pyro III)
-  "Patch City": "Pyro III",           // Bloom's L3 Lagrange point
-  "Starlight Service": "Pyro III",    // Bloom's L1 Lagrange point
+  // Korrekte Snareplan-Mappings
+  "Rat's Nest": "Rats Nest",                 // Offizielle Schreibweise ohne Apostroph
+  "Checkmate": "Checkmate Station",          // Vollständiger offizieller Name
+  "Checkmate Station": "Checkmate Station",  // Fallback
+  "Starlight Service": "Starlight Service Station",  // Vollständiger Name
+  "Starlight Service Station": "Starlight Service Station",
+  "Megumi Refueling": "Megumi Refueling",    // Bereits korrekt
+  "Dudley and Daughters": "Dudley and Daughters",  // Bereits korrekt
   
-  // Independent/Outlaw Stations -> Pyro IV (Terminus) 
-  "Endgame": "Pyro IV",               // Terminus L3 Lagrange point
-  "Dudley and Daughters": "Pyro IV",  // Terminus L4 Lagrange point
-  "Megumi Refueling": "Pyro IV",      // Terminus L5 Lagrange point
+  // Rough & Ready Gang Controlled -> Pyro III (Bloom/Monox)
+  "Orbituary": "Orbituary",                    // High orbit above Bloom (Pyro III)
+  "Patch City": "Patch City",                 // Bloom's L3 alternative point
   
-  // Pyro V (Gas Giant) Stations
-  "Rat's Nest": "Pyro V",             // Pyro V's L5 Lagrange point
-  "Rod's Fuel 'N Supplies": "Pyro V", // Pyro V's L4 Lagrange point
-  "Gaslight": "Pyro V",               // Pyro V's L2 Lagrange point
+  // Independent/Outlaw Stations mit korrekten Lagrange Points
+  "Endgame": "Endgame",                      // Terminus L3 Lagrange point
+  "Rod's Fuel 'N Supplies": "Rods Fuel N Supplies",       // Pyro V's L4 Lagrange point
+  "Gaslight": "Gaslight",                     // Pyro V's L2 Lagrange point
   
-  // Trading Posts and Outposts -> General Pyro System
+  // Planeten-Mapping (Offizielle Namen)
+  "Pyro I": "Pyro I",
+  "Pyro II": "Ignis",                        // Offizieller Name für Pyro II
+  "Pyro III": "Monox",                       // Offizieller Name für Pyro III (Bloom)
+  "Pyro IV": "Terminus",                     // Offizieller Name für Pyro IV
+  "Pyro V": "Pyro V",
+  "Pyro VI": "Vatra",                        // Offizieller Name für Pyro VI
+  
+  // Jump Point
+  "Pyro Gateway": "Pyro-Stanton JumpPoint",
+  "Pyro-Stanton Jump Point": "Pyro-Stanton JumpPoint",
+  
+  // Trading Posts and Outposts (from API - assumed Pyro)
   "Canard View": "Pyro",
   "Jackson's Swap": "Pyro",
   "The Golden Riviera": "Pyro",
@@ -973,8 +988,10 @@ const TERMINAL_TO_SNAREPLAN_MAPPING = {
   "Dinger's Depot": "Pyro",
   "Feo Canyon Depot": "Pyro",
   
-  // Checkmate (moved to Pyro system based on verification)
-  "Checkmate": "Pyro",
+  // RAB Stationen (für zukünftige Verwendung)
+  "RAB Alpha": "RAB-Alpha",
+  "RAB Bravo": "RAB-Bravo",
+  "RAB Charlie": "RAB-Charlie",
   
   // Platinum Operations in Pyro
   "Platinum Bay Terra": "Pyro"
@@ -1063,10 +1080,10 @@ const SNAREPLAN_LOCATIONS = {
   // PYRO SYSTEM  
   'Pyro': {
     'Pyro Gateway': 'Pyro Gateway',
-    'Rat\'s Nest': 'Pyro V',
-    'Ruin Station': 'Pyro I',
-    'Endgame': 'Pyro IV',
-    'Orbituary': 'Pyro III',
+    'Rat\'s Nest': 'Rats Nest',
+    'Ruin Station': 'Ruin Station',
+    'Endgame': 'Endgame',
+    'Orbituary': 'Orbituary',
     'Pyro I': 'Pyro I',
     'Pyro II': 'Pyro II', 
     'Pyro III': 'Pyro III',
