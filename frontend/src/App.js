@@ -922,7 +922,7 @@ const TERMINAL_TO_SNAREPLAN_MAPPING = {
   
   // Outposts -> Nearest Planet
   "Ashland": "Hurston",
-  "Checkmate": "Hurston", 
+  // "Checkmate": moved to Pyro system (see Pyro section below)
   "Deakins Research": "Microtech",
   "Hickes Research": "Microtech",
   "Maker's Point": "ArcCorp",
@@ -938,22 +938,22 @@ const TERMINAL_TO_SNAREPLAN_MAPPING = {
   "GrimHEX": "Crusader",
   
   // === PYRO SYSTEM ===
-  // Major Stations -> Correct Pyro Planets (Snareplan Compatible)
-  "Ruin Station": "Pyro I",           // Pyrotechnic Amalgamated, Pyro I orbit
-  "Stanton Gateway": "Pyro I",        // Pyro-Stanton Jump Point (Pyro side)
+  // Major Stations -> Official Designations
+  "Ruin Station": "Pyro I",           // Pyrotechnic Amalgamated, Pyro I orbit  
+  "Stanton Gateway": "Stanton Gateway",        // Use official designation
   
   // Rough & Ready Gang Controlled -> Pyro III (Bloom)
   "Orbituary": "Pyro III",            // High orbit above Bloom (Pyro III)
   "Patch City": "Pyro III",           // Bloom's L3 Lagrange point
   "Starlight Service": "Pyro III",    // Bloom's L1 Lagrange point
   
-  // Independent/Outlaw Stations -> Pyro IV (Terminus) 
-  "Endgame": "Pyro IV",               // Terminus L3 Lagrange point
-  "Dudley and Daughters": "Pyro IV",  // Terminus L4 Lagrange point
-  "Megumi Refueling": "Pyro IV",      // Terminus L5 Lagrange point
+  // Independent/Outlaw Stations -> Official Designations 
+  "Endgame": "Terminus",              // Maps to Terminus (official designation)
+  "Dudley and Daughters": "Dudley and Daughters",  // Already official name
+  "Megumi Refueling": "Megumi Refueling",      // Already official name
   
   // Pyro V (Gas Giant) Stations
-  "Rat's Nest": "Pyro V",             // Pyro V's L5 Lagrange point
+  "Rat's Nest": "Rats Nest",          // Map to official designation (no apostrophe)
   "Rod's Fuel 'N Supplies": "Pyro V", // Pyro V's L4 Lagrange point
   "Gaslight": "Pyro V",               // Pyro V's L2 Lagrange point
   
@@ -974,7 +974,77 @@ const TERMINAL_TO_SNAREPLAN_MAPPING = {
   "Feo Canyon Depot": "Pyro",
   
   // Checkmate (moved to Pyro system based on verification)
-  "Checkmate": "Pyro",
+  "Checkmate": "Checkmate Station",
+  
+  // Additional Pyro System Terminals (Official Designations)
+  "Adir": "Adir",
+  "CAJ-445": "CAJ‑445",
+  "DLO-486": "DLO‑486", 
+  "EMM-567": "EMM‑567",
+  "HJS-232": "HJS‑232",
+  "Ignis": "Ignis",
+  "KKE-717": "KKE‑717",
+  "MNK-833": "MNK‑833",
+  "Monox": "Monox",
+  "RSC-340": "RSC‑340",
+  "Terminus": "Terminus",
+  "Vatra": "Vatra",
+  "YKA-011": "YKA‑011",
+  
+  // PYAM Stations
+  "PYAM-EXHANG-0-1": "PYAM‑EXHANG‑0‑1",
+  "PYAM-FARSTAT-1-3": "PYAM‑FARSTAT‑1‑3", 
+  "PYAM-SUPVISR-3-5": "PYAM‑SUPVISR‑3‑5",
+  
+  // Lagrange Points - PYR1 (Pyro I)
+  "PYR1 L1": "PYR1 L1",
+  "PYR1 L2": "PYR1 L2",
+  "PYR1 L3": "PYR1 L3",
+  "PYR1 L3-A": "PYR1 L3‑A",
+  "PYR1 L4": "PYR1 L4",
+  
+  // Lagrange Points - PYR2 (Pyro II)
+  "PYR2 L1": "PYR2 L1",
+  "PYR2 L2": "PYR2 L2", 
+  "PYR2 L4": "PYR2 L4",
+  "PYR2 L5": "PYR2 L5",
+  
+  // Lagrange Points - PYR3 (Pyro III)
+  "PYR3 L1": "PYR3 L1",
+  "PYR3 L2": "PYR3 L2",
+  "PYR3 L3": "PYR3 L3",
+  
+  // Lagrange Points - PYR5 (Pyro V) 
+  "PYR5 L1": "PYR5 L1",
+  "PYR5 L2": "PYR5 L2",
+  "PYR5 L3": "PYR5 L3",
+  "PYR5 L4": "PYR5 L4",
+  "PYR5 L5": "PYR5 L5",
+  
+  // RAB Stations (Rough and Ready Boys)
+  "RAB-Alpha": "RAB‑Alpha",
+  "RAB-Bravo": "RAB‑Bravo",
+  "RAB-Charlie": "RAB‑Charlie",
+  "RAB-Cook": "RAB‑Cook",
+  "RAB-Delta": "RAB‑Delta",
+  "RAB-Echo": "RAB‑Echo",
+  "RAB-Foxtrot": "RAB‑Foxtrot",
+  "RAB-Gulf": "RAB‑Gulf",
+  "RAB-Helio": "RAB‑Helio",
+  "RAB-Ignition": "RAB‑Ignition",
+  "RAB-Ion": "RAB‑Ion",
+  "RAB-Iung": "RAB‑Iung",
+  "RAB-Lynx": "RAB‑Lynx",
+  "RAB-Mat": "RAB‑Mat",
+  "RAB-November": "RAB‑November",
+  "RAB-Point": "RAB‑Point",
+  "RAB-Quagmire": "RAB‑Quagmire",
+  "RAB-Roth": "RAB‑Roth",
+  "RAB-Sierra": "RAB‑Sierra",
+  "RAB-Ultra": "RAB‑Ultra",
+  "RAB-Victory": "RAB‑Victory",
+  "RAB-Whiskey": "RAB‑Whiskey",
+  "RAB-York": "RAB‑York",
   
   // Platinum Operations in Pyro
   "Platinum Bay Terra": "Pyro"
@@ -1063,16 +1133,97 @@ const SNAREPLAN_LOCATIONS = {
   // PYRO SYSTEM  
   'Pyro': {
     'Pyro Gateway': 'Pyro Gateway',
-    'Rat\'s Nest': 'Pyro V',
-    'Ruin Station': 'Pyro I',
-    'Endgame': 'Pyro IV',
-    'Orbituary': 'Pyro III',
+    'Pyro‑Stanton JumpPoint': 'Pyro‑Stanton JumpPoint',
+    'Stanton Gateway': 'Stanton Gateway',
+    
+    // Main Planets/Bodies
     'Pyro I': 'Pyro I',
     'Pyro II': 'Pyro II', 
     'Pyro III': 'Pyro III',
     'Pyro IV': 'Pyro IV',
     'Pyro V': 'Pyro V',
-    'Pyro VI': 'Pyro VI'
+    'Pyro VI': 'Pyro VI',
+    
+    // Major Stations (Official Names)
+    'Rats Nest': 'Rats Nest',          // Fixed apostrophe
+    'Rat\'s Nest': 'Rats Nest',        // Legacy mapping with apostrophe
+    'Ruin Station': 'Pyro I',
+    'Endgame': 'Pyro IV',
+    'Orbituary': 'Pyro III',
+    'Checkmate Station': 'Checkmate Station',
+    'Dudley and Daughters': 'Dudley and Daughters',
+    'Megumi Refueling': 'Megumi Refueling',
+    'Starlight Service Station': 'Starlight Service Station',
+    
+    // Official Terminal Designations
+    'Adir': 'Adir',
+    'CAJ‑445': 'CAJ‑445',
+    'DLO‑486': 'DLO‑486',
+    'EMM‑567': 'EMM‑567',
+    'HJS‑232': 'HJS‑232',
+    'Ignis': 'Ignis',
+    'KKE‑717': 'KKE‑717',
+    'MNK‑833': 'MNK‑833',
+    'Monox': 'Monox',
+    'RSC‑340': 'RSC‑340',
+    'Terminus': 'Terminus',
+    'Vatra': 'Vatra',
+    'YKA‑011': 'YKA‑011',
+    
+    // PYAM Stations
+    'PYAM‑EXHANG‑0‑1': 'PYAM‑EXHANG‑0‑1',
+    'PYAM‑FARSTAT‑1‑3': 'PYAM‑FARSTAT‑1‑3',
+    'PYAM‑SUPVISR‑3‑5': 'PYAM‑SUPVISR‑3‑5',
+    
+    // Lagrange Points - PYR1 (Pyro I)
+    'PYR1 L1': 'PYR1 L1',
+    'PYR1 L2': 'PYR1 L2',
+    'PYR1 L3': 'PYR1 L3',
+    'PYR1 L3‑A': 'PYR1 L3‑A',
+    'PYR1 L4': 'PYR1 L4',
+    
+    // Lagrange Points - PYR2 (Pyro II)
+    'PYR2 L1': 'PYR2 L1',
+    'PYR2 L2': 'PYR2 L2',
+    'PYR2 L4': 'PYR2 L4',
+    'PYR2 L5': 'PYR2 L5',
+    
+    // Lagrange Points - PYR3 (Pyro III)
+    'PYR3 L1': 'PYR3 L1',
+    'PYR3 L2': 'PYR3 L2',
+    'PYR3 L3': 'PYR3 L3',
+    
+    // Lagrange Points - PYR5 (Pyro V)
+    'PYR5 L1': 'PYR5 L1',
+    'PYR5 L2': 'PYR5 L2',
+    'PYR5 L3': 'PYR5 L3',
+    'PYR5 L4': 'PYR5 L4',
+    'PYR5 L5': 'PYR5 L5',
+    
+    // RAB Stations (Rough and Ready Boys)
+    'RAB‑Alpha': 'RAB‑Alpha',
+    'RAB‑Bravo': 'RAB‑Bravo',
+    'RAB‑Charlie': 'RAB‑Charlie',
+    'RAB‑Cook': 'RAB‑Cook',
+    'RAB‑Delta': 'RAB‑Delta',
+    'RAB‑Echo': 'RAB‑Echo',
+    'RAB‑Foxtrot': 'RAB‑Foxtrot',
+    'RAB‑Gulf': 'RAB‑Gulf',
+    'RAB‑Helio': 'RAB‑Helio',
+    'RAB‑Ignition': 'RAB‑Ignition',
+    'RAB‑Ion': 'RAB‑Ion',
+    'RAB‑Iung': 'RAB‑Iung',
+    'RAB‑Lynx': 'RAB‑Lynx',
+    'RAB‑Mat': 'RAB‑Mat',
+    'RAB‑November': 'RAB‑November',
+    'RAB‑Point': 'RAB‑Point',
+    'RAB‑Quagmire': 'RAB‑Quagmire',
+    'RAB‑Roth': 'RAB‑Roth',
+    'RAB‑Sierra': 'RAB‑Sierra',
+    'RAB‑Ultra': 'RAB‑Ultra',
+    'RAB‑Victory': 'RAB‑Victory',
+    'RAB‑Whiskey': 'RAB‑Whiskey',
+    'RAB‑York': 'RAB‑York'
   },
   
   // NYX SYSTEM
