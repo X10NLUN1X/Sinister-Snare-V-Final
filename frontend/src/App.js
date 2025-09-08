@@ -2040,7 +2040,7 @@ const FAQModal = ({ isOpen, onClose }) => {
                 <div className="text-sm text-gray-400">High Traffic - Multiple traders per hour</div>
               </div>
               <div className="bg-gray-700/30 p-3 rounded">
-                <div className="text-gray-400 font-bold">Score <30</div>
+                <div className="text-gray-400 font-bold">Score &lt;30</div>
                 <div className="text-sm text-gray-400">Low Traffic - Occasional traders</div>
               </div>
             </div>
