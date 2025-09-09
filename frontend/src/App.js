@@ -3518,10 +3518,10 @@ function App() {
           <div className="flex items-center justify-center">
             <button
               onClick={() => setSnarePlanExpanded(!snarePlanExpanded)}
-              className="flex items-center space-x-2 bg-gradient-to-r from-red-900 to-red-800 hover:from-red-800 hover:to-red-700 px-4 py-2 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg border border-red-600"
+              className="flex items-center space-x-2 bg-gradient-to-r from-gray-800 to-gray-700 hover:from-gray-700 hover:to-gray-600 px-4 py-2 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg border border-gray-600"
             >
-              <span className="text-red-400 text-sm font-bold">🏴‍☠️ Advanced Piracy Tools</span>
-              <span className={`text-red-400 transition-transform duration-300 ${snarePlanExpanded ? 'rotate-180' : ''}`}>
+              <span className="text-gray-300 text-sm font-bold">🔒 Redacted</span>
+              <span className={`text-gray-300 transition-transform duration-300 ${snarePlanExpanded ? 'rotate-180' : ''}`}>
                 ▼
               </span>
             </button>
