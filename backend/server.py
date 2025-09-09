@@ -767,8 +767,18 @@ class RouteAnalyzer:
             else:
                 commodity_score = 2  # Exotic/rare commodities (less frequent)
             
+            # FACTOR 5: High-Value Cargo Bonus (5% weight) - NEW
+            high_value_bonus = 0
+            
+            # Premium cargo that warrants ELITE piracy attention
+            if profit > 2000000:  # Routes with >2M profit get extra attention
+                if any(commodity in commodity_name for commodity in elite_commodities):
+                    high_value_bonus = 10  # Extra boost for premium commodities with high profit
+                else:
+                    high_value_bonus = 5   # Standard high-profit bonus
+            
             # Calculate final realistic score
-            final_score = system_traffic_score + hub_score + distance_score + commodity_score
+            final_score = system_traffic_score + hub_score + distance_score + commodity_score + high_value_bonus
             
             # Reality check: Cap inter-system routes at maximum 25 points
             if not is_same_system:
