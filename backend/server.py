@@ -777,19 +777,17 @@ class RouteAnalyzer:
     
     @staticmethod
     def categorize_risk_level(piracy_score: float) -> str:
-        """FIXED: Realistic risk categorization based on actual piracy score distribution"""
-        if piracy_score >= 75:  # FIXED: Lowered from 90 to 75 for LEGENDARY
+        """Enhanced risk categorization - RESTORED original thresholds"""
+        if piracy_score >= 90:
             return "LEGENDARY"
-        elif piracy_score >= 70:  # FIXED: Lowered from 80 to 70 for ELITE
+        elif piracy_score >= 80:
             return "ELITE"
-        elif piracy_score >= 60:  # FIXED: Lowered from 65 to 60 for HIGH
+        elif piracy_score >= 65:
             return "HIGH"
-        elif piracy_score >= 40:  # FIXED: Lowered from 45 to 40 for MODERATE
+        elif piracy_score >= 45:
             return "MODERATE"
-        elif piracy_score >= 25:
-            return "LOW"
         else:
-            return "MINIMAL"
+            return "LOW"
     
     @staticmethod
     def calculate_interception_points(route_data: Dict[str, Any]) -> List[Dict[str, Any]]:
