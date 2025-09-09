@@ -1994,7 +1994,7 @@ const RouteDetailModal = ({ isOpen, onClose, route }) => {
                 }`}>{route.risk_level}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-400">Piracy Rating:</span>
+                <span className="text-gray-400">Piracy Score:</span>
                 <span className="text-red-400 font-bold">{route.piracy_rating?.toFixed(1)}</span>
               </div>
             </div>
