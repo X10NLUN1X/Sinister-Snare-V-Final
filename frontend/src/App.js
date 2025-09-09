@@ -3213,15 +3213,27 @@ function App() {
             </button>
           ))}
           
-          {/* Snare Nuke Kachel */}
+          {/* Snare Hardmode Kachel */}
           <button 
-            onClick={handleSnareNuke}
+            onClick={handleSnareHardmode}
             className="p-4 rounded-xl bg-red-600 hover:bg-red-700 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-2xl"
           >
             <div className="text-center">
-              <div className="text-3xl mb-2">💀</div>
-              <div className="text-sm font-bold text-white">SNARE NUKE</div>
-              <div className="text-xs opacity-75 text-gray-300">ELITE Only</div>
+              <div className="text-3xl mb-2">⚡</div>
+              <div className="text-sm font-bold text-white">SNARE HARDMODE</div>
+              <div className="text-xs opacity-75 text-gray-300">ELITE + LEGENDARY</div>
+            </div>
+          </button>
+          
+          {/* FAQ Kachel */}
+          <button 
+            onClick={() => setFaqModal(true)}
+            className="p-4 rounded-xl bg-blue-600 hover:bg-blue-700 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-2xl"
+          >
+            <div className="text-center">
+              <div className="text-3xl mb-2">❓</div>
+              <div className="text-sm font-bold text-white">FAQ</div>
+              <div className="text-xs opacity-75 text-gray-300">Help Guide</div>
             </div>
           </button>
         </div>
