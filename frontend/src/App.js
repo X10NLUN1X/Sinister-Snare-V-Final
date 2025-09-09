@@ -99,8 +99,32 @@ class SinisterDatabase {
       
       return addedRoutes;
     } catch (error) {
-      console.error('Error adding routes to database:', error);
-      return [];
+      console.error('Critical error in addRoutes:', error);
+      return this.useFallbackStorage(routes);
+    }
+  }
+
+  useFallbackStorage(routes) {
+    console.log('Using fallback localStorage instead of IndexedDB');
+    try {
+      const timestamp = new Date().toISOString();
+      const routesWithTimestamp = routes.map(route => ({
+        ...route,
+        timestamp,
+        id: route.id || `${route.commodity_name}_${Date.now()}_${Math.random()}`
+      }));
+      
+      const existingRoutes = JSON.parse(localStorage.getItem('sinister_routes') || '[]');
+      const allRoutes = [...existingRoutes, ...routesWithTimestamp];
+      
+      // Keep only last 1000 routes to prevent localStorage overflow
+      const limitedRoutes = allRoutes.slice(-1000);
+      localStorage.setItem('sinister_routes', JSON.stringify(limitedRoutes));
+      
+      return routesWithTimestamp;
+    } catch (fallbackError) {
+      console.error('Fallback storage also failed:', fallbackError);
+      return routes; // Return original routes without storage
     }
   }
 
