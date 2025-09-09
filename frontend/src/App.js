@@ -909,46 +909,67 @@ const AdvancedSnareplanModal = ({ isOpen, onClose, routes }) => {
     return (
       <div className="space-y-6">
         {/* Multi-Route Optimization */}
-        {interdictionData.multi_route_optimization && (
+        {interdictionData.multi_route_optimization && !interdictionData.multi_route_optimization.error && (
           <div className="bg-purple-900/20 rounded-lg p-6 border border-purple-600">
-            <h4 className="text-purple-400 text-lg font-bold mb-4">🎯 Optimal Interdiction Position</h4>
+            <h4 className="text-purple-400 text-lg font-bold mb-4">🎯 Optimal Multi-Route Interdiction</h4>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <div className="bg-black/30 rounded p-4 mb-4">
-                  <div className="text-purple-300 text-sm font-bold mb-2">Optimal Position</div>
-                  <div className="text-white text-xs font-mono">
-                    X: {interdictionData.multi_route_optimization.optimal_position?.[0]?.toFixed(0) || 0}<br/>
-                    Y: {interdictionData.multi_route_optimization.optimal_position?.[1]?.toFixed(0) || 0}<br/>
-                    Z: {interdictionData.multi_route_optimization.optimal_position?.[2]?.toFixed(0) || 0}
-                  </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+              <div className="bg-black/30 rounded p-4">
+                <div className="text-purple-300 text-sm font-bold mb-2">Optimal Position</div>
+                <div className="text-white text-xs font-mono space-y-1">
+                  <div>X: {interdictionData.multi_route_optimization.optimal_position?.[0]?.toFixed(0) || 0}</div>
+                  <div>Y: {interdictionData.multi_route_optimization.optimal_position?.[1]?.toFixed(0) || 0}</div>
+                  <div>Z: {interdictionData.multi_route_optimization.optimal_position?.[2]?.toFixed(0) || 0}</div>
                 </div>
-                
-                <div className="bg-black/30 rounded p-4">
-                  <div className="text-green-300 text-sm font-bold mb-2">Coverage Score</div>
-                  <div className="text-white text-2xl font-bold">
-                    {interdictionData.multi_route_optimization.total_coverage_score?.toFixed(1) || 0}%
-                  </div>
-                </div>
+                <div className="text-purple-400 text-xs mt-2">Coordinates (meters)</div>
               </div>
               
-              <div>
-                <div className="bg-black/30 rounded p-4 mb-4">
-                  <div className="text-yellow-300 text-sm font-bold mb-2">Movement Required</div>
-                  <div className="text-white text-lg font-bold">
-                    {(interdictionData.multi_route_optimization.movement_required / 1000)?.toFixed(1) || 0} km
-                  </div>
+              <div className="bg-black/30 rounded p-4">
+                <div className="text-green-300 text-sm font-bold mb-2">Total Coverage</div>
+                <div className="text-white text-3xl font-bold">
+                  {interdictionData.multi_route_optimization.total_coverage_score?.toFixed(1) || 0}%
                 </div>
-                
-                <div className="bg-black/30 rounded p-4">
-                  <div className="text-blue-300 text-sm font-bold mb-2">QED Parameters</div>
-                  <div className="text-white text-xs">
-                    Radius: {interdictionData.quantum_parameters?.qed_radius_km}km<br/>
-                    Quantum Speed: {(interdictionData.quantum_parameters?.quantum_speed_c * 100).toFixed(1)}% c
-                  </div>
+                <div className="text-green-400 text-xs mt-2">Combined Route Coverage</div>
+              </div>
+              
+              <div className="bg-black/30 rounded p-4">
+                <div className="text-yellow-300 text-sm font-bold mb-2">Movement Required</div>
+                <div className="text-white text-2xl font-bold">
+                  {(interdictionData.multi_route_optimization.movement_required / 1000)?.toFixed(1) || 0}
                 </div>
+                <div className="text-yellow-400 text-xs mt-2">Kilometers to Travel</div>
               </div>
             </div>
+            
+            {/* Route Coverage Breakdown */}
+            {interdictionData.multi_route_optimization.route_coverages && (
+              <div className="bg-gray-800/50 rounded p-4">
+                <h5 className="text-white font-bold mb-3">📊 Individual Route Coverage</h5>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {interdictionData.multi_route_optimization.route_coverages.map((routeCoverage, index) => (
+                    <div key={index} className="bg-black/30 rounded p-3">
+                      <div className="flex justify-between items-center mb-2">
+                        <div className="text-purple-400 font-bold text-sm">
+                          {selectedRoutes[routeCoverage.route_index]?.commodity_name || `Route ${index + 1}`}
+                        </div>
+                        <div className="text-green-400 font-bold">
+                          {routeCoverage.coverage?.coverage_percentage?.toFixed(1) || 0}%
+                        </div>
+                      </div>
+                      <div className="w-full bg-gray-700 rounded-full h-2">
+                        <div 
+                          className="bg-green-400 h-2 rounded-full" 
+                          style={{width: `${Math.min(routeCoverage.coverage?.coverage_percentage || 0, 100)}%`}}
+                        ></div>
+                      </div>
+                      <div className="text-gray-400 text-xs mt-1">
+                        Coverage: {(routeCoverage.coverage?.coverage_length / 1000)?.toFixed(1) || 0}km
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
 
