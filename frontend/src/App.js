@@ -853,104 +853,136 @@ const AdvancedSnareplanModal = ({ isOpen, onClose, routes }) => {
             </div>
           </div>
           
-          {/* Interactive Controls */}
-          <div className="bg-gray-800 rounded-lg p-4">
-            <h5 className="text-purple-400 font-bold mb-3">🎮 Interactive Controls</h5>
+          {/* Enhanced Interactive Controls - LARGER AND MORE RESPONSIVE */}
+          <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
+            <h5 className="text-purple-400 font-bold text-xl mb-4">🎮 Interactive Position Controls</h5>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-              <div>
-                <label className="text-purple-400 text-sm font-bold block mb-2">Mantis X Position</label>
-                <div className="flex items-center space-x-2">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+              <div className="bg-gray-900 rounded-lg p-4 border border-purple-600">
+                <label className="text-purple-400 text-base font-bold block mb-3">🔴 Mantis X Position (East/West)</label>
+                <div className="flex items-center space-x-3">
                   <input 
                     type="range" 
-                    min="-100000" 
-                    max="100000" 
-                    step="1000"
+                    min="-200000" 
+                    max="200000" 
+                    step="2000"
                     value={mantisPosition[0]} 
                     onChange={(e) => setMantisPosition([+e.target.value, mantisPosition[1], mantisPosition[2]])}
-                    className="flex-1"
+                    className="flex-1 h-3 bg-gray-700 rounded-lg appearance-none cursor-pointer slider-purple"
                   />
-                  <span className="text-white text-xs w-20">{mantisPosition[0]}</span>
+                  <span className="text-white text-sm w-24 font-mono bg-gray-700 px-2 py-1 rounded">
+                    {(mantisPosition[0] / 1000).toFixed(0)}k
+                  </span>
                 </div>
+                <div className="text-xs text-gray-400 mt-2">Range: -200k to +200k km</div>
               </div>
               
-              <div>
-                <label className="text-purple-400 text-sm font-bold block mb-2">Mantis Y Position</label>
-                <div className="flex items-center space-x-2">
+              <div className="bg-gray-900 rounded-lg p-4 border border-green-600">
+                <label className="text-green-400 text-base font-bold block mb-3">🟢 Mantis Y Position (North/South)</label>
+                <div className="flex items-center space-x-3">
+                  <input 
+                    type="range" 
+                    min="-200000" 
+                    max="200000" 
+                    step="2000"
+                    value={mantisPosition[1]} 
+                    onChange={(e) => setMantisPosition([mantisPosition[0], +e.target.value, mantisPosition[2]])}
+                    className="flex-1 h-3 bg-gray-700 rounded-lg appearance-none cursor-pointer slider-green"
+                  />
+                  <span className="text-white text-sm w-24 font-mono bg-gray-700 px-2 py-1 rounded">
+                    {(mantisPosition[1] / 1000).toFixed(0)}k
+                  </span>
+                </div>
+                <div className="text-xs text-gray-400 mt-2">Range: -200k to +200k km</div>
+              </div>
+              
+              <div className="bg-gray-900 rounded-lg p-4 border border-blue-600">
+                <label className="text-blue-400 text-base font-bold block mb-3">🔵 Mantis Z Position (Up/Down)</label>
+                <div className="flex items-center space-x-3">
                   <input 
                     type="range" 
                     min="-100000" 
                     max="100000" 
-                    step="1000"
-                    value={mantisPosition[1]} 
-                    onChange={(e) => setMantisPosition([mantisPosition[0], +e.target.value, mantisPosition[2]])}
-                    className="flex-1"
-                  />
-                  <span className="text-white text-xs w-20">{mantisPosition[1]}</span>
-                </div>
-              </div>
-              
-              <div>
-                <label className="text-purple-400 text-sm font-bold block mb-2">Mantis Z Position</label>
-                <div className="flex items-center space-x-2">
-                  <input 
-                    type="range" 
-                    min="-50000" 
-                    max="50000" 
-                    step="1000"
+                    step="2000"
                     value={mantisPosition[2]} 
                     onChange={(e) => setMantisPosition([mantisPosition[0], mantisPosition[1], +e.target.value])}
-                    className="flex-1"
+                    className="flex-1 h-3 bg-gray-700 rounded-lg appearance-none cursor-pointer slider-blue"
                   />
-                  <span className="text-white text-xs w-20">{mantisPosition[2]}</span>
+                  <span className="text-white text-sm w-24 font-mono bg-gray-700 px-2 py-1 rounded">
+                    {(mantisPosition[2] / 1000).toFixed(0)}k
+                  </span>
                 </div>
-              </div>
-              
-              <div className="flex items-end">
-                <button 
-                  onClick={calculateInterdiction}
-                  disabled={loading}
-                  className="w-full bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded text-white font-bold text-sm disabled:opacity-50"
-                >
-                  {loading ? '🔄' : '🎯'} Recalculate
-                </button>
+                <div className="text-xs text-gray-400 mt-2">Range: -100k to +100k km</div>
               </div>
             </div>
             
-            {/* Quick Preset Positions */}
+            {/* Real-time Position Display */}
+            <div className="bg-black/50 rounded-lg p-4 mb-4 border border-gray-600">
+              <h6 className="text-purple-400 font-bold mb-3">📍 Current Mantis Coordinates</h6>
+              <div className="grid grid-cols-3 gap-4 text-center">
+                <div className="bg-purple-900/30 rounded p-3">
+                  <div className="text-purple-400 text-sm font-bold">X (East/West)</div>
+                  <div className="text-white text-xl font-mono">{mantisPosition[0].toLocaleString()}</div>
+                  <div className="text-gray-400 text-xs">meters</div>
+                </div>
+                <div className="bg-green-900/30 rounded p-3">
+                  <div className="text-green-400 text-sm font-bold">Y (North/South)</div>
+                  <div className="text-white text-xl font-mono">{mantisPosition[1].toLocaleString()}</div>
+                  <div className="text-gray-400 text-xs">meters</div>
+                </div>
+                <div className="bg-blue-900/30 rounded p-3">
+                  <div className="text-blue-400 text-sm font-bold">Z (Up/Down)</div>
+                  <div className="text-white text-xl font-mono">{mantisPosition[2].toLocaleString()}</div>
+                  <div className="text-gray-400 text-xs">meters</div>
+                </div>
+              </div>
+            </div>
+            
+            {/* Action Buttons - ENHANCED */}
+            <div className="flex flex-wrap gap-3 mb-4">
+              <button 
+                onClick={calculateInterdiction}
+                disabled={loading}
+                className="flex-1 min-w-[200px] bg-purple-600 hover:bg-purple-700 px-6 py-3 rounded-lg text-white font-bold text-lg disabled:opacity-50 transition-all duration-300 transform hover:scale-105"
+              >
+                {loading ? '🔄 Calculating...' : '🎯 Recalculate Interdiction'}
+              </button>
+            </div>
+            
+            {/* Quick Preset Positions - IMPROVED */}
             <div>
-              <label className="text-purple-400 text-sm font-bold block mb-2">Quick Preset Positions</label>
-              <div className="flex space-x-2">
+              <label className="text-purple-400 text-base font-bold block mb-3">⚡ Quick Preset Positions</label>
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
                 <button 
                   onClick={() => setMantisPosition([0, 0, 0])}
-                  className="bg-gray-700 hover:bg-gray-600 px-3 py-1 rounded text-white text-xs"
+                  className="bg-gray-700 hover:bg-gray-600 px-4 py-3 rounded-lg text-white text-sm font-bold transition-all duration-200 hover:scale-105"
                 >
-                  Origin (0,0,0)
+                  🎯 Origin<br/><span className="text-xs text-gray-400">(0,0,0)</span>
                 </button>
                 <button 
-                  onClick={() => setMantisPosition([50000, 0, 0])}
-                  className="bg-gray-700 hover:bg-gray-600 px-3 py-1 rounded text-white text-xs"
+                  onClick={() => setMantisPosition([100000, 0, 0])}
+                  className="bg-gray-700 hover:bg-gray-600 px-4 py-3 rounded-lg text-white text-sm font-bold transition-all duration-200 hover:scale-105"
                 >
-                  East Position
+                  🔴 East<br/><span className="text-xs text-gray-400">(+100k,0,0)</span>
                 </button>
                 <button 
-                  onClick={() => setMantisPosition([0, 50000, 0])}
-                  className="bg-gray-700 hover:bg-gray-600 px-3 py-1 rounded text-white text-xs"
+                  onClick={() => setMantisPosition([0, 100000, 0])}
+                  className="bg-gray-700 hover:bg-gray-600 px-4 py-3 rounded-lg text-white text-sm font-bold transition-all duration-200 hover:scale-105"
                 >
-                  North Position
+                  🟢 North<br/><span className="text-xs text-gray-400">(0,+100k,0)</span>
                 </button>
                 <button 
-                  onClick={() => setMantisPosition([25000, 25000, 0])}
-                  className="bg-gray-700 hover:bg-gray-600 px-3 py-1 rounded text-white text-xs"
+                  onClick={() => setMantisPosition([70710, 70710, 0])}
+                  className="bg-gray-700 hover:bg-gray-600 px-4 py-3 rounded-lg text-white text-sm font-bold transition-all duration-200 hover:scale-105"
                 >
-                  Northeast
+                  ↗️ Northeast<br/><span className="text-xs text-gray-400">(71k,71k,0)</span>
                 </button>
                 {interdictionData.multi_route_optimization?.optimal_position && (
                   <button 
                     onClick={() => setMantisPosition(interdictionData.multi_route_optimization.optimal_position)}
-                    className="bg-purple-600 hover:bg-purple-700 px-3 py-1 rounded text-white text-xs"
+                    className="bg-purple-600 hover:bg-purple-700 px-4 py-3 rounded-lg text-white text-sm font-bold transition-all duration-200 hover:scale-105"
                   >
-                    Move to Optimal
+                    🎯 Move to Optimal<br/><span className="text-xs text-purple-200">Best Position</span>
                   </button>
                 )}
               </div>
