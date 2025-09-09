@@ -1486,6 +1486,11 @@ async def export_routes(
         logging.error(f"Error in export_routes: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+@api_router.get("/targets")
+async def get_targets():
+    """Get all targets - redirect to priority targets for compatibility"""
+    return await get_priority_targets()
+
 @api_router.get("/targets/priority")
 async def get_priority_targets(
     limit: int = Query(default=20, le=100),
