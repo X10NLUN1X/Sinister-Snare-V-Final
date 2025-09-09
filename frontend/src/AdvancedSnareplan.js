@@ -3,6 +3,85 @@ import axios from 'axios';
 
 const API = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001/api';
 
+// Terminal zu Planet/System Zuordnung
+const TERMINAL_MAPPING = {
+  // Stanton System
+  'TDD New Babbage': { planet: 'Microtech', system: 'Stanton' },
+  'New Babbage': { planet: 'Microtech', system: 'Stanton' },
+  'Port Tressler': { planet: 'Microtech', system: 'Stanton' },
+  'Area18': { planet: 'ArcCorp', system: 'Stanton' },
+  'Lorville': { planet: 'Hurston', system: 'Stanton' },
+  'Orison': { planet: 'Crusader', system: 'Stanton' },
+  'Port Olisar': { planet: 'Crusader', system: 'Stanton' },
+  'Grim HEX': { planet: 'Yela', system: 'Stanton' },
+  'Seraphim Station': { planet: 'Vanguard', system: 'Stanton' },
+  'Deakins Research': { planet: 'Microtech', system: 'Stanton' },
+  'CRU-L5': { planet: 'Crusader', system: 'Stanton' },
+  'HUR-L1': { planet: 'Hurston', system: 'Stanton' },
+  'HUR-L2': { planet: 'Hurston', system: 'Stanton' },
+  'HUR-L3': { planet: 'Hurston', system: 'Stanton' },
+  'HUR-L4': { planet: 'Hurston', system: 'Stanton' },
+  'HUR-L5': { planet: 'Hurston', system: 'Stanton' },
+  'ARC-L1': { planet: 'ArcCorp', system: 'Stanton' },
+  'ARC-L2': { planet: 'ArcCorp', system: 'Stanton' },
+  'ARC-L3': { planet: 'ArcCorp', system: 'Stanton' },
+  'ARC-L4': { planet: 'ArcCorp', system: 'Stanton' },
+  'ARC-L5': { planet: 'ArcCorp', system: 'Stanton' },
+  'MIC-L1': { planet: 'Microtech', system: 'Stanton' },
+  'MIC-L2': { planet: 'Microtech', system: 'Stanton' },
+  'MIC-L3': { planet: 'Microtech', system: 'Stanton' },
+  'MIC-L4': { planet: 'Microtech', system: 'Stanton' },
+  'MIC-L5': { planet: 'Microtech', system: 'Stanton' },
+  
+  // Pyro System
+  'Checkmate': { planet: 'Pyro VI', system: 'Pyro' },
+  'Ruin Station': { planet: 'Pyro I', system: 'Pyro' },
+  'Terminus': { planet: 'Pyro III', system: 'Pyro' },
+  'Shady Glen': { planet: 'Pyro IV', system: 'Pyro' },
+  'The Good Doctor': { planet: 'Pyro V', system: 'Pyro' },
+  
+  // Magnus Gateway
+  'Magnus Gateway': { planet: 'Magnus', system: 'Stanton' },
+  
+  // Andere
+  'Everus Harbor': { planet: 'Hurston', system: 'Stanton' },
+  'Baijini Point': { planet: 'Hurston', system: 'Stanton' }
+};
+
+const getLocationInfo = (locationName) => {
+  // Suche nach exakter Übereinstimmung
+  if (TERMINAL_MAPPING[locationName]) {
+    return TERMINAL_MAPPING[locationName];
+  }
+  
+  // Suche nach partieller Übereinstimmung
+  for (const [terminal, info] of Object.entries(TERMINAL_MAPPING)) {
+    if (locationName.includes(terminal) || terminal.includes(locationName)) {
+      return info;
+    }
+  }
+  
+  // Fallback basierend auf bekannten Schlüsselwörtern
+  if (locationName.includes('Babbage') || locationName.includes('TDD')) {
+    return { planet: 'Microtech', system: 'Stanton' };
+  }
+  if (locationName.includes('Area18') || locationName.includes('ArcCorp')) {
+    return { planet: 'ArcCorp', system: 'Stanton' };
+  }
+  if (locationName.includes('Lorville') || locationName.includes('Hurston')) {
+    return { planet: 'Hurston', system: 'Stanton' };
+  }
+  if (locationName.includes('Orison') || locationName.includes('Crusader')) {
+    return { planet: 'Crusader', system: 'Stanton' };
+  }
+  if (locationName.includes('Checkmate') || locationName.includes('Pyro')) {
+    return { planet: 'Pyro VI', system: 'Pyro' };
+  }
+  
+  // Standard Fallback
+  return { planet: 'Unknown', system: 'Unknown' };
+};
+
 const AdvancedSnareplanModal = ({ isOpen, onClose, routes }) => {
   const [selectedRoute, setSelectedRoute] = useState(null);
   const [playerCoordinates, setPlayerCoordinates] = useState({ x: '', y: '', z: '' });
