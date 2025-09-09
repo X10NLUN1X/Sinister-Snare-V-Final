@@ -3550,7 +3550,7 @@ function App() {
                 
                 {/* Real-time Statistics */}
                 <div className="p-6 rounded-xl bg-gray-800/50 border border-gray-700">
-                  <h4 className="text-red-400 font-bold mb-3">📊 Live Interdiction Stats</h4>
+                  <h4 className="text-gray-300 font-bold mb-3">📊 Live Interdiction Stats</h4>
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
                       <span className="text-gray-400">Active Routes:</span>
