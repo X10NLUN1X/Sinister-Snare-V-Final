@@ -3146,6 +3146,18 @@ function App() {
             </button>
           ))}
           
+          {/* Advanced Snareplan - NEW */}
+          <button 
+            onClick={() => setAdvancedSnareplanModal(true)}
+            className="p-4 rounded-xl bg-gradient-to-br from-purple-600 via-purple-700 to-indigo-700 hover:from-purple-500 hover:via-purple-600 hover:to-indigo-600 transition-all duration-300 transform hover:scale-110 shadow-xl hover:shadow-2xl ring-2 ring-purple-400"
+          >
+            <div className="text-center">
+              <div className="text-3xl mb-2">🎯</div>
+              <div className="text-sm font-bold text-white">ADVANCED SNAREPLAN</div>
+              <div className="text-xs opacity-90 text-purple-100">3D Interdiction</div>
+            </div>
+          </button>
+          
           {/* Hardcore Mode Kachel */}
           <button 
             onClick={handleSnareHardmode}
