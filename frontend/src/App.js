@@ -3312,13 +3312,33 @@ function App() {
   }, []);
 
   const fetchRoutes = useCallback(async () => {
+    const requestId = `fetchRoutes_${Date.now()}`;
+    
+    // Prevent race conditions
+    if (isRequestPending.current || requestQueue.current.has('fetchRoutes')) {
+      console.log('Request already pending, skipping...');
+      return;
+    }
+    
+    isRequestPending.current = true;
+    requestQueue.current.add('fetchRoutes');
+    
+    // Cancel previous request if exists
+    if (abortController.current) {
+      abortController.current.abort();
+    }
+    abortController.current = new AbortController();
+    
     try {
       const dataTypeParam = showAverageData ? 'averaged' : 'current';
       let response;
       
       if (showAverageData) {
         // Fetch averaged/merged data from backend
-        response = await axios.get(`${API}/database/routes/${dataTypeParam}`);
+        response = await axios.get(`${API}/database/routes/${dataTypeParam}`, {
+          timeout: 30000,
+          signal: abortController.current.signal
+        });
         const routes = response.data.routes || [];
         setRoutes(routes);
         console.log(`✅ Fetched ${routes.length} ${dataTypeParam} routes`);
