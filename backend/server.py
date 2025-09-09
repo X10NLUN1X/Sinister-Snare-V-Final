@@ -436,6 +436,9 @@ class StarProfitClient:
             "Terra Mills",            # VERIFIED Terra system
         }
         
+        # Enhanced matching with normalization and fallback
+        terminal_normalized = terminal_name_clean.lower().strip()
+        
         # Priority exact matching first
         if terminal_name_clean in stanton_terminals:
             return "Stanton"
@@ -444,8 +447,43 @@ class StarProfitClient:
         if terminal_name_clean in terra_terminals:
             return "Terra"
         
-        # Fallback: Unknown terminals default to Pyro (lawless frontier)
-        # This makes sense as new/undocumented outposts are likely in lawless space
+        # Enhanced partial matching for better coverage
+        def check_terminal_match(terminal_set, system_name):
+            for terminal in terminal_set:
+                terminal_lower = terminal.lower()
+                # Exact match
+                if terminal_lower == terminal_normalized:
+                    return system_name
+                # Partial match - check if key identifiers match
+                if (terminal_lower in terminal_normalized or 
+                    terminal_normalized in terminal_lower or
+                    any(word in terminal_normalized for word in terminal_lower.split() if len(word) > 3)):
+                    return system_name
+            return None
+        
+        # Try enhanced matching
+        system_match = (check_terminal_match(stanton_terminals, "Stanton") or
+                       check_terminal_match(pyro_terminals, "Pyro") or  
+                       check_terminal_match(terra_terminals, "Terra"))
+        
+        if system_match:
+            return system_match
+        
+        # Fallback with system identifier detection
+        system_identifiers = {
+            "stanton": ["crusader", "hurston", "microtech", "arccorp", "olisar", "orison", "lorville", "babbage", "tressler"],
+            "pyro": ["pyro", "ruin", "checkmate", "terminus", "bloom"],
+            "terra": ["terra", "mills"],
+            "nyx": ["nyx", "delamar", "levski"]
+        }
+        
+        for system, identifiers in system_identifiers.items():
+            if any(identifier in terminal_normalized for identifier in identifiers):
+                logging.info(f"Terminal mapping via identifier: {terminal_name} -> {system.title()}")
+                return system.title()
+        
+        # Final fallback with logging for debugging
+        logging.warning(f"Unknown terminal mapping: '{terminal_name}' -> defaulting to Pyro")
         return "Pyro"
 
     def generate_system_coordinates(self, system_name: str) -> Dict[str, float]:
