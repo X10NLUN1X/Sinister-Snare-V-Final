@@ -3529,10 +3529,10 @@ function App() {
           
           {/* Expandable SnarePlan Panel */}
           {snarePlanExpanded && (
-            <div className="mt-4 bg-gradient-to-br from-gray-900 via-gray-800 to-red-900/30 rounded-xl p-6 border-2 border-red-800 shadow-2xl animate-fadeIn">
+            <div className="mt-4 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-700/30 rounded-xl p-6 border-2 border-gray-600 shadow-2xl animate-fadeIn">
               <div className="text-center mb-6">
-                <h3 className="text-2xl font-bold text-red-400 mb-2">🎯 Quantum Interdiction Planning</h3>
-                <p className="text-gray-300 text-sm">Select a route for automated snare calculation</p>
+                <h3 className="text-2xl font-bold text-gray-300 mb-2">🎯 Quantum Interdiction Planning</h3>
+                <p className="text-gray-400 text-sm">Select a route for automated snare calculation</p>
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
