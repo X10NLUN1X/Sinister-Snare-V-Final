@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import "./App.css";
 import axios from "axios";
+import AdvancedSnareplanModal from "./AdvancedSnareplan";
 
 // IndexedDB Database Manager
 class SinisterDatabase {
