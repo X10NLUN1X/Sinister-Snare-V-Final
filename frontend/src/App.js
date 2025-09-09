@@ -3307,7 +3307,7 @@ function App() {
     
     setLoading(false); // CRITICAL: Always set loading to false
     console.log('🎉 Data loading completed (with any available data)');
-  }, [fetchApiStatus, fetchRoutes, fetchTargets, fetchHourlyData, fetchAlerts, fetchTrends, fetchTrackingStatus, fetchDbStats]);
+  }, []); // FIXED: Empty dependency array to prevent infinite loop
 
   useEffect(() => {
     const initializeApp = async () => {
