@@ -605,59 +605,298 @@ const AdvancedSnareplanModal = ({ isOpen, onClose, routes }) => {
   };
 
   const render3DVisualization = () => {
-    if (!interdictionData) return null;
+    if (!interdictionData) {
+      return (
+        <div className="bg-gray-900 rounded-lg p-6 mb-6">
+          <h4 className="text-purple-400 text-lg font-bold mb-4">🎯 3D Route Visualization</h4>
+          <div className="bg-black rounded-lg p-8 mb-4 min-h-[400px] flex items-center justify-center border border-purple-500">
+            <div className="text-center">
+              <div className="text-6xl mb-4">📊</div>
+              <div className="text-purple-400 text-xl font-bold mb-2">Select Routes & Calculate</div>
+              <div className="text-gray-400 text-sm">Go to Route Selection tab and calculate interdiction data first</div>
+            </div>
+          </div>
+        </div>
+      );
+    }
 
     return (
-      <div className="bg-gray-900 rounded-lg p-6 mb-6">
-        <h4 className="text-purple-400 text-lg font-bold mb-4">🎯 3D Route Visualization</h4>
-        
-        {/* 3D Canvas Placeholder - In production this would be a Three.js or similar 3D render */}
-        <div className="bg-black rounded-lg p-8 mb-4 min-h-[400px] flex items-center justify-center border border-purple-500">
-          <div className="text-center">
-            <div className="text-6xl mb-4">🌌</div>
-            <div className="text-purple-400 text-xl font-bold mb-2">3D Route Visualization</div>
-            <div className="text-gray-400 text-sm mb-4">Interactive 3D visualization would render here</div>
-            <div className="grid grid-cols-2 gap-4 text-xs">
-              <div className="bg-purple-900/30 p-3 rounded">
-                <div className="text-purple-300 font-bold">QED Radius</div>
-                <div className="text-white">{interdictionData.quantum_parameters?.qed_radius_km}km</div>
+      <div className="space-y-6">
+        {/* 3D Interactive Visualization */}
+        <div className="bg-gray-900 rounded-lg p-6 border border-purple-500">
+          <h4 className="text-purple-400 text-lg font-bold mb-4">🌌 3D Quantum Route Visualization</h4>
+          
+          {/* 3D Scene Display */}
+          <div className="bg-black rounded-lg p-4 mb-6 min-h-[500px] relative border border-purple-400">
+            {/* Coordinate System Display */}
+            <div className="absolute top-4 left-4 text-xs font-mono text-purple-300">
+              <div>X: East/West Axis</div>
+              <div>Y: North/South Axis</div>
+              <div>Z: Up/Down Axis</div>
+            </div>
+            
+            {/* 3D Route Rendering */}
+            <div className="w-full h-full flex items-center justify-center relative">
+              <svg width="100%" height="450" viewBox="0 0 800 450" className="border border-gray-800">
+                {/* Grid Lines */}
+                <defs>
+                  <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+                    <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#374151" strokeWidth="1"/>
+                  </pattern>
+                </defs>
+                <rect width="100%" height="100%" fill="url(#grid)" />
+                
+                {/* Center Origin */}
+                <circle cx="400" cy="225" r="3" fill="#8b5cf6" />
+                <text x="410" y="230" className="text-xs fill-purple-400">Origin (0,0,0)</text>
+                
+                {/* Render Routes */}
+                {interdictionData.single_route_intercepts?.map((routeData, index) => {
+                  const startX = 400; // Center
+                  const startY = 225; // Center
+                  
+                  // Calculate end point (simplified 2D projection)
+                  const route = selectedRoutes[index];
+                  if (!route?.coordinates_destination) return null;
+                  
+                  const endX = 400 + (route.coordinates_destination.x / 1000); // Scale down
+                  const endY = 225 - (route.coordinates_destination.y / 1000); // Invert Y
+                  
+                  // Intercept point
+                  const interceptX = 400 + (routeData.intercept_data?.intercept_point?.[0] / 1000 || 0);
+                  const interceptY = 225 - (routeData.intercept_data?.intercept_point?.[1] / 1000 || 0);
+                  
+                  return (
+                    <g key={index}>
+                      {/* Route Line */}
+                      <line 
+                        x1={startX} y1={startY} 
+                        x2={Math.min(Math.max(endX, 50), 750)} 
+                        y2={Math.min(Math.max(endY, 50), 400)}
+                        stroke="#3b82f6" 
+                        strokeWidth="2" 
+                        strokeDasharray="5,5"
+                      />
+                      
+                      {/* Intercept Point */}
+                      <circle 
+                        cx={Math.min(Math.max(interceptX, 50), 750)} 
+                        cy={Math.min(Math.max(interceptY, 50), 400)} 
+                        r="8" 
+                        fill="#ef4444" 
+                        stroke="#fbbf24" 
+                        strokeWidth="2"
+                      />
+                      
+                      {/* QED Coverage Circle */}
+                      <circle 
+                        cx={Math.min(Math.max(interceptX, 50), 750)} 
+                        cy={Math.min(Math.max(interceptY, 50), 400)} 
+                        r={interdictionData.quantum_parameters?.qed_radius_km || 20} 
+                        fill="none" 
+                        stroke="#ef4444" 
+                        strokeWidth="1" 
+                        strokeOpacity="0.3"
+                      />
+                      
+                      {/* Route Label */}
+                      <text 
+                        x={Math.min(Math.max(endX, 60), 740)} 
+                        y={Math.min(Math.max(endY - 10, 60), 390)} 
+                        className="text-xs fill-blue-400"
+                      >
+                        {routeData.route_name}
+                      </text>
+                    </g>
+                  );
+                })}
+                
+                {/* Mantis Position */}
+                <g>
+                  <circle cx="400" cy="225" r="6" fill="#10b981" stroke="#34d399" strokeWidth="2"/>
+                  <text x="410" y="220" className="text-xs fill-green-400">Mantis</text>
+                </g>
+                
+                {/* Optimal Position (if multi-route) */}
+                {interdictionData.multi_route_optimization?.optimal_position && (
+                  <g>
+                    <circle 
+                      cx={400 + (interdictionData.multi_route_optimization.optimal_position[0] / 1000)} 
+                      cy={225 - (interdictionData.multi_route_optimization.optimal_position[1] / 1000)} 
+                      r="10" 
+                      fill="#8b5cf6" 
+                      stroke="#c084fc" 
+                      strokeWidth="2"
+                    />
+                    <text 
+                      x={410 + (interdictionData.multi_route_optimization.optimal_position[0] / 1000)} 
+                      y={220 - (interdictionData.multi_route_optimization.optimal_position[1] / 1000)} 
+                      className="text-xs fill-purple-400"
+                    >
+                      Optimal
+                    </text>
+                  </g>
+                )}
+              </svg>
+            </div>
+            
+            {/* Legend */}
+            <div className="absolute bottom-4 right-4 bg-gray-800/90 rounded p-3 text-xs">
+              <div className="text-purple-400 font-bold mb-2">Legend</div>
+              <div className="space-y-1">
+                <div className="flex items-center space-x-2">
+                  <div className="w-3 h-3 bg-green-400 rounded-full"></div>
+                  <span className="text-gray-300">Mantis Position</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                  <span className="text-gray-300">Intercept Points</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <div className="w-3 h-3 bg-purple-500 rounded-full"></div>
+                  <span className="text-gray-300">Optimal Position</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <div className="w-3 h-0.5 bg-blue-500"></div>
+                  <span className="text-gray-300">Quantum Routes</span>
+                </div>
               </div>
-              <div className="bg-blue-900/30 p-3 rounded">
-                <div className="text-blue-300 font-bold">Routes Analyzed</div>
-                <div className="text-white">{interdictionData.total_routes_analyzed}</div>
+            </div>
+          </div>
+          
+          {/* Interactive Controls */}
+          <div className="bg-gray-800 rounded-lg p-4">
+            <h5 className="text-purple-400 font-bold mb-3">🎮 Interactive Controls</h5>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+              <div>
+                <label className="text-purple-400 text-sm font-bold block mb-2">Mantis X Position</label>
+                <div className="flex items-center space-x-2">
+                  <input 
+                    type="range" 
+                    min="-100000" 
+                    max="100000" 
+                    step="1000"
+                    value={mantisPosition[0]} 
+                    onChange={(e) => setMantisPosition([+e.target.value, mantisPosition[1], mantisPosition[2]])}
+                    className="flex-1"
+                  />
+                  <span className="text-white text-xs w-20">{mantisPosition[0]}</span>
+                </div>
+              </div>
+              
+              <div>
+                <label className="text-purple-400 text-sm font-bold block mb-2">Mantis Y Position</label>
+                <div className="flex items-center space-x-2">
+                  <input 
+                    type="range" 
+                    min="-100000" 
+                    max="100000" 
+                    step="1000"
+                    value={mantisPosition[1]} 
+                    onChange={(e) => setMantisPosition([mantisPosition[0], +e.target.value, mantisPosition[2]])}
+                    className="flex-1"
+                  />
+                  <span className="text-white text-xs w-20">{mantisPosition[1]}</span>
+                </div>
+              </div>
+              
+              <div>
+                <label className="text-purple-400 text-sm font-bold block mb-2">Mantis Z Position</label>
+                <div className="flex items-center space-x-2">
+                  <input 
+                    type="range" 
+                    min="-50000" 
+                    max="50000" 
+                    step="1000"
+                    value={mantisPosition[2]} 
+                    onChange={(e) => setMantisPosition([mantisPosition[0], mantisPosition[1], +e.target.value])}
+                    className="flex-1"
+                  />
+                  <span className="text-white text-xs w-20">{mantisPosition[2]}</span>
+                </div>
+              </div>
+              
+              <div className="flex items-end">
+                <button 
+                  onClick={calculateInterdiction}
+                  disabled={loading}
+                  className="w-full bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded text-white font-bold text-sm disabled:opacity-50"
+                >
+                  {loading ? '🔄' : '🎯'} Recalculate
+                </button>
+              </div>
+            </div>
+            
+            {/* Quick Preset Positions */}
+            <div>
+              <label className="text-purple-400 text-sm font-bold block mb-2">Quick Preset Positions</label>
+              <div className="flex space-x-2">
+                <button 
+                  onClick={() => setMantisPosition([0, 0, 0])}
+                  className="bg-gray-700 hover:bg-gray-600 px-3 py-1 rounded text-white text-xs"
+                >
+                  Origin (0,0,0)
+                </button>
+                <button 
+                  onClick={() => setMantisPosition([50000, 0, 0])}
+                  className="bg-gray-700 hover:bg-gray-600 px-3 py-1 rounded text-white text-xs"
+                >
+                  East Position
+                </button>
+                <button 
+                  onClick={() => setMantisPosition([0, 50000, 0])}
+                  className="bg-gray-700 hover:bg-gray-600 px-3 py-1 rounded text-white text-xs"
+                >
+                  North Position
+                </button>
+                <button 
+                  onClick={() => setMantisPosition([25000, 25000, 0])}
+                  className="bg-gray-700 hover:bg-gray-600 px-3 py-1 rounded text-white text-xs"
+                >
+                  Northeast
+                </button>
+                {interdictionData.multi_route_optimization?.optimal_position && (
+                  <button 
+                    onClick={() => setMantisPosition(interdictionData.multi_route_optimization.optimal_position)}
+                    className="bg-purple-600 hover:bg-purple-700 px-3 py-1 rounded text-white text-xs"
+                  >
+                    Move to Optimal
+                  </button>
+                )}
               </div>
             </div>
           </div>
         </div>
-
-        {/* Control Panel */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="bg-gray-800 p-4 rounded">
-            <label className="text-purple-400 text-sm font-bold block mb-2">Mantis Position X</label>
-            <input 
-              type="number" 
-              value={mantisPosition[0]} 
-              onChange={(e) => setMantisPosition([+e.target.value, mantisPosition[1], mantisPosition[2]])}
-              className="w-full bg-gray-700 text-white p-2 rounded text-sm"
-            />
-          </div>
-          <div className="bg-gray-800 p-4 rounded">
-            <label className="text-purple-400 text-sm font-bold block mb-2">Mantis Position Y</label>
-            <input 
-              type="number" 
-              value={mantisPosition[1]} 
-              onChange={(e) => setMantisPosition([mantisPosition[0], +e.target.value, mantisPosition[2]])}
-              className="w-full bg-gray-700 text-white p-2 rounded text-sm"
-            />
-          </div>
-          <div className="bg-gray-800 p-4 rounded">
-            <label className="text-purple-400 text-sm font-bold block mb-2">Mantis Position Z</label>
-            <input 
-              type="number" 
-              value={mantisPosition[2]} 
-              onChange={(e) => setMantisPosition([mantisPosition[0], mantisPosition[1], +e.target.value])}
-              className="w-full bg-gray-700 text-white p-2 rounded text-sm"
-            />
+        
+        {/* Technical Data Display */}
+        <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
+          <h5 className="text-purple-400 font-bold mb-4">🛸 Quantum Interdiction Parameters</h5>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="bg-black/30 rounded p-4">
+              <div className="text-purple-300 text-sm font-bold mb-2">QED Field Radius</div>
+              <div className="text-white text-2xl font-bold">{interdictionData.quantum_parameters?.qed_radius_km}km</div>
+              <div className="text-gray-400 text-xs">RSI Mantis Coverage</div>
+            </div>
+            
+            <div className="bg-black/30 rounded p-4">
+              <div className="text-blue-300 text-sm font-bold mb-2">Quantum Speed</div>
+              <div className="text-white text-2xl font-bold">{(interdictionData.quantum_parameters?.quantum_speed_c * 100).toFixed(1)}%</div>
+              <div className="text-gray-400 text-xs">Speed of Light</div>
+            </div>
+            
+            <div className="bg-black/30 rounded p-4">
+              <div className="text-green-300 text-sm font-bold mb-2">Routes Analyzed</div>
+              <div className="text-white text-2xl font-bold">{interdictionData.total_routes_analyzed}</div>
+              <div className="text-gray-400 text-xs">Active Quantum Routes</div>
+            </div>
+            
+            <div className="bg-black/30 rounded p-4">
+              <div className="text-yellow-300 text-sm font-bold mb-2">Mantis Max Speed</div>
+              <div className="text-white text-2xl font-bold">{interdictionData.quantum_parameters?.mantis_max_speed_ms}</div>
+              <div className="text-gray-400 text-xs">Meters per Second</div>
+            </div>
           </div>
         </div>
       </div>
