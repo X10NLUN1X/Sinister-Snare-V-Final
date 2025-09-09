@@ -3112,13 +3112,20 @@ async def main():
     
     all_results = TestResults()
     
-    # Test GOLD COMMODITY CLASSIFICATION FIRST (PRIORITY TEST from review request)
-    gold_results = await test_gold_commodity_classification()
-    all_results.results.extend(gold_results.results)
-    all_results.passed += gold_results.passed
-    all_results.failed += gold_results.failed
+    # Test GOLD COMMODITY PIRACY SCORING V2.1 FIRST (PRIMARY FOCUS from review request)
+    print("\n🎯 PRIORITY TEST: Gold Commodity Piracy Scoring V2.1 Enhanced Algorithm")
+    gold_scoring_results = await test_gold_commodity_piracy_scoring()
+    all_results.results.extend(gold_scoring_results.results)
+    all_results.passed += gold_scoring_results.passed
+    all_results.failed += gold_scoring_results.failed
     
-    # Test URGENT PIRACY SCORING SYSTEM (highest priority)
+    # Test GOLD COMMODITY CLASSIFICATION (secondary priority)
+    gold_classification_results = await test_gold_commodity_classification()
+    all_results.results.extend(gold_classification_results.results)
+    all_results.passed += gold_classification_results.passed
+    all_results.failed += gold_classification_results.failed
+    
+    # Test URGENT PIRACY SCORING SYSTEM (high priority)
     piracy_results = await test_piracy_scoring_system()
     all_results.results.extend(piracy_results.results)
     all_results.passed += piracy_results.passed
