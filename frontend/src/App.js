@@ -2930,37 +2930,50 @@ function App() {
     }
   };
 
-  const handleSnareNuke = useCallback(async () => {
+  const handleSnareHardmode = useCallback(async () => {
     try {
-      console.log('🔥 SNARE NUKE: Filtering for ELITE routes with highest interception probability...');
+      console.log('⚡ SNARE HARDMODE: Filtering for ELITE and LEGENDARY routes...');
       
-      // Filter routes for ELITE risk level and sort by interception probability
-      const eliteRoutes = routes
-        .filter(route => route.risk_level === 'ELITE')
+      // Filter routes for ELITE and LEGENDARY risk levels, sort by piracy_rating
+      const hardmodeRoutes = routes
+        .filter(route => ['ELITE', 'LEGENDARY'].includes(route.risk_level))
         .sort((a, b) => {
           // Sort by piracy_rating (highest interception probability first)
           const aPiracy = parseFloat(a.piracy_rating) || 0;
           const bPiracy = parseFloat(b.piracy_rating) || 0;
           return bPiracy - aPiracy;
         })
-        .slice(0, 10); // Top 10 ELITE routes
+        .slice(0, 15); // Top 15 ELITE/LEGENDARY routes
       
-      if (eliteRoutes.length === 0) {
-        alert('⚠️ No ELITE routes found with high interception probability!');
+      if (hardmodeRoutes.length === 0) {
+        alert('⚠️ No ELITE or LEGENDARY routes found! Check back later for premium targets.');
         return;
       }
       
-      // Set filtered routes and switch to routes tab
-      setRoutes(eliteRoutes);
-      setActiveTab('routes');
+      // Create hardmode modal data
+      const hardmodeData = {
+        status: 'success',
+        title: 'SNARE HARDMODE',
+        description: 'Premium targets with maximum risk and reward',
+        routes: hardmodeRoutes,
+        stats: {
+          elite_count: hardmodeRoutes.filter(r => r.risk_level === 'ELITE').length,
+          legendary_count: hardmodeRoutes.filter(r => r.risk_level === 'LEGENDARY').length,
+          avg_piracy_rating: hardmodeRoutes.reduce((sum, r) => sum + (r.piracy_rating || 0), 0) / hardmodeRoutes.length,
+          total_profit: hardmodeRoutes.reduce((sum, r) => sum + (r.profit || 0), 0)
+        }
+      };
       
-      console.log(`🎯 SNARE NUKE: Found ${eliteRoutes.length} ELITE routes with highest interception rates`);
+      // Set hardmode modal data and open it
+      setSnareHardmodeModal(hardmodeData);
+      
+      console.log(`⚡ SNARE HARDMODE: Found ${hardmodeRoutes.length} premium routes (${hardmodeData.stats.elite_count} ELITE, ${hardmodeData.stats.legendary_count} LEGENDARY)`);
       
     } catch (error) {
-      console.error('❌ SNARE NUKE error:', error);
-      alert('Error filtering ELITE routes. Please try again.');
+      console.error('❌ SNARE HARDMODE error:', error);
+      alert('Error loading premium targets. Please try again.');
     }
-  }, [routes, setActiveTab]);
+  }, [routes]);
 
   const startTracking = async () => {
     try {
