@@ -3374,7 +3374,14 @@ function App() {
         }
       }
     } catch (error) {
-      console.error('Error fetching routes:', error);
+      if (error.name === 'AbortError') {
+        console.log('Request aborted');
+      } else {
+        console.error('Error fetching routes:', error);
+      }
+    } finally {
+      isRequestPending.current = false;
+      requestQueue.current.delete('fetchRoutes');
     }
   }, [dataSource, showAverageData, fetchDbStats]);
 
