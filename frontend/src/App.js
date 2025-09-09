@@ -2854,10 +2854,14 @@ function App() {
 
   const handleSnareHardmode = useCallback(async () => {
     try {
-      console.log('⚡ HARDCORE MODE: Loading ALL ELITE and LEGENDARY routes...');
+      console.log('⚡ HARDCORE MODE: Loading ALL ELITE and LEGENDARY routes from fresh API call...');
+      
+      // FIXED: Load fresh data directly from API instead of using potentially filtered routes state
+      const response = await axios.get(`${API}/routes/analyze?limit=100&min_score=1`);
+      const allRoutes = response.data.routes || [];
       
       // Filter ALL routes for ELITE and LEGENDARY risk levels
-      const hardcoreRoutes = routes
+      const hardcoreRoutes = allRoutes
         .filter(route => ['ELITE', 'LEGENDARY'].includes(route.risk_level))
         .sort((a, b) => {
           // Sort by piracy_rating (highest first)
@@ -2866,8 +2870,16 @@ function App() {
           return bPiracy - aPiracy;
         });
       
+      console.log(`🔍 HARDCORE MODE DEBUG: Total routes fetched: ${allRoutes.length}, ELITE/LEGENDARY found: ${hardcoreRoutes.length}`);
+      
       if (hardcoreRoutes.length === 0) {
-        alert('⚠️ No ELITE or LEGENDARY routes available! Check back later for premium targets.');
+        // Show detailed debug info
+        const riskLevels = allRoutes.reduce((acc, route) => {
+          acc[route.risk_level] = (acc[route.risk_level] || 0) + 1;
+          return acc;
+        }, {});
+        console.log('🔍 DEBUG: Risk level distribution:', riskLevels);
+        alert(`⚠️ No ELITE or LEGENDARY routes available in ${allRoutes.length} total routes!\n\nRisk distribution: ${JSON.stringify(riskLevels, null, 2)}`);
         return;
       }
       
@@ -2895,7 +2907,7 @@ function App() {
       console.error('❌ HARDCORE MODE error:', error);
       alert('Error loading hardcore targets. Please try again.');
     }
-  }, [routes]);
+  }, []); // Removed routes dependency to force fresh API call
 
   const startTracking = async () => {
     try {
