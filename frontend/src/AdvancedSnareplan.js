@@ -178,60 +178,74 @@ const AdvancedSnareplanModal = ({ isOpen, onClose, routes }) => {
 
   const renderRouteSelection = () => (
     <div className="space-y-6">
-      <div className="bg-green-900/20 border border-green-600 rounded-lg p-4">
-        <h4 className="text-green-400 font-bold text-lg mb-2">🎯 Route für Interdiction auswählen</h4>
+      <div className="bg-red-900/20 border border-red-600 rounded-lg p-4">
+        <h4 className="text-red-400 font-bold text-lg mb-2">🎯 Route für Interdiction auswählen</h4>
         <p className="text-gray-300 text-sm">Wählen Sie eine Handelsroute aus, um optimale Interdiction-Positionen zu berechnen.</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 max-h-[600px] overflow-y-auto">
-        {routes?.map((route, index) => (
-          <div 
-            key={route.id || index}
-            className={`bg-gray-800 rounded-lg p-4 border cursor-pointer transition-all duration-300 ${
-              selectedRoute?.id === route.id 
-                ? 'border-green-500 bg-green-900/20 shadow-lg shadow-green-500/20' 
-                : 'border-gray-700 hover:border-green-400 hover:shadow-lg'
-            }`}
-            onClick={() => handleRouteSelect(route)}
-          >
-            <div className="mb-4">
-              <h5 className="text-white font-bold text-lg mb-2">{route.commodity_name}</h5>
-              <div className="text-sm text-gray-400 mb-1">Route: {route.route_code}</div>
-            </div>
-            
-            <div className="space-y-2 text-sm">
-              <div className="flex items-center space-x-2">
-                <span className="text-blue-400">🚀 Von:</span>
-                <span className="text-white font-medium">{route.origin_name}</span>
+        {routes?.map((route, index) => {
+          const originInfo = getLocationInfo(route.origin_name || '');
+          const destInfo = getLocationInfo(route.destination_name || '');
+          
+          return (
+            <div 
+              key={route.id || index}
+              className={`bg-gray-800 rounded-lg p-4 border cursor-pointer transition-all duration-300 ${
+                selectedRoute?.id === route.id 
+                  ? 'border-red-500 bg-red-900/20 shadow-lg shadow-red-500/20' 
+                  : 'border-gray-700 hover:border-red-400 hover:shadow-lg'
+              }`}
+              onClick={() => handleRouteSelect(route)}
+            >
+              <div className="mb-4">
+                <h5 className="text-white font-bold text-lg mb-2">{route.commodity_name}</h5>
+                <div className="text-sm text-gray-400 mb-1">Route: {route.route_code}</div>
               </div>
-              <div className="flex items-center space-x-2">
-                <span className="text-orange-400">🎯 Nach:</span>
-                <span className="text-white font-medium">{route.destination_name}</span>
+              
+              <div className="space-y-2 text-sm">
+                <div className="flex items-center space-x-2">
+                  <span className="text-blue-400">🚀 Von:</span>
+                  <div className="text-white font-medium">
+                    <div>{originInfo.planet}</div>
+                    <div className="text-xs text-gray-400">{route.origin_name}</div>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <span className="text-orange-400">🎯 Nach:</span>
+                  <div className="text-white font-medium">
+                    <div>{destInfo.planet}</div>
+                    <div className="text-xs text-gray-400">{route.destination_name}</div>
+                  </div>
+                </div>
+                <div className="text-xs text-gray-500 mt-2">
+                  {originInfo.system} → {destInfo.system}
+                </div>
               </div>
-            </div>
-            
-            <div className="flex justify-between items-center mt-4 pt-3 border-t border-gray-700">
-              <div className="text-center">
-                <div className="text-green-400 font-bold">{((route.profit || 0) / 1000000).toFixed(2)}M</div>
-                <div className="text-gray-400 text-xs">Profit</div>
-              </div>
-              <div className="text-center">
-                <div className="text-red-400 font-bold">{route.piracy_rating}</div>
-                <div className="text-gray-400 text-xs">Piracy Score</div>
-              </div>
-              <div className="text-center">
-                <div className={`px-2 py-1 rounded text-xs font-bold ${
-                  route.risk_level === 'ELITE' ? 'bg-red-600 text-white' :
-                  route.risk_level === 'HIGH' ? 'bg-orange-600 text-white' :
-                  route.risk_level === 'MODERATE' ? 'bg-yellow-600 text-black' :
-                  'bg-green-600 text-white'
-                }`}>
-                  {route.risk_level}
+              
+              <div className="flex justify-between items-center mt-4 pt-3 border-t border-gray-700">
+                <div className="text-center">
+                  <div className="text-green-400 font-bold">{((route.profit || 0) / 1000000).toFixed(2)}M</div>
+                  <div className="text-gray-400 text-xs">Profit</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-red-400 font-bold">{route.piracy_rating}</div>
+                  <div className="text-gray-400 text-xs">Piracy Score</div>
+                </div>
+                <div className="text-center">
+                  <div className={`px-2 py-1 rounded text-xs font-bold ${
+                    route.risk_level === 'ELITE' ? 'bg-red-600 text-white' :
+                    route.risk_level === 'HIGH' ? 'bg-orange-600 text-white' :
+                    route.risk_level === 'MODERATE' ? 'bg-yellow-600 text-black' :
+                    'bg-green-600 text-white'
+                  }`}>
+                    {route.risk_level}
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
