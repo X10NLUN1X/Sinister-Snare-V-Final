@@ -3591,6 +3591,17 @@ function App() {
         route={routeDetailModal.route}
       />
       
+      <FAQModal 
+        isOpen={faqModal}
+        onClose={() => setFaqModal(false)}
+      />
+      
+      <SnareHardmodeModal 
+        data={snareHardmodeModal}
+        onClose={() => setSnareHardmodeModal(null)}
+        onRouteSelect={handleRouteClick}
+      />
+      
       <CommoditySnareModal 
         isOpen={commoditySnareModal}
         onClose={() => setCommoditySnareModal(false)}
