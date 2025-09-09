@@ -2807,7 +2807,7 @@ function App() {
   const [hourlyData, setHourlyData] = useState([]);
   const [alerts, setAlerts] = useState([]);
   const [trends, setTrends] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false); // TEMP: Skip loading to debug SnarePlan
   const [apiStatus, setApiStatus] = useState(null);
   const [activeTab, setActiveTab] = useState('dashboard'); // FIXED: Start on dashboard instead of routes
   const [trackingStatus, setTrackingStatus] = useState(null);
