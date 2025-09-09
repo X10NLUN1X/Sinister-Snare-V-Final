@@ -632,6 +632,68 @@ const FAQModal = ({ isOpen, onClose }) => {
   );
 };
 
+const SnareHardmodeModal = ({ data, onClose, onRouteSelect }) => {
+  if (!data) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-gray-800 rounded-lg p-6 w-[95vw] h-[95vh] overflow-y-auto border border-red-600">
+        <div className="flex justify-between items-center mb-6">
+          <div>
+            <h3 className="text-red-400 text-2xl font-bold">⚡ SNARE HARDMODE</h3>
+            <p className="text-gray-400 text-sm mt-1">Premium ELITE & LEGENDARY targets only</p>
+          </div>
+          <button onClick={onClose} className="text-gray-400 hover:text-white text-xl">✕</button>
+        </div>
+
+        {/* Stats Bar */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+          <div className="bg-red-900/30 rounded-lg p-3 text-center border border-red-600">
+            <div className="text-red-300 text-xl font-bold">{data.stats.elite_count}</div>
+            <div className="text-gray-400 text-xs">ELITE Routes</div>
+          </div>
+          <div className="bg-purple-900/30 rounded-lg p-3 text-center border border-purple-600">
+            <div className="text-purple-300 text-xl font-bold">{data.stats.legendary_count}</div>
+            <div className="text-gray-400 text-xs">LEGENDARY Routes</div>
+          </div>
+          <div className="bg-orange-900/30 rounded-lg p-3 text-center border border-orange-600">
+            <div className="text-orange-300 text-xl font-bold">{data.stats.avg_piracy_rating.toFixed(1)}</div>
+            <div className="text-gray-400 text-xs">Avg Piracy Rating</div>
+          </div>
+          <div className="bg-green-900/30 rounded-lg p-3 text-center border border-green-600">
+            <div className="text-green-300 text-xl font-bold">{(data.stats.total_profit / 1000000).toFixed(1)}M</div>
+            <div className="text-gray-400 text-xs">Total Profit</div>
+          </div>
+        </div>
+
+        {/* Routes Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
+          {data.routes.map((route, index) => (
+            <RouteCard 
+              key={route.id || index} 
+              route={route} 
+              onSelect={(route) => {
+                onRouteSelect(route);
+                onClose();
+              }}
+              onAlternativeRouteSelect={() => {}}
+            />
+          ))}
+        </div>
+
+        <div className="mt-6 text-center">
+          <button 
+            onClick={onClose}
+            className="bg-red-600 hover:bg-red-700 px-6 py-3 rounded text-white font-bold"
+          >
+            Ready for Action! ⚡
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const CommoditySnareModal = ({ isOpen, onClose, onSnare, onRouteSelect, onAlternativeRouteSelect }) => {
 
 const PirateTargetCard = ({ target, onTrack }) => (
