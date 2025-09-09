@@ -2512,6 +2512,295 @@ const ExportPanel = ({ onExport, exportLoading }) => (
   </div>
 );
 
+// NEW: SnarePlan Modal Component
+const SnarePlanModal = ({ isOpen, onClose, routes, onRouteSelect, selectedRoute, calculatedSnare }) => {
+  if (!isOpen) return null;
+
+  // Star Citizen System Coordinates (approximate)
+  const SYSTEM_COORDINATES = {
+    'Stanton': { x: 0, y: 0, z: 0 },
+    'Pyro': { x: -15000000, y: 8000000, z: 2000000 },
+    'Terra': { x: 12000000, y: -5000000, z: 3000000 },
+    'Nyx': { x: -8000000, y: -12000000, z: -1000000 }
+  };
+
+  const calculateSnareForRoute = (route) => {
+    if (!route) return null;
+
+    const originSystem = route.origin_name?.split(' - ')[0] || 'Unknown';
+    const destSystem = route.destination_name?.split(' - ')[0] || 'Unknown';
+    const originLocation = route.origin_name?.split(' - ')[1] || 'Unknown';
+    const destLocation = route.destination_name?.split(' - ')[1] || 'Unknown';
+
+    // Get system coordinates
+    const originCoords = SYSTEM_COORDINATES[originSystem] || { x: 0, y: 0, z: 0 };
+    const destCoords = SYSTEM_COORDINATES[destSystem] || { x: 0, y: 0, z: 0 };
+
+    // Calculate midpoint for interdiction
+    const midpoint = {
+      x: (originCoords.x + destCoords.x) / 2,
+      y: (originCoords.y + destCoords.y) / 2,
+      z: (originCoords.z + destCoords.z) / 2
+    };
+
+    // Calculate distance
+    const distance = Math.sqrt(
+      Math.pow(destCoords.x - originCoords.x, 2) +
+      Math.pow(destCoords.y - originCoords.y, 2) +
+      Math.pow(destCoords.z - originCoords.z, 2)
+    );
+
+    // Determine optimal interdiction point (closer to destination for better success)
+    const interdictionRatio = 0.75; // 75% of the way to destination
+    const interdictionPoint = {
+      x: originCoords.x + (destCoords.x - originCoords.x) * interdictionRatio,
+      y: originCoords.y + (destCoords.y - originCoords.y) * interdictionRatio,
+      z: originCoords.z + (destCoords.z - originCoords.z) * interdictionRatio
+    };
+
+    return {
+      route: route,
+      origin: { system: originSystem, location: originLocation, coords: originCoords },
+      destination: { system: destSystem, location: destLocation, coords: destCoords },
+      interdictionPoint: interdictionPoint,
+      midpoint: midpoint,
+      distance: distance,
+      estimatedTravelTime: distance / 900000, // Assuming ~900k m/s quantum speed
+      interceptionProbability: Math.min(95, route.piracy_rating + 10), // Higher piracy score = better interception
+      recommendedSnareType: route.piracy_rating >= 70 ? 'QED-3' : route.piracy_rating >= 50 ? 'QED-2' : 'QED-1',
+      riskAssessment: route.piracy_rating >= 70 ? 'HIGH REWARD - HIGH RISK' : 
+                      route.piracy_rating >= 50 ? 'MODERATE REWARD - MODERATE RISK' : 'LOW REWARD - LOW RISK'
+    };
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
+      <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-red-900/20 rounded-xl max-w-6xl w-full max-h-[95vh] overflow-y-auto border-2 border-red-600 shadow-2xl">
+        
+        {/* Header */}
+        <div className="bg-gradient-to-r from-red-800 to-red-700 p-6 rounded-t-xl border-b-2 border-red-600">
+          <div className="flex justify-between items-center">
+            <div>
+              <h2 className="text-3xl font-bold text-white">🎯 SINISTER SNARE</h2>
+              <p className="text-red-200 mt-1">Quantum Interdiction Planning System</p>
+            </div>
+            <button
+              onClick={onClose}
+              className="text-white hover:text-red-300 text-2xl font-bold bg-red-800 hover:bg-red-700 w-10 h-10 rounded-full transition-all duration-300"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+
+        <div className="p-6">
+          {!selectedRoute && !calculatedSnare && (
+            <div>
+              {/* Route Selection Interface */}
+              <div className="mb-6">
+                <h3 className="text-2xl font-bold text-red-400 mb-4">📍 Select Target Route</h3>
+                <p className="text-gray-300 mb-4">Choose a trading route to calculate optimal interdiction positions:</p>
+              </div>
+
+              {/* Route Cards Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-[60vh] overflow-y-auto">
+                {routes
+                  .sort((a, b) => (b.piracy_rating || 0) - (a.piracy_rating || 0)) // Sort by piracy rating
+                  .map((route, index) => (
+                    <div
+                      key={index}
+                      onClick={() => {
+                        onRouteSelect(route);
+                        const snareData = calculateSnareForRoute(route);
+                        if (snareData) {
+                          onRouteSelect(route);
+                        }
+                      }}
+                      className="bg-gray-800 hover:bg-gray-700 rounded-lg p-4 border border-gray-600 hover:border-red-500 cursor-pointer transition-all duration-300 transform hover:scale-105"
+                    >
+                      <div className="flex justify-between items-start mb-3">
+                        <div>
+                          <h4 className="text-white font-bold">{route.commodity_name}</h4>
+                          <p className="text-gray-400 text-sm">{route.route_code}</p>
+                        </div>
+                        <div className={`px-2 py-1 rounded text-xs font-bold ${
+                          route.piracy_rating >= 70 ? 'bg-red-600 text-white' :
+                          route.piracy_rating >= 50 ? 'bg-orange-600 text-white' :
+                          route.piracy_rating >= 30 ? 'bg-yellow-600 text-black' :
+                          'bg-gray-600 text-white'
+                        }`}>
+                          {route.piracy_rating || 0}
+                        </div>
+                      </div>
+                      
+                      <div className="space-y-2 text-sm">
+                        <div>
+                          <span className="text-gray-400">From:</span>
+                          <span className="text-white ml-2">{route.origin_name}</span>
+                        </div>
+                        <div>
+                          <span className="text-gray-400">To:</span>
+                          <span className="text-white ml-2">{route.destination_name}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-400">Profit:</span>
+                          <span className="text-green-400 font-mono">{((route.profit || 0) / 1000000).toFixed(2)}M aUEC</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-400">ROI:</span>
+                          <span className="text-blue-400 font-mono">{(route.roi || 0).toFixed(1)}%</span>
+                        </div>
+                      </div>
+                      
+                      <div className="mt-3 pt-3 border-t border-gray-700 text-center">
+                        <button className="text-red-400 hover:text-red-300 font-bold text-sm">
+                          🎯 CALCULATE SNARE
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            </div>
+          )}
+
+          {selectedRoute && calculatedSnare && (
+            <div>
+              {/* Snare Calculation Results */}
+              <div className="mb-6">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-2xl font-bold text-red-400">🎯 Interdiction Plan Generated</h3>
+                  <button
+                    onClick={() => {
+                      onRouteSelect(null);
+                    }}
+                    className="bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded-lg text-white"
+                  >
+                    ← Back to Routes
+                  </button>
+                </div>
+              </div>
+
+              {/* Route Info Header */}
+              <div className="bg-gray-800 rounded-lg p-4 mb-6 border border-red-600">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <h4 className="text-red-400 font-bold">Target Route</h4>
+                    <p className="text-white font-mono">{selectedRoute.commodity_name}</p>
+                    <p className="text-gray-400 text-sm">{selectedRoute.route_code}</p>
+                  </div>
+                  <div>
+                    <h4 className="text-red-400 font-bold">Profit Potential</h4>
+                    <p className="text-green-400 font-mono text-lg">{((selectedRoute.profit || 0) / 1000000).toFixed(2)}M aUEC</p>
+                    <p className="text-gray-400 text-sm">ROI: {(selectedRoute.roi || 0).toFixed(1)}%</p>
+                  </div>
+                  <div>
+                    <h4 className="text-red-400 font-bold">Piracy Score</h4>
+                    <p className="text-red-400 font-mono text-lg">{selectedRoute.piracy_rating || 0}</p>
+                    <p className="text-gray-400 text-sm">{calculatedSnare.riskAssessment}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Interdiction Plan */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Coordinates & Positioning */}
+                <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
+                  <h4 className="text-red-400 font-bold mb-4">📍 Interdiction Coordinates</h4>
+                  <div className="space-y-4">
+                    <div>
+                      <h5 className="text-white font-semibold">Origin</h5>
+                      <p className="text-gray-300">{calculatedSnare.origin.system} - {calculatedSnare.origin.location}</p>
+                      <p className="text-gray-400 font-mono text-sm">
+                        X: {calculatedSnare.origin.coords.x.toLocaleString()} | 
+                        Y: {calculatedSnare.origin.coords.y.toLocaleString()} | 
+                        Z: {calculatedSnare.origin.coords.z.toLocaleString()}
+                      </p>
+                    </div>
+                    
+                    <div className="border-t border-gray-700 pt-4">
+                      <h5 className="text-red-400 font-semibold">🎯 OPTIMAL INTERDICTION POINT</h5>
+                      <p className="text-red-300 font-bold">75% route completion</p>
+                      <p className="text-gray-400 font-mono text-sm">
+                        X: {calculatedSnare.interdictionPoint.x.toLocaleString()} | 
+                        Y: {calculatedSnare.interdictionPoint.y.toLocaleString()} | 
+                        Z: {calculatedSnare.interdictionPoint.z.toLocaleString()}
+                      </p>
+                    </div>
+                    
+                    <div>
+                      <h5 className="text-white font-semibold">Destination</h5>
+                      <p className="text-gray-300">{calculatedSnare.destination.system} - {calculatedSnare.destination.location}</p>
+                      <p className="text-gray-400 font-mono text-sm">
+                        X: {calculatedSnare.destination.coords.x.toLocaleString()} | 
+                        Y: {calculatedSnare.destination.coords.y.toLocaleString()} | 
+                        Z: {calculatedSnare.destination.coords.z.toLocaleString()}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Mission Parameters */}
+                <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
+                  <h4 className="text-red-400 font-bold mb-4">⚙️ Mission Parameters</h4>
+                  <div className="space-y-4">
+                    <div className="flex justify-between">
+                      <span className="text-gray-400">Route Distance:</span>
+                      <span className="text-white font-mono">{(calculatedSnare.distance / 1000000).toFixed(2)}M km</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-400">Est. Travel Time:</span>
+                      <span className="text-white font-mono">{calculatedSnare.estimatedTravelTime.toFixed(1)} min</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-400">Interception Probability:</span>
+                      <span className="text-green-400 font-mono font-bold">{calculatedSnare.interceptionProbability}%</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-400">Recommended QED:</span>
+                      <span className="text-red-400 font-mono font-bold">{calculatedSnare.recommendedSnareType}</span>
+                    </div>
+                  </div>
+                  
+                  <div className="mt-6 p-4 bg-red-900/30 rounded-lg border border-red-600">
+                    <h5 className="text-red-400 font-bold mb-2">🏴‍☠️ Tactical Recommendation</h5>
+                    <p className="text-gray-300 text-sm">
+                      Position your QED ship at the interdiction coordinates approximately{' '}
+                      <span className="text-red-400 font-bold">{(calculatedSnare.estimatedTravelTime * 0.75).toFixed(1)} minutes</span>{' '}
+                      after the target begins their quantum jump. This provides optimal interception probability.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="mt-6 flex justify-center space-x-4">
+                <button
+                  onClick={() => {
+                    const coords = calculatedSnare.interdictionPoint;
+                    navigator.clipboard.writeText(`${coords.x.toFixed(0)}, ${coords.y.toFixed(0)}, ${coords.z.toFixed(0)}`);
+                  }}
+                  className="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg text-white font-bold transition-all duration-300"
+                >
+                  📋 Copy Coordinates
+                </button>
+                <button
+                  onClick={() => {
+                    // Save to local storage or database
+                    localStorage.setItem('lastSnareCalculation', JSON.stringify(calculatedSnare));
+                  }}
+                  className="bg-green-600 hover:bg-green-700 px-6 py-3 rounded-lg text-white font-bold transition-all duration-300"
+                >
+                  💾 Save Plan
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 function App() {
   const [routes, setRoutes] = useState([]);
   const [targets, setTargets] = useState([]);
