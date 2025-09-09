@@ -639,13 +639,16 @@ class RouteAnalyzer:
     @staticmethod
     def calculate_piracy_score(route_data: Dict[str, Any]) -> float:
         """
-        REALISTIC Piracy Score V2.0 (0-100) - Based on actual Star Citizen player behavior
+        REALISTIC Piracy Score V2.1 (0-100) - Based on actual Star Citizen player behavior
+        
+        Enhanced with Premium Commodity Support to ensure ELITE commodities reach proper classification.
         
         Prioritizes routes that are ACTUALLY used by players:
         1. System-internal routes (95% of player traffic)
         2. Short, practical distances  
         3. Major hub-to-hub connections
         4. High-traffic commodities
+        5. Premium cargo bonuses (Gold, Diamond, etc.)
         """
         try:
             # Extract data with safe defaults
