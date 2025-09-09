@@ -556,6 +556,334 @@ const RouteCard = ({ route, onSelect, onAlternativeRouteSelect }) => {
   );
 };
 
+const AdvancedSnareplanModal = ({ isOpen, onClose, routes }) => {
+  const [selectedRoutes, setSelectedRoutes] = useState([]);
+  const [mantisPosition, setMantisPosition] = useState([0, 0, 0]);
+  const [interdictionData, setInterdictionData] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [viewMode, setViewMode] = useState('route_selection'); // 'route_selection', '3d_view', 'calculations'
+
+  if (!isOpen) return null;
+
+  const handleRouteSelect = (route, isSelected) => {
+    if (isSelected) {
+      setSelectedRoutes([...selectedRoutes, route]);
+    } else {
+      setSelectedRoutes(selectedRoutes.filter(r => r.id !== route.id));
+    }
+  };
+
+  const calculateInterdiction = async () => {
+    if (selectedRoutes.length === 0) {
+      alert('Please select at least one route for interdiction analysis.');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const routesData = selectedRoutes.map(route => ({
+        name: route.commodity_name,
+        origin_coordinates: route.coordinates_origin ? 
+          [route.coordinates_origin.x, route.coordinates_origin.y, route.coordinates_origin.z] : [0, 0, 0],
+        destination_coordinates: route.coordinates_destination ? 
+          [route.coordinates_destination.x, route.coordinates_destination.y, route.coordinates_destination.z] : [100000, 0, 0]
+      }));
+
+      const response = await axios.post(`${API}/interception/calculate`, {
+        routes: routesData,
+        mantis_position: mantisPosition
+      });
+
+      setInterdictionData(response.data);
+      setViewMode('calculations');
+    } catch (error) {
+      console.error('Error calculating interdiction:', error);
+      alert('Error calculating interdiction positions. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const render3DVisualization = () => {
+    if (!interdictionData) return null;
+
+    return (
+      <div className="bg-gray-900 rounded-lg p-6 mb-6">
+        <h4 className="text-purple-400 text-lg font-bold mb-4">🎯 3D Route Visualization</h4>
+        
+        {/* 3D Canvas Placeholder - In production this would be a Three.js or similar 3D render */}
+        <div className="bg-black rounded-lg p-8 mb-4 min-h-[400px] flex items-center justify-center border border-purple-500">
+          <div className="text-center">
+            <div className="text-6xl mb-4">🌌</div>
+            <div className="text-purple-400 text-xl font-bold mb-2">3D Route Visualization</div>
+            <div className="text-gray-400 text-sm mb-4">Interactive 3D visualization would render here</div>
+            <div className="grid grid-cols-2 gap-4 text-xs">
+              <div className="bg-purple-900/30 p-3 rounded">
+                <div className="text-purple-300 font-bold">QED Radius</div>
+                <div className="text-white">{interdictionData.quantum_parameters?.qed_radius_km}km</div>
+              </div>
+              <div className="bg-blue-900/30 p-3 rounded">
+                <div className="text-blue-300 font-bold">Routes Analyzed</div>
+                <div className="text-white">{interdictionData.total_routes_analyzed}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Control Panel */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="bg-gray-800 p-4 rounded">
+            <label className="text-purple-400 text-sm font-bold block mb-2">Mantis Position X</label>
+            <input 
+              type="number" 
+              value={mantisPosition[0]} 
+              onChange={(e) => setMantisPosition([+e.target.value, mantisPosition[1], mantisPosition[2]])}
+              className="w-full bg-gray-700 text-white p-2 rounded text-sm"
+            />
+          </div>
+          <div className="bg-gray-800 p-4 rounded">
+            <label className="text-purple-400 text-sm font-bold block mb-2">Mantis Position Y</label>
+            <input 
+              type="number" 
+              value={mantisPosition[1]} 
+              onChange={(e) => setMantisPosition([mantisPosition[0], +e.target.value, mantisPosition[2]])}
+              className="w-full bg-gray-700 text-white p-2 rounded text-sm"
+            />
+          </div>
+          <div className="bg-gray-800 p-4 rounded">
+            <label className="text-purple-400 text-sm font-bold block mb-2">Mantis Position Z</label>
+            <input 
+              type="number" 
+              value={mantisPosition[2]} 
+              onChange={(e) => setMantisPosition([mantisPosition[0], mantisPosition[1], +e.target.value])}
+              className="w-full bg-gray-700 text-white p-2 rounded text-sm"
+            />
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const renderCalculations = () => {
+    if (!interdictionData) return null;
+
+    return (
+      <div className="space-y-6">
+        {/* Multi-Route Optimization */}
+        {interdictionData.multi_route_optimization && (
+          <div className="bg-purple-900/20 rounded-lg p-6 border border-purple-600">
+            <h4 className="text-purple-400 text-lg font-bold mb-4">🎯 Optimal Interdiction Position</h4>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <div className="bg-black/30 rounded p-4 mb-4">
+                  <div className="text-purple-300 text-sm font-bold mb-2">Optimal Position</div>
+                  <div className="text-white text-xs font-mono">
+                    X: {interdictionData.multi_route_optimization.optimal_position?.[0]?.toFixed(0) || 0}<br/>
+                    Y: {interdictionData.multi_route_optimization.optimal_position?.[1]?.toFixed(0) || 0}<br/>
+                    Z: {interdictionData.multi_route_optimization.optimal_position?.[2]?.toFixed(0) || 0}
+                  </div>
+                </div>
+                
+                <div className="bg-black/30 rounded p-4">
+                  <div className="text-green-300 text-sm font-bold mb-2">Coverage Score</div>
+                  <div className="text-white text-2xl font-bold">
+                    {interdictionData.multi_route_optimization.total_coverage_score?.toFixed(1) || 0}%
+                  </div>
+                </div>
+              </div>
+              
+              <div>
+                <div className="bg-black/30 rounded p-4 mb-4">
+                  <div className="text-yellow-300 text-sm font-bold mb-2">Movement Required</div>
+                  <div className="text-white text-lg font-bold">
+                    {(interdictionData.multi_route_optimization.movement_required / 1000)?.toFixed(1) || 0} km
+                  </div>
+                </div>
+                
+                <div className="bg-black/30 rounded p-4">
+                  <div className="text-blue-300 text-sm font-bold mb-2">QED Parameters</div>
+                  <div className="text-white text-xs">
+                    Radius: {interdictionData.quantum_parameters?.qed_radius_km}km<br/>
+                    Quantum Speed: {(interdictionData.quantum_parameters?.quantum_speed_c * 100).toFixed(1)}% c
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Individual Route Analysis */}
+        <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
+          <h4 className="text-white text-lg font-bold mb-4">📊 Individual Route Analysis</h4>
+          
+          <div className="space-y-4">
+            {interdictionData.single_route_intercepts?.map((routeData, index) => (
+              <div key={index} className="bg-black/30 rounded-lg p-4 border border-gray-600">
+                <div className="flex justify-between items-start mb-3">
+                  <div>
+                    <h5 className="text-purple-400 font-bold">{routeData.route_name}</h5>
+                    <div className="text-gray-400 text-sm">Route #{routeData.route_index + 1}</div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-green-400 font-bold text-lg">
+                      {(routeData.intercept_data?.coverage?.coverage_percentage || 0).toFixed(1)}%
+                    </div>
+                    <div className="text-gray-400 text-xs">Coverage</div>
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+                  <div>
+                    <div className="text-gray-400 mb-1">Intercept Point</div>
+                    <div className="text-white font-mono">
+                      X: {routeData.intercept_data?.intercept_point?.[0]?.toFixed(0) || 0}<br/>
+                      Y: {routeData.intercept_data?.intercept_point?.[1]?.toFixed(0) || 0}<br/>  
+                      Z: {routeData.intercept_data?.intercept_point?.[2]?.toFixed(0) || 0}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-gray-400 mb-1">Time to Position</div>
+                    <div className="text-white">{routeData.intercept_data?.time_to_position?.toFixed(1) || 0}s</div>
+                    
+                    <div className="text-gray-400 mb-1 mt-2">Travel Distance</div>
+                    <div className="text-white">{(routeData.intercept_data?.mantis_travel_distance / 1000)?.toFixed(1) || 0}km</div>
+                  </div>
+                  <div>
+                    <div className="text-gray-400 mb-1">Success Probability</div>
+                    <div className="text-green-400 font-bold">
+                      {((routeData.intercept_data?.success_probability || 0) * 100).toFixed(1)}%
+                    </div>
+                    
+                    <div className="text-gray-400 mb-1 mt-2">Coverage Length</div>
+                    <div className="text-white">{(routeData.intercept_data?.coverage?.coverage_length / 1000)?.toFixed(1) || 0}km</div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-gray-800 rounded-lg w-[95vw] h-[95vh] overflow-y-auto border border-purple-600">
+        <div className="flex justify-between items-center p-6 border-b border-gray-700">
+          <div>
+            <h3 className="text-purple-400 text-2xl font-bold">🎯 Advanced Snareplan</h3>
+            <p className="text-gray-400 text-sm mt-1">3D Quantum Interdiction Positioning & Analysis</p>
+          </div>
+          <button onClick={onClose} className="text-gray-400 hover:text-white text-xl">✕</button>
+        </div>
+
+        {/* Navigation Tabs */}
+        <div className="flex space-x-4 p-6 border-b border-gray-700">
+          <button 
+            onClick={() => setViewMode('route_selection')}
+            className={`px-4 py-2 rounded ${viewMode === 'route_selection' ? 'bg-purple-600 text-white' : 'bg-gray-700 text-gray-300'}`}
+          >
+            Route Selection
+          </button>
+          <button 
+            onClick={() => setViewMode('3d_view')}
+            className={`px-4 py-2 rounded ${viewMode === '3d_view' ? 'bg-purple-600 text-white' : 'bg-gray-700 text-gray-300'}`}
+          >
+            3D Visualization
+          </button>
+          <button 
+            onClick={() => setViewMode('calculations')}
+            className={`px-4 py-2 rounded ${viewMode === 'calculations' ? 'bg-purple-600 text-white' : 'bg-gray-700 text-gray-300'}`}
+            disabled={!interdictionData}
+          >
+            Analysis Results
+          </button>
+        </div>
+
+        <div className="p-6">
+          {viewMode === 'route_selection' && (
+            <div>
+              <div className="flex justify-between items-center mb-6">
+                <h4 className="text-white text-lg font-bold">Select Routes for Interdiction Analysis</h4>
+                <div className="flex space-x-3">
+                  <button 
+                    onClick={calculateInterdiction}
+                    disabled={loading || selectedRoutes.length === 0}
+                    className="bg-purple-600 hover:bg-purple-700 px-6 py-3 rounded text-white font-bold disabled:opacity-50"
+                  >
+                    {loading ? '🔄 Calculating...' : '🎯 Calculate Interdiction'}
+                  </button>
+                </div>
+              </div>
+
+              <div className="bg-gray-900/50 rounded-lg p-4 mb-6">
+                <div className="text-purple-400 text-sm font-bold mb-2">Selected Routes: {selectedRoutes.length}</div>
+                <div className="text-gray-400 text-xs">
+                  Select multiple routes to find optimal QED positioning for maximum interdiction coverage
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 max-h-[600px] overflow-y-auto">
+                {routes?.map((route, index) => (
+                  <div 
+                    key={route.id || index}
+                    className={`bg-gray-800 rounded-lg p-4 border cursor-pointer transition-all ${
+                      selectedRoutes.find(r => r.id === route.id) 
+                        ? 'border-purple-500 bg-purple-900/20' 
+                        : 'border-gray-700 hover:border-purple-400'
+                    }`}
+                    onClick={() => handleRouteSelect(route, !selectedRoutes.find(r => r.id === route.id))}
+                  >
+                    <div className="flex justify-between items-start mb-2">
+                      <h5 className="text-white font-bold text-sm">{route.commodity_name}</h5>
+                      <div className={`w-5 h-5 rounded border-2 flex items-center justify-center ${
+                        selectedRoutes.find(r => r.id === route.id) 
+                          ? 'border-purple-500 bg-purple-500' 
+                          : 'border-gray-400'
+                      }`}>
+                        {selectedRoutes.find(r => r.id === route.id) && (
+                          <div className="text-white text-xs">✓</div>
+                        )}
+                      </div>
+                    </div>
+                    
+                    <div className="text-xs text-gray-400 mb-2">{route.route_code}</div>
+                    
+                    <div className="space-y-1 text-xs">
+                      <div className="text-gray-400">
+                        From: <span className="text-white">{route.origin_name}</span>
+                      </div>
+                      <div className="text-gray-400">
+                        To: <span className="text-white">{route.destination_name}</span>
+                      </div>
+                    </div>
+                    
+                    <div className="flex justify-between items-center mt-3 pt-3 border-t border-gray-700">
+                      <div className="text-center">
+                        <div className="text-green-400 font-bold">{((route.profit || 0) / 1000000).toFixed(2)}M</div>
+                        <div className="text-gray-400 text-xs">Profit</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-red-400 font-bold">{route.piracy_rating}</div>
+                        <div className="text-gray-400 text-xs">Piracy Score</div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {viewMode === '3d_view' && render3DVisualization()}
+          
+          {viewMode === 'calculations' && renderCalculations()}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const FAQModal = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
 
