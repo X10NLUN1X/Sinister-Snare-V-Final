@@ -8,6 +8,71 @@
   background-color: #000000;
 }
 
+/* Enhanced Slider Styles for 3D Visualization */
+.slider-purple::-webkit-slider-thumb {
+  appearance: none;
+  height: 20px;
+  width: 20px;
+  border-radius: 50%;
+  background: #8b5cf6;
+  border: 2px solid #c084fc;
+  cursor: pointer;
+  box-shadow: 0 0 10px rgba(139, 92, 246, 0.5);
+}
+
+.slider-green::-webkit-slider-thumb {
+  appearance: none;
+  height: 20px;
+  width: 20px;
+  border-radius: 50%;
+  background: #10b981;
+  border: 2px solid #34d399;
+  cursor: pointer;
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
+}
+
+.slider-blue::-webkit-slider-thumb {
+  appearance: none;
+  height: 20px;
+  width: 20px;
+  border-radius: 50%;
+  background: #3b82f6;
+  border: 2px solid #60a5fa;
+  cursor: pointer;
+  box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+}
+
+.slider-purple::-webkit-slider-track,
+.slider-green::-webkit-slider-track,
+.slider-blue::-webkit-slider-track {
+  height: 8px;
+  border-radius: 4px;
+  background: #374151;
+  border: 1px solid #4b5563;
+}
+
+.slider-purple::-moz-range-thumb,
+.slider-green::-moz-range-thumb,
+.slider-blue::-moz-range-thumb {
+  height: 20px;
+  width: 20px;
+  border-radius: 50%;
+  cursor: pointer;
+  border: none;
+}
+
+.slider-purple::-moz-range-thumb {
+  background: #8b5cf6;
+}
+
+.slider-green::-moz-range-thumb {
+  background: #10b981;
+}
+
+.slider-blue::-moz-range-thumb {
+  background: #3b82f6;
+}
+
 .App-header {
   background: linear-gradient(135deg, #7f1d1d 0%, #000000 100%);
   padding: 40px;
