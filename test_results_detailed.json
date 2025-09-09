@@ -1,38 +1,66 @@
 [
   {
+    "test": "Gold ELITE Classification (80+ Piracy Score)",
+    "status": "FAIL",
+    "message": "No Gold routes found with piracy_rating >= 80. Highest Gold piracy score: 70.0. This explains why Gold doesn't appear in Hardcore Mode!",
+    "details": null,
+    "timestamp": "2025-09-09T01:11:45.435821"
+  },
+  {
+    "test": "Gold LEGENDARY Classification (90+ Piracy Score)",
+    "status": "PASS",
+    "message": "No Gold routes with piracy_rating >= 90 found (acceptable - LEGENDARY is rare)",
+    "details": null,
+    "timestamp": "2025-09-09T01:11:45.435838"
+  },
+  {
+    "test": "Gold Commodity Snare Analysis",
+    "status": "FAIL",
+    "message": "Gold commodity endpoint returns 0 routes - Gold commodity not available in current data",
+    "details": null,
+    "timestamp": "2025-09-09T01:11:45.766825"
+  },
+  {
+    "test": "Hardcore Mode Gold Filtering",
+    "status": "FAIL",
+    "message": "No ELITE or LEGENDARY routes found - Hardcore Mode would be empty!",
+    "details": null,
+    "timestamp": "2025-09-09T01:11:46.215481"
+  },
+  {
     "test": "Inter-System Routes Piracy Cap (\u226425)",
     "status": "PASS",
     "message": "\u2705 All 31 Inter-System routes have piracy_rating \u2264 25. Max score: 25.0",
     "details": null,
-    "timestamp": "2025-09-09T00:09:17.511325"
+    "timestamp": "2025-09-09T01:11:46.663121"
   },
   {
     "test": "System-Internal vs Inter-System Score Distribution",
     "status": "PASS",
-    "message": "\u2705 System-internal routes have higher scores. Avg same-system: 67.1, Avg inter-system: 20.9",
+    "message": "\u2705 System-internal routes have higher scores. Avg same-system: 66.8, Avg inter-system: 20.9",
     "details": null,
-    "timestamp": "2025-09-09T00:09:17.511386"
+    "timestamp": "2025-09-09T01:11:46.663176"
   },
   {
     "test": "Aluminum Pyro\u2192Stanton Route Specific Test",
     "status": "PASS",
     "message": "\u2705 Aluminum Pyro\u2192Stanton route shows correct piracy_rating: 25.0 (not 72.9). Route: Pyro - Megumi Refueling \u2192 Stanton - Everus Harbor",
     "details": null,
-    "timestamp": "2025-09-09T00:09:17.968105"
+    "timestamp": "2025-09-09T01:11:47.127019"
   },
   {
     "test": "Score Distribution Verification",
     "status": "PASS",
-    "message": "\u2705 Correct score distribution: Stanton-internal avg 70.5 (max 80.0), Pyro-internal avg 63.5 (max 70.0), Inter-system avg 21.0 (max 25.0)",
+    "message": "\u2705 Correct score distribution: Stanton-internal avg 69.7 (max 77.0), Pyro-internal avg 63.5 (max 70.0), Inter-system avg 21.0 (max 25.0)",
     "details": null,
-    "timestamp": "2025-09-09T00:09:18.442711"
+    "timestamp": "2025-09-09T01:11:47.591805"
   },
   {
     "test": "Pyro\u2194Stanton Routes Verification",
     "status": "PASS",
     "message": "\u2705 All 43 Pyro\u2194Stanton routes have piracy_rating \u2264 25",
     "details": null,
-    "timestamp": "2025-09-09T00:09:18.442774"
+    "timestamp": "2025-09-09T01:11:47.591865"
   },
   {
     "test": "Database Stats - Routes Analysis",
@@ -68,19 +96,19 @@
         "analysis_timestamp"
       ]
     },
-    "timestamp": "2025-09-09T00:09:18.794250"
+    "timestamp": "2025-09-09T01:11:47.925830"
   },
   {
     "test": "Live Tracking - Uptime Minutes Fix",
     "status": "PASS",
-    "message": "Tracking status working correctly: uptime_minutes=4, last_update=2025-09-09T00:04:20.065932Z, route_count=0, active=True",
+    "message": "Tracking status working correctly: uptime_minutes=0, last_update=2025-09-09T01:11:31.505683Z, route_count=0, active=True",
     "details": {
-      "uptime_minutes": 4,
-      "last_update": "2025-09-09T00:04:20.065932Z",
+      "uptime_minutes": 0,
+      "last_update": "2025-09-09T01:11:31.505683Z",
       "route_count": 0,
       "active": true
     },
-    "timestamp": "2025-09-09T00:09:18.837773"
+    "timestamp": "2025-09-09T01:11:47.969610"
   },
   {
     "test": "Overall System Status",
@@ -116,10 +144,10 @@
           "alert_system": true,
           "export_functionality": true
         },
-        "timestamp": "2025-09-09T00:09:19.453724+00:00"
+        "timestamp": "2025-09-09T01:11:48.629386+00:00"
       }
     },
-    "timestamp": "2025-09-09T00:09:19.496808"
+    "timestamp": "2025-09-09T01:11:48.672682"
   },
   {
     "test": "Database Stats Consistency Check",
@@ -130,231 +158,231 @@
       "actual_routes": 20,
       "total_available": 20
     },
-    "timestamp": "2025-09-09T00:09:20.713329"
+    "timestamp": "2025-09-09T01:11:49.796199"
   },
   {
     "test": "Terminal Data Structure - Aluminum",
     "status": "PASS",
     "message": "All required fields present: ['terminal', 'buy_price', 'sell_price', 'stock', 'system']. Found 38 terminals.",
     "details": null,
-    "timestamp": "2025-09-09T00:09:21.058618"
+    "timestamp": "2025-09-09T01:11:50.153705"
   },
   {
     "test": "Buy/Sell Separation - Aluminum",
     "status": "PASS",
     "message": "Bidirectional workflow supported: 21 buy locations, 17 sell locations",
     "details": null,
-    "timestamp": "2025-09-09T00:09:21.385093"
+    "timestamp": "2025-09-09T01:11:50.493788"
   },
   {
     "test": "System Assignment - Aluminum",
     "status": "PASS",
     "message": "Correct system assignment: Stanton (29 terminals), Pyro (9 terminals)",
     "details": null,
-    "timestamp": "2025-09-09T00:09:21.740898"
+    "timestamp": "2025-09-09T01:11:50.940788"
   },
   {
     "test": "Terminal Data Structure - Agricium",
     "status": "PASS",
     "message": "All required fields present: ['terminal', 'buy_price', 'sell_price', 'stock', 'system']. Found 25 terminals.",
     "details": null,
-    "timestamp": "2025-09-09T00:09:22.091015"
+    "timestamp": "2025-09-09T01:11:51.296752"
   },
   {
     "test": "Buy/Sell Separation - Agricium",
     "status": "PASS",
     "message": "Bidirectional workflow supported: 4 buy locations, 21 sell locations",
     "details": null,
-    "timestamp": "2025-09-09T00:09:22.460867"
+    "timestamp": "2025-09-09T01:11:51.633741"
   },
   {
     "test": "System Assignment - Agricium",
     "status": "PASS",
     "message": "Correct system assignment: Stanton (14 terminals), Pyro (11 terminals)",
     "details": null,
-    "timestamp": "2025-09-09T00:09:22.797900"
+    "timestamp": "2025-09-09T01:11:51.988763"
   },
   {
     "test": "Terminal Data Structure - Altruciatoxin",
     "status": "PASS",
     "message": "All required fields present: ['terminal', 'buy_price', 'sell_price', 'stock', 'system']. Found 20 terminals.",
     "details": null,
-    "timestamp": "2025-09-09T00:09:23.131850"
+    "timestamp": "2025-09-09T01:11:52.335778"
   },
   {
     "test": "Buy/Sell Separation - Altruciatoxin",
     "status": "PASS",
     "message": "Bidirectional workflow supported: 2 buy locations, 18 sell locations",
     "details": null,
-    "timestamp": "2025-09-09T00:09:23.512859"
+    "timestamp": "2025-09-09T01:11:52.715759"
   },
   {
     "test": "System Assignment - Altruciatoxin",
     "status": "PASS",
     "message": "Correct system assignment: Stanton (7 terminals), Pyro (13 terminals)",
     "details": null,
-    "timestamp": "2025-09-09T00:09:23.870938"
+    "timestamp": "2025-09-09T01:11:53.044774"
   },
   {
     "test": "Data Completeness - Multiple Commodities",
     "status": "PASS",
     "message": "Consistent data structure across 3 commodities with 83 total terminals",
     "details": null,
-    "timestamp": "2025-09-09T00:09:24.894896"
+    "timestamp": "2025-09-09T01:11:54.054862"
   },
   {
     "test": "Bidirectional Workflow Simulation",
     "status": "PASS",
     "message": "Bidirectional workflow supported: Buy-first (21 options) and Sell-first (17 options) with 38 unique terminals",
     "details": null,
-    "timestamp": "2025-09-09T00:09:25.229969"
+    "timestamp": "2025-09-09T01:11:54.389794"
   },
   {
     "test": "Web Crawling Primary Data Source",
     "status": "PASS",
     "message": "Web crawling working - Source: web, API: UEXCorp, Routes: 5, Pyro terminals: True, Stanton terminals: True",
     "details": null,
-    "timestamp": "2025-09-09T00:09:25.587906"
+    "timestamp": "2025-09-09T01:11:54.717496"
   },
   {
     "test": "Default Data Source is Web",
     "status": "PASS",
     "message": "Default data source correctly set to web: web",
     "details": null,
-    "timestamp": "2025-09-09T00:09:25.973981"
+    "timestamp": "2025-09-09T01:11:55.052755"
   },
   {
     "test": "Alternative Routes Endpoint (Altruciatoxin)",
     "status": "PASS",
-    "message": "Alternative routes working - 20 terminals found, Systems: ['Stanton', 'Pyro'], Format verified",
+    "message": "Alternative routes working - 20 terminals found, Systems: ['Pyro', 'Stanton'], Format verified",
     "details": null,
-    "timestamp": "2025-09-09T00:09:26.320937"
+    "timestamp": "2025-09-09T01:11:55.393803"
   },
   {
     "test": "Data Quality - Altruciatoxin",
     "status": "PASS",
     "message": "Quality verified - Origin: Pyro - Rat's Nest, Dest: Stanton - Reclamation Orinth, Buy: 3252.0, Sell: 4460.0",
     "details": null,
-    "timestamp": "2025-09-09T00:09:26.669137"
+    "timestamp": "2025-09-09T01:11:55.758025"
   },
   {
     "test": "Data Quality - Agricium",
     "status": "PASS",
     "message": "Quality verified - Origin: Pyro - Endgame, Dest: Stanton - ARC-L4, Buy: 1957.0, Sell: 2641.0",
     "details": null,
-    "timestamp": "2025-09-09T00:09:27.018190"
+    "timestamp": "2025-09-09T01:11:56.127007"
   },
   {
     "test": "Data Quality - Aluminum",
     "status": "PASS",
     "message": "Quality verified - Origin: Pyro - Megumi Refueling, Dest: Stanton - Everus Harbor, Buy: 221.0, Sell: 322.0",
     "details": null,
-    "timestamp": "2025-09-09T00:09:27.372137"
+    "timestamp": "2025-09-09T01:11:56.492915"
   },
   {
     "test": "API vs Web Source Comparison",
     "status": "PASS",
     "message": "Both sources work - API: 3 routes (api), Web: 3 routes (web), Web is default",
     "details": null,
-    "timestamp": "2025-09-09T00:09:28.027959"
+    "timestamp": "2025-09-09T01:11:57.131851"
   },
   {
     "test": "Diverse Commodities in Route Analysis",
     "status": "PASS",
-    "message": "Found 20 unique commodities out of 20 routes. Non-Agricium routes: 19. Sample commodities: ['Atlasium', 'Argon', 'Carbon', 'Carbon-Silk', 'Agricultural Supplies']",
+    "message": "Found 20 unique commodities out of 20 routes. Non-Agricium routes: 19. Sample commodities: ['Bexalite', 'Carbon', 'Audio Visual Equipment', 'Amioshi Plague', 'Compboard']",
     "details": null,
-    "timestamp": "2025-09-09T00:09:28.397857"
+    "timestamp": "2025-09-09T01:11:57.504668"
   },
   {
     "test": "Correct Real Data Usage - Agricium",
     "status": "FAIL",
     "message": "Issues found: Not using Star Profit API: UEXCorp; Unrealistic prices: Buy 1957.0, Sell 2641.0",
     "details": null,
-    "timestamp": "2025-09-09T00:09:28.736165"
+    "timestamp": "2025-09-09T01:11:57.867287"
   },
   {
     "test": "Unknown Values Fix",
     "status": "PASS",
     "message": "No 'Unknown - Unknown' values found. 20/20 routes have proper format. 20/20 routes complete.",
     "details": null,
-    "timestamp": "2025-09-09T00:09:29.100461"
+    "timestamp": "2025-09-09T01:11:58.240319"
   },
   {
     "test": "Database Upsert Functionality",
     "status": "PASS",
     "message": "Database upsert working - 5 routes consistent between calls, indicating update/overwrite behavior",
     "details": null,
-    "timestamp": "2025-09-09T00:09:31.748333"
+    "timestamp": "2025-09-09T01:12:00.891275"
   },
   {
     "test": "Median/Average Data Endpoint",
     "status": "PASS",
     "message": "Averaged endpoint accessible but no data available (acceptable if database is empty)",
     "details": null,
-    "timestamp": "2025-09-09T00:09:31.793822"
+    "timestamp": "2025-09-09T01:12:00.942721"
   },
   {
     "test": "Manual Refresh with API Data Source",
     "status": "PASS",
     "message": "Manual refresh correctly used API data source: api",
     "details": null,
-    "timestamp": "2025-09-09T00:09:32.363435"
+    "timestamp": "2025-09-09T01:12:01.615849"
   },
   {
     "test": "Manual Refresh with Web Data Source",
     "status": "PASS",
     "message": "Manual refresh correctly used web data source: web",
     "details": null,
-    "timestamp": "2025-09-09T00:09:33.033906"
+    "timestamp": "2025-09-09T01:12:02.315694"
   },
   {
     "test": "Route Data Structure Fix",
     "status": "PASS",
     "message": "All required fields present with real data. Sample: {'origin_name': 'Pyro - Checkmate', 'destination_name': \"Pyro - Shepherd's Rest\", 'buy_price': 232.0, 'sell_price': 334.0, 'buy_stock': 20000, 'sell_stock': 0}",
     "details": null,
-    "timestamp": "2025-09-09T00:09:33.383970"
+    "timestamp": "2025-09-09T01:12:02.754830"
   },
   {
     "test": "Commodity Snare Agricium Analysis",
     "status": "PASS",
     "message": "Agricium analysis successful - Found 20 total routes, 20 profitable",
     "details": null,
-    "timestamp": "2025-09-09T00:09:33.668878"
+    "timestamp": "2025-09-09T01:12:03.048735"
   },
   {
     "test": "Routes Analysis API Data Source",
     "status": "PASS",
     "message": "Routes analysis correctly uses API data source: api, API: UEXCorp",
     "details": null,
-    "timestamp": "2025-09-09T00:09:33.992913"
+    "timestamp": "2025-09-09T01:12:03.403348"
   },
   {
     "test": "Routes Analysis Web Data Source",
     "status": "PASS",
     "message": "Routes analysis correctly uses web data source: web, API: UEXCorp",
     "details": null,
-    "timestamp": "2025-09-09T00:09:34.340958"
+    "timestamp": "2025-09-09T01:12:03.745808"
   },
   {
     "test": "Star Profit API Direct",
     "status": "PASS",
     "message": "Successfully connected to Star Profit API, received 2261 commodities",
     "details": null,
-    "timestamp": "2025-09-09T00:09:34.574760"
+    "timestamp": "2025-09-09T01:12:04.023356"
   },
   {
     "test": "Backend Star Profit Integration",
     "status": "FAIL",
     "message": "Backend not using Star Profit API - Source: web, API: UEXCorp",
     "details": null,
-    "timestamp": "2025-09-09T00:09:34.922195"
+    "timestamp": "2025-09-09T01:12:04.491168"
   },
   {
     "test": "UEX API Connection",
     "status": "FAIL",
     "message": "HTTP 403: <!DOCTYPE html><html lang=\"en-US\"><head><title>Just a moment...</title><meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\"><meta http-equiv=\"X-UA-Compatible\" content=\"IE=Edge\"><meta nam",
     "details": null,
-    "timestamp": "2025-09-09T00:09:35.087796"
+    "timestamp": "2025-09-09T01:12:04.659416"
   },
   {
     "test": "API Status Endpoint",
@@ -387,85 +415,85 @@
         "alert_system": true,
         "export_functionality": true
       },
-      "timestamp": "2025-09-09T00:09:35.713517+00:00"
+      "timestamp": "2025-09-09T01:12:05.321437+00:00"
     },
-    "timestamp": "2025-09-09T00:09:35.716674"
+    "timestamp": "2025-09-09T01:12:05.324571"
   },
   {
     "test": "Routes Analysis Endpoint",
     "status": "PASS",
     "message": "Successfully analyzed 10 routes with proper structure",
     "details": null,
-    "timestamp": "2025-09-09T00:09:36.077108"
+    "timestamp": "2025-09-09T01:12:05.681989"
   },
   {
     "test": "Priority Targets Endpoint",
     "status": "PASS",
     "message": "Successfully retrieved 5 priority targets",
     "details": null,
-    "timestamp": "2025-09-09T00:09:36.120939"
+    "timestamp": "2025-09-09T01:12:05.726620"
   },
   {
     "test": "Hourly Analysis Endpoint",
     "status": "PASS",
     "message": "Successfully retrieved 24-hour analysis with recommendations",
     "details": null,
-    "timestamp": "2025-09-09T00:09:36.177781"
+    "timestamp": "2025-09-09T01:12:05.782638"
   },
   {
     "test": "Export Routes Endpoint",
     "status": "PASS",
     "message": "Export endpoint working correctly - 60 records",
     "details": null,
-    "timestamp": "2025-09-09T00:09:36.188790"
+    "timestamp": "2025-09-09T01:12:05.793733"
   },
   {
     "test": "Alerts Endpoint",
     "status": "PASS",
     "message": "Alerts endpoint working - 0 alerts retrieved",
     "details": null,
-    "timestamp": "2025-09-09T00:09:36.231785"
+    "timestamp": "2025-09-09T01:12:05.836656"
   },
   {
     "test": "Historical Trends Endpoint",
     "status": "PASS",
     "message": "Trends endpoint working - 0 routes over 24 hours",
     "details": null,
-    "timestamp": "2025-09-09T00:09:36.274781"
+    "timestamp": "2025-09-09T01:12:05.879526"
   },
   {
     "test": "Snare Now Endpoint",
     "status": "PASS",
     "message": "Snare Now endpoint working - 0 active snares",
     "details": null,
-    "timestamp": "2025-09-09T00:09:36.318787"
+    "timestamp": "2025-09-09T01:12:05.923687"
   },
   {
     "test": "Snare Commodity Endpoint (Agricium)",
     "status": "PASS",
     "message": "Snare Commodity endpoint working - 0 snare points for Agricium",
     "details": null,
-    "timestamp": "2025-09-09T00:09:36.601847"
+    "timestamp": "2025-09-09T01:12:06.197736"
   },
   {
     "test": "Tracking Status Endpoint",
     "status": "PASS",
     "message": "Tracking status endpoint working - Active: True, Routes: 0",
     "details": null,
-    "timestamp": "2025-09-09T00:09:36.645746"
+    "timestamp": "2025-09-09T01:12:06.241662"
   },
   {
     "test": "Interception Points Endpoint",
     "status": "PASS",
-    "message": "Interception Points endpoint working - 3 strategic points",
+    "message": "Interception Points endpoint working - 1 strategic points",
     "details": null,
-    "timestamp": "2025-09-09T00:09:36.690821"
+    "timestamp": "2025-09-09T01:12:06.285701"
   },
   {
     "test": "Rate Limiting",
     "status": "PASS",
     "message": "All 12/12 requests succeeded (rate limiting may not be implemented)",
     "details": null,
-    "timestamp": "2025-09-09T00:09:44.582759"
+    "timestamp": "2025-09-09T01:12:14.287662"
   }
 ]
