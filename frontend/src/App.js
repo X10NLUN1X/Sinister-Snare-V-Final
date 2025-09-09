@@ -2531,6 +2531,7 @@ function App() {
   const [commoditySnareModal, setCommoditySnareModal] = useState(false);
   const [faqModal, setFaqModal] = useState(false); // ADDED: FAQ Modal state
   const [snareHardmodeModal, setSnareHardmodeModal] = useState(null); // ADDED: Snare Hardmode Modal state
+  const [advancedSnareplanModal, setAdvancedSnareplanModal] = useState(false); // ADDED: Advanced Snareplan Modal state
   const [routeDetailModal, setRouteDetailModal] = useState({ open: false, route: null });
   const [dbStats, setDbStats] = useState(null);
   const [dataSource, setDataSource] = useState('web'); // Default: Web Crawling only
