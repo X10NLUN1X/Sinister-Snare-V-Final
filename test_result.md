@@ -620,13 +620,16 @@ test_plan:
     implemented: true
     working: false
     file: "backend/server.py"
-    stuck_count: 0
+    stuck_count: 1
     priority: "critical"
     needs_retesting: false
     status_history:
         - working: false
         - agent: "testing"
         - comment: "🚨 CRITICAL ISSUE IDENTIFIED: Gold commodity routes exist but DO NOT meet ELITE criteria for Hardcore Mode. Found 2 Gold routes: 1) 'Gold' commodity with piracy_rating 70.0 (HIGH risk level) from Pyro Rod's Fuel 'N Supplies → Pyro Rat's Nest, 2) 'Golden Medmon' commodity with piracy_rating 58.0 (MODERATE risk level) from Pyro Shepherd's Rest → Pyro Ashland. PROBLEM: No Gold routes have piracy_rating >= 80 (required for ELITE classification). Highest Gold piracy score is only 70.0. This explains why Gold doesn't appear in Hardcore Mode filtering. Additionally, NO ELITE or LEGENDARY routes exist in the entire system (Hardcore Mode would be completely empty). The piracy scoring algorithm needs adjustment to ensure high-value commodities like Gold achieve ELITE status."
+        - working: false
+        - agent: "testing"
+        - comment: "🎯 COMPREHENSIVE GOLD COMMODITY TESTING COMPLETE - V2.1 ALGORITHM ANALYSIS: ❌ CRITICAL FINDINGS: Gold commodity piracy scoring V2.1 enhanced algorithm is NOT working as intended. DETAILED RESULTS: ✅ SYSTEM OPERATIONAL: Found 70 routes with updated piracy scoring algorithm V2.1, system functioning correctly. ✅ GOLD ROUTES DETECTED: Found 2 Gold commodity routes in system (Gold: 72.0 piracy rating, Golden Medmon: 70.0 piracy rating). ❌ ELITE STATUS FAILURE: NO Gold routes achieve piracy_rating >= 80 (ELITE threshold). Highest Gold piracy score: 72.0 vs required 80+. ❌ HARDCORE MODE EMPTY FOR GOLD: Gold routes classified as 'HIGH' risk level, NOT 'ELITE/LEGENDARY' as required for Hardcore Mode filtering. ✅ HARDCORE MODE FUNCTIONAL: System has 4 ELITE routes available (Corundum: 87.0, Fluorine: 87.0, Laranite: 80.0, Titanium: 80.0) but NO Gold commodities. ✅ PREMIUM COMMODITY BONUSES WORKING: Enhanced algorithm V2.1 successfully provides bonuses to premium commodities (4 commodities with scores ≥70), but Gold bonus insufficient to reach ELITE threshold. ✅ PIRACY SCORING V2.0 VERIFIED: Inter-system route caps working correctly (≤25 points), system-internal routes properly prioritized (avg 69.9 vs 20.9). ROOT CAUSE: Gold commodity needs additional scoring boost in V2.1 algorithm to reach 80+ piracy rating for ELITE classification and Hardcore Mode inclusion."
 
   - task: "Comprehensive System Debug - All Backend APIs"
     implemented: true
