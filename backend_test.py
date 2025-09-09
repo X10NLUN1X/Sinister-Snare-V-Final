@@ -2635,6 +2635,226 @@ async def test_piracy_scoring_system():
     
     return results
 
+async def test_gold_commodity_piracy_scoring():
+    """Test Gold commodity piracy scoring improvements for Hardcore Mode - V2.1 Enhanced Algorithm"""
+    results = TestResults()
+    
+    print(f"\n🏆 Testing Gold Commodity Piracy Scoring V2.1 - Enhanced Premium Commodity Algorithm")
+    print("Focus: Gold commodity routes achieving ELITE status (80+ piracy score) for Hardcore Mode")
+    
+    async with httpx.AsyncClient(timeout=60.0) as client:
+        
+        # Test 1: Get all routes with updated scoring (limit=100 as requested)
+        try:
+            response = await client.get(f"{BACKEND_URL}/api/routes/analyze?limit=100")
+            if response.status_code == 200:
+                data = response.json()
+                if data.get('status') == 'success':
+                    routes = data.get('routes', [])
+                    total_routes = len(routes)
+                    
+                    results.add_result(
+                        "Routes Analysis with Updated Scoring (limit=100)",
+                        "PASS",
+                        f"Successfully retrieved {total_routes} routes with updated piracy scoring algorithm V2.1"
+                    )
+                    
+                    # Test 2: Check specifically for Gold commodity routes
+                    gold_routes = []
+                    for route in routes:
+                        commodity_name = route.get('commodity_name', '').lower()
+                        if 'gold' in commodity_name:
+                            gold_routes.append(route)
+                    
+                    if gold_routes:
+                        results.add_result(
+                            "Gold Commodity Routes Detection",
+                            "PASS",
+                            f"Found {len(gold_routes)} Gold commodity routes in the system"
+                        )
+                        
+                        # Test 3: Log Gold routes' NEW piracy_rating and risk_level
+                        print(f"\n📊 GOLD COMMODITY ROUTES ANALYSIS:")
+                        print(f"{'='*80}")
+                        
+                        elite_gold_routes = 0
+                        legendary_gold_routes = 0
+                        
+                        for i, route in enumerate(gold_routes, 1):
+                            commodity_name = route.get('commodity_name', 'Unknown')
+                            piracy_rating = route.get('piracy_rating', 0)
+                            risk_level = route.get('risk_level', 'UNKNOWN')
+                            origin = route.get('origin_name', 'Unknown')
+                            destination = route.get('destination_name', 'Unknown')
+                            profit = route.get('profit', 0)
+                            
+                            print(f"Gold Route #{i}:")
+                            print(f"  Commodity: {commodity_name}")
+                            print(f"  NEW Piracy Rating: {piracy_rating}")
+                            print(f"  NEW Risk Level: {risk_level}")
+                            print(f"  Route: {origin} → {destination}")
+                            print(f"  Profit: {profit:,.0f} aUEC")
+                            print(f"  {'='*60}")
+                            
+                            # Count ELITE and LEGENDARY routes
+                            if piracy_rating >= 90:
+                                legendary_gold_routes += 1
+                            elif piracy_rating >= 80:
+                                elite_gold_routes += 1
+                        
+                        # Test 4: Verify Gold commodities achieve piracy_rating >= 80 (ELITE)
+                        if elite_gold_routes > 0 or legendary_gold_routes > 0:
+                            results.add_result(
+                                "Gold Commodities Achieve ELITE Status (≥80 piracy score)",
+                                "PASS",
+                                f"SUCCESS! Found {elite_gold_routes} ELITE Gold routes (80-89) and {legendary_gold_routes} LEGENDARY Gold routes (90+)"
+                            )
+                        else:
+                            max_gold_score = max([route.get('piracy_rating', 0) for route in gold_routes]) if gold_routes else 0
+                            results.add_result(
+                                "Gold Commodities Achieve ELITE Status (≥80 piracy score)",
+                                "FAIL",
+                                f"CRITICAL: No Gold routes achieve ELITE status. Highest Gold piracy score: {max_gold_score}"
+                            )
+                        
+                        # Test 5: Check Gold routes are classified as "ELITE" or "LEGENDARY"
+                        elite_classified_gold = [route for route in gold_routes if route.get('risk_level') in ['ELITE', 'LEGENDARY']]
+                        
+                        if elite_classified_gold:
+                            results.add_result(
+                                "Gold Routes Classified as ELITE/LEGENDARY",
+                                "PASS",
+                                f"SUCCESS! {len(elite_classified_gold)} Gold routes properly classified as ELITE/LEGENDARY"
+                            )
+                        else:
+                            gold_risk_levels = [route.get('risk_level', 'UNKNOWN') for route in gold_routes]
+                            results.add_result(
+                                "Gold Routes Classified as ELITE/LEGENDARY",
+                                "FAIL",
+                                f"CRITICAL: No Gold routes classified as ELITE/LEGENDARY. Risk levels found: {set(gold_risk_levels)}"
+                            )
+                    else:
+                        results.add_result(
+                            "Gold Commodity Routes Detection",
+                            "FAIL",
+                            "CRITICAL: No Gold commodity routes found in the system"
+                        )
+                    
+                    # Test 6: Check for ANY ELITE/LEGENDARY routes (Hardcore Mode availability)
+                    elite_routes = [route for route in routes if route.get('risk_level') in ['ELITE', 'LEGENDARY']]
+                    elite_count = len([route for route in routes if route.get('piracy_rating', 0) >= 80])
+                    legendary_count = len([route for route in routes if route.get('piracy_rating', 0) >= 90])
+                    
+                    if elite_routes or elite_count > 0:
+                        results.add_result(
+                            "Hardcore Mode Route Availability (ELITE/LEGENDARY routes exist)",
+                            "PASS",
+                            f"SUCCESS! Found {elite_count} ELITE routes (80+) and {legendary_count} LEGENDARY routes (90+). Hardcore Mode will have {len(elite_routes)} routes available."
+                        )
+                        
+                        # Log top ELITE/LEGENDARY routes for verification
+                        print(f"\n🎯 TOP ELITE/LEGENDARY ROUTES FOR HARDCORE MODE:")
+                        print(f"{'='*80}")
+                        
+                        top_elite_routes = sorted([route for route in routes if route.get('piracy_rating', 0) >= 80], 
+                                                key=lambda x: x.get('piracy_rating', 0), reverse=True)[:5]
+                        
+                        for i, route in enumerate(top_elite_routes, 1):
+                            commodity_name = route.get('commodity_name', 'Unknown')
+                            piracy_rating = route.get('piracy_rating', 0)
+                            risk_level = route.get('risk_level', 'UNKNOWN')
+                            origin = route.get('origin_name', 'Unknown')
+                            destination = route.get('destination_name', 'Unknown')
+                            
+                            print(f"#{i} ELITE Route:")
+                            print(f"  Commodity: {commodity_name}")
+                            print(f"  Piracy Rating: {piracy_rating}")
+                            print(f"  Risk Level: {risk_level}")
+                            print(f"  Route: {origin} → {destination}")
+                            print(f"  {'='*60}")
+                        
+                    else:
+                        results.add_result(
+                            "Hardcore Mode Route Availability (ELITE/LEGENDARY routes exist)",
+                            "FAIL",
+                            "CRITICAL: No ELITE or LEGENDARY routes found. Hardcore Mode would be empty!"
+                        )
+                    
+                    # Test 7: Verify the fix for empty Hardcore Mode issue
+                    hardcore_mode_routes = [route for route in routes if route.get('piracy_rating', 0) >= 80]
+                    
+                    if len(hardcore_mode_routes) > 0:
+                        results.add_result(
+                            "Empty Hardcore Mode Issue Fix Verification",
+                            "PASS",
+                            f"SUCCESS! Hardcore Mode fix verified - {len(hardcore_mode_routes)} routes now available for Hardcore Mode (piracy_rating ≥ 80)"
+                        )
+                    else:
+                        results.add_result(
+                            "Empty Hardcore Mode Issue Fix Verification",
+                            "FAIL",
+                            "CRITICAL: Empty Hardcore Mode issue NOT FIXED - no routes with piracy_rating ≥ 80 found"
+                        )
+                    
+                    # Test 8: Enhanced Piracy Scoring Algorithm V2.1 Verification
+                    # Check for premium commodity bonuses
+                    premium_commodities = ['Gold', 'Diamond', 'Quantanium', 'Laranite', 'Platinum', 'Bexalite']
+                    premium_routes_found = []
+                    
+                    for route in routes:
+                        commodity_name = route.get('commodity_name', '')
+                        for premium in premium_commodities:
+                            if premium.lower() in commodity_name.lower():
+                                premium_routes_found.append({
+                                    'commodity': commodity_name,
+                                    'piracy_rating': route.get('piracy_rating', 0),
+                                    'risk_level': route.get('risk_level', 'UNKNOWN')
+                                })
+                                break
+                    
+                    if premium_routes_found:
+                        high_scoring_premium = [route for route in premium_routes_found if route['piracy_rating'] >= 70]
+                        
+                        if high_scoring_premium:
+                            results.add_result(
+                                "Enhanced Piracy Scoring V2.1 - Premium Commodity Bonuses",
+                                "PASS",
+                                f"SUCCESS! Premium commodity bonuses working - {len(high_scoring_premium)} premium commodities with high scores (≥70)"
+                            )
+                        else:
+                            results.add_result(
+                                "Enhanced Piracy Scoring V2.1 - Premium Commodity Bonuses",
+                                "FAIL",
+                                f"Premium commodities found but scores too low. Max premium score: {max([r['piracy_rating'] for r in premium_routes_found]) if premium_routes_found else 0}"
+                            )
+                    else:
+                        results.add_result(
+                            "Enhanced Piracy Scoring V2.1 - Premium Commodity Bonuses",
+                            "FAIL",
+                            "No premium commodities (Gold, Diamond, Quantanium, etc.) found in route analysis"
+                        )
+                    
+                else:
+                    results.add_result(
+                        "Routes Analysis with Updated Scoring (limit=100)",
+                        "FAIL",
+                        f"API returned status: {data.get('status')}"
+                    )
+            else:
+                results.add_result(
+                    "Routes Analysis with Updated Scoring (limit=100)",
+                    "FAIL",
+                    f"HTTP {response.status_code}: {response.text[:200]}"
+                )
+        except Exception as e:
+            results.add_result(
+                "Routes Analysis with Updated Scoring (limit=100)",
+                "FAIL",
+                f"Connection error: {str(e)}"
+            )
+    
+    return results
+
 async def test_gold_commodity_classification():
     """Test Gold commodity specifically for piracy score and risk level classification"""
     results = TestResults()
