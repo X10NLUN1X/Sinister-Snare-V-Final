@@ -752,7 +752,15 @@ class RouteAnalyzer:
                 'Maze', 'Neon', 'WiDoW', 'SLAM'
             ]
             
-            if any(commodity in commodity_name for commodity in high_traffic_commodities):
+            # ELITE COMMODITY BONUS: Premium commodities get extra scoring to reach ELITE status
+            elite_commodities = [
+                'Gold', 'Diamond', 'Quantanium', 'Laranite', 'Platinum',
+                'Bexalite', 'Taranite', 'Corundum', 'Fluorine'
+            ]
+            
+            if any(commodity in commodity_name for commodity in elite_commodities):
+                commodity_score = 15  # INCREASED: Premium bonus for elite commodities
+            elif any(commodity in commodity_name for commodity in high_traffic_commodities):
                 commodity_score = 8
             elif any(commodity in commodity_name for commodity in medium_traffic_commodities):
                 commodity_score = 5
