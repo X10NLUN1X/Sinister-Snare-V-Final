@@ -2850,46 +2850,46 @@ function App() {
 
   const handleSnareHardmode = useCallback(async () => {
     try {
-      console.log('⚡ SNARE HARDMODE: Filtering for ELITE and LEGENDARY routes...');
+      console.log('⚡ HARDCORE MODE: Loading ALL ELITE and LEGENDARY routes...');
       
-      // Filter routes for ELITE and LEGENDARY risk levels, sort by piracy_rating
-      const hardmodeRoutes = routes
+      // Filter ALL routes for ELITE and LEGENDARY risk levels
+      const hardcoreRoutes = routes
         .filter(route => ['ELITE', 'LEGENDARY'].includes(route.risk_level))
         .sort((a, b) => {
-          // Sort by piracy_rating (highest interception probability first)
+          // Sort by piracy_rating (highest first)
           const aPiracy = parseFloat(a.piracy_rating) || 0;
           const bPiracy = parseFloat(b.piracy_rating) || 0;
           return bPiracy - aPiracy;
-        })
-        .slice(0, 15); // Top 15 ELITE/LEGENDARY routes
+        });
       
-      if (hardmodeRoutes.length === 0) {
-        alert('⚠️ No ELITE or LEGENDARY routes found! Check back later for premium targets.');
+      if (hardcoreRoutes.length === 0) {
+        alert('⚠️ No ELITE or LEGENDARY routes available! Check back later for premium targets.');
         return;
       }
       
-      // Create hardmode modal data
-      const hardmodeData = {
+      // Create hardcore modal data with ALL routes (no limit)
+      const hardcoreData = {
         status: 'success',
-        title: 'SNARE HARDMODE',
-        description: 'Premium targets with maximum risk and reward',
-        routes: hardmodeRoutes,
+        title: 'HARDCORE MODE',
+        description: 'All ELITE & LEGENDARY routes - No limits, maximum challenge',
+        routes: hardcoreRoutes, // ALL routes, no slice limit
         stats: {
-          elite_count: hardmodeRoutes.filter(r => r.risk_level === 'ELITE').length,
-          legendary_count: hardmodeRoutes.filter(r => r.risk_level === 'LEGENDARY').length,
-          avg_piracy_rating: hardmodeRoutes.reduce((sum, r) => sum + (r.piracy_rating || 0), 0) / hardmodeRoutes.length,
-          total_profit: hardmodeRoutes.reduce((sum, r) => sum + (r.profit || 0), 0)
+          elite_count: hardcoreRoutes.filter(r => r.risk_level === 'ELITE').length,
+          legendary_count: hardcoreRoutes.filter(r => r.risk_level === 'LEGENDARY').length,
+          avg_piracy_rating: hardcoreRoutes.reduce((sum, r) => sum + (r.piracy_rating || 0), 0) / hardcoreRoutes.length,
+          total_profit: hardcoreRoutes.reduce((sum, r) => sum + (r.profit || 0), 0),
+          total_routes: hardcoreRoutes.length
         }
       };
       
-      // Set hardmode modal data and open it
-      setSnareHardmodeModal(hardmodeData);
+      // Set hardcore modal data and open it
+      setSnareHardmodeModal(hardcoreData);
       
-      console.log(`⚡ SNARE HARDMODE: Found ${hardmodeRoutes.length} premium routes (${hardmodeData.stats.elite_count} ELITE, ${hardmodeData.stats.legendary_count} LEGENDARY)`);
+      console.log(`⚡ HARDCORE MODE: Loaded ALL ${hardcoreRoutes.length} premium routes (${hardcoreData.stats.elite_count} ELITE, ${hardcoreData.stats.legendary_count} LEGENDARY)`);
       
     } catch (error) {
-      console.error('❌ SNARE HARDMODE error:', error);
-      alert('Error loading premium targets. Please try again.');
+      console.error('❌ HARDCORE MODE error:', error);
+      alert('Error loading hardcore targets. Please try again.');
     }
   }, [routes]);
 
