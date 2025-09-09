@@ -815,14 +815,110 @@ class RouteAnalyzer:
     
     @staticmethod
     def calculate_interception_points(route_data: Dict[str, Any]) -> List[Dict[str, Any]]:
-        """Calculate optimal interception points for a route"""
+        """Calculate optimal interception points for a route using advanced 3D positioning"""
         origin_coords = route_data.get('coordinates_origin', {})
         dest_coords = route_data.get('coordinates_destination', {})
         
         if not origin_coords or not dest_coords:
             return []
         
-        interception_points = []
+        try:
+            # Convert to numpy arrays for advanced calculations
+            route_start = np.array([
+                origin_coords.get("x", 0),
+                origin_coords.get("y", 0), 
+                origin_coords.get("z", 0)
+            ])
+            
+            route_end = np.array([
+                dest_coords.get("x", 0),
+                dest_coords.get("y", 0),
+                dest_coords.get("z", 0)
+            ])
+            
+            # Calculate advanced interception points using quantum interdiction math
+            interception_points = []
+            
+            # Multiple strategic positions along the route
+            strategic_positions = [0.15, 0.35, 0.5, 0.65, 0.85]  # 15%, 35%, 50%, 65%, 85% along route
+            
+            for position_factor in strategic_positions:
+                # Calculate position along route
+                intercept_pos = route_start + (route_end - route_start) * position_factor
+                
+                # Use interdiction calculator for coverage analysis
+                coverage = interdiction_calc._calculate_coverage_zone(
+                    intercept_pos, route_start, route_end
+                )
+                
+                # Calculate intercept probability based on route position and coverage
+                if position_factor == 0.5:  # Midpoint
+                    base_probability = 0.95
+                    difficulty = "EASY"
+                    description = "Optimal quantum drive interdiction point"
+                elif position_factor in [0.15, 0.85]:  # Near endpoints
+                    base_probability = 0.70
+                    difficulty = "HARD" 
+                    description = "Near terminal security zones - high risk"
+                else:  # 35% and 65% positions
+                    base_probability = 0.85
+                    difficulty = "MODERATE"
+                    description = "Strategic interdiction zone"
+                
+                # Adjust probability based on coverage
+                adjusted_probability = min(0.98, base_probability * (coverage['coverage_percentage'] / 100))
+                
+                point_name = f"QED Zone {int(position_factor * 100)}%"
+                if position_factor == 0.5:
+                    point_name = "Route Midpoint (Optimal)"
+                elif position_factor == 0.15:
+                    point_name = "Departure Zone"
+                elif position_factor == 0.85:
+                    point_name = "Arrival Approach"
+                
+                interception_point = {
+                    "name": point_name,
+                    "coordinates": {
+                        "x": float(intercept_pos[0]),
+                        "y": float(intercept_pos[1]),
+                        "z": float(intercept_pos[2])
+                    },
+                    "intercept_probability": round(adjusted_probability, 3),
+                    "difficulty": difficulty,
+                    "description": description,
+                    "coverage_data": {
+                        "coverage_length": coverage['coverage_length'],
+                        "coverage_percentage": round(coverage['coverage_percentage'], 2),
+                        "qed_radius": interdiction_calc.QED_RADIUS / 1000  # Convert to km
+                    },
+                    "tactical_info": {
+                        "position_along_route": f"{int(position_factor * 100)}%",
+                        "distance_from_origin": float(np.linalg.norm(intercept_pos - route_start)) / 1000,  # km
+                        "distance_from_destination": float(np.linalg.norm(intercept_pos - route_end)) / 1000  # km
+                    }
+                }
+                
+                interception_points.append(interception_point)
+            
+            # Add quantum interdiction math validation
+            route_length = float(np.linalg.norm(route_end - route_start))
+            logging.info(f"Generated {len(interception_points)} advanced interception points for {route_length/1000:.1f}km route")
+            
+            return interception_points
+            
+        except Exception as e:
+            logging.error(f"Error in advanced interception calculation: {e}")
+            # Fallback to basic calculation
+            return RouteAnalyzer._calculate_basic_interception_points(route_data)
+    
+    @staticmethod
+    def _calculate_basic_interception_points(route_data: Dict[str, Any]) -> List[Dict[str, Any]]:
+        """Fallback basic interception points calculation"""
+        origin_coords = route_data.get('coordinates_origin', {})
+        dest_coords = route_data.get('coordinates_destination', {})
+        
+        if not origin_coords or not dest_coords:
+            return []
         
         # Calculate midpoint
         midpoint = {
@@ -831,7 +927,7 @@ class RouteAnalyzer:
             "z": (origin_coords["z"] + dest_coords["z"]) / 2
         }
         
-        # Add various interception zones
+        # Basic interception zones
         points = [
             {
                 "name": "Route Midpoint",
@@ -850,28 +946,6 @@ class RouteAnalyzer:
                 "intercept_probability": 0.70,
                 "difficulty": "HARD",
                 "description": "Near departure terminal - high security risk"
-            },
-            {
-                "name": "Arrival Approach",
-                "coordinates": {
-                    "x": origin_coords["x"] + (dest_coords["x"] - origin_coords["x"]) * 0.85,
-                    "y": origin_coords["y"] + (dest_coords["y"] - origin_coords["y"]) * 0.85,
-                    "z": origin_coords["z"] + (dest_coords["z"] - origin_coords["z"]) * 0.85
-                },
-                "intercept_probability": 0.75,
-                "difficulty": "HARD",
-                "description": "Near arrival terminal - cargo still valuable"
-            },
-            {
-                "name": "Quantum Interdiction Zone",
-                "coordinates": {
-                    "x": midpoint["x"] + random.uniform(-5000, 5000),
-                    "y": midpoint["y"] + random.uniform(-5000, 5000),
-                    "z": midpoint["z"] + random.uniform(-2000, 2000)
-                },
-                "intercept_probability": 0.95,
-                "difficulty": "EASY",
-                "description": "Optimal quantum drive interdiction point"
             }
         ]
         
