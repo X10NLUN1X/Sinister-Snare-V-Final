@@ -137,6 +137,47 @@ class StarProfitClient:
                 
                 return {"commodities": [], "error": str(e), "source": source_type}
     
+    def _generate_fallback_commodity_data(self) -> List[Dict[str, Any]]:
+        """Generate fallback commodity data when web parsing fails"""
+        logging.info("Generating fallback commodity data")
+        return [
+            {
+                "name": "Gold",
+                "buy_price": 7800,
+                "sell_price": 8200,
+                "roi": self._calculate_safe_roi(8200, 7800),
+                "volume": 100,
+                "origin": "Seraphim Station",
+                "destination": "New Babbage",
+                "system_origin": "Stanton",
+                "system_destination": "Stanton",
+                "profit": 40000,
+                "investment": 780000
+            },
+            {
+                "name": "Agricultural Supplies",
+                "buy_price": 1200,
+                "sell_price": 1400,
+                "roi": self._calculate_safe_roi(1400, 1200),
+                "volume": 500,
+                "origin": "Port Tressler",
+                "destination": "Area18",
+                "system_origin": "Stanton",
+                "system_destination": "Stanton",
+                "profit": 100000,
+                "investment": 600000
+            }
+        ]
+    
+    def _calculate_safe_roi(self, sell_price: float, buy_price: float) -> float:
+        """Safe ROI calculation with zero-division protection"""
+        if buy_price <= 0:
+            return 0.0
+        try:
+            return round(((sell_price - buy_price) / buy_price) * 100, 2)
+        except (ZeroDivisionError, TypeError):
+            return 0.0
+
     async def _parse_commodities_from_web(self, html_content: str, client) -> List[Dict[str, Any]]:
         """Parse commodity data from Star Profit website - Enhanced Implementation"""
         try:
