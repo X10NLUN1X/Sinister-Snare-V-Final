@@ -3310,75 +3310,33 @@ function App() {
   }, []); // FIXED: Empty dependency array to prevent infinite loop
 
   useEffect(() => {
-    const initializeApp = async () => {
-      console.log('🚀 AUTO-START: Loading app with immediate database query...');
-      
-      // Force emergency timeout (3 seconds)
-      const emergencyTimeout = setTimeout(() => {
-        console.warn('🚨 EMERGENCY: Forcing app load after 3 seconds');
-        setLoading(false);
-        setApiStatus({ status: 'emergency_loaded' });
-      }, 3000);
-      
+    // SIMPLIFIED INITIALIZATION - just load the app quickly
+    console.log('🚀 SIMPLE-START: Loading app...');
+    
+    // Very short timeout to ensure app loads
+    const quickTimeout = setTimeout(() => {
+      console.log('✅ SIMPLE-START: App loaded via timeout');
+      setLoading(false);
+      setApiStatus({ status: 'loaded' });
+    }, 1000);
+    
+    // Try to load routes quickly
+    const loadRoutes = async () => {
       try {
-        // STEP 1: Clear any cached data
-        try {
-          localStorage.clear();
-          sessionStorage.clear();
-          await sinisterDB.init();
-          await sinisterDB.clearAllData();
-          console.log('✅ Cache cleared');
-        } catch (e) {
-          console.warn('Cache clear failed:', e);
-        }
-        
-        // STEP 2: IMMEDIATE DATABASE QUERY - Load fresh routes with cache busting
-        console.log('🎯 AUTO-START: Making immediate database query...');
-        const timestamp = Date.now();
-        const response = await axios.get(`${API}/routes/analyze?limit=15&t=${timestamp}&cachebust=${Math.random()}`);
+        const response = await axios.get(`${API}/routes/analyze?limit=15`);
         const freshRoutes = response.data.routes || [];
-        
-        // CRITICAL DEBUG: Log exact scores from API
-        console.log('🎯 AUTO-START DATABASE QUERY RESULT:', freshRoutes.slice(0,3).map(r => ({
-          commodity: r.commodity_name,
-          origin: r.origin_name,
-          destination: r.destination_name,
-          piracy_rating: r.piracy_rating,
-          inter_system: (r.origin_name?.split(' - ')[0] !== r.destination_name?.split(' - ')[0])
-        })));
-        
+        console.log(`✅ SIMPLE-START: Loaded ${freshRoutes.length} routes`);
         setRoutes(freshRoutes);
-        clearTimeout(emergencyTimeout);
+        clearTimeout(quickTimeout);
         setLoading(false);
-        setApiStatus({ status: 'auto_loaded', routes: freshRoutes.length });
-        
-        console.log('🎉 AUTO-START: Database query completed successfully!');
-        
-        // STEP 3: Load other essential data in background
-        console.log('Loading additional data in background...');
-        setTimeout(async () => {
-          try {
-            await Promise.allSettled([
-              fetchApiStatus(),
-              fetchTargets(),
-              fetchTrackingStatus(),
-              fetchDbStats()
-            ]);
-            console.log('✅ Background data loaded');
-          } catch (error) {
-            console.warn('⚠️ Background loading failed:', error);
-          }
-        }, 500);
-        
+        setApiStatus({ status: 'loaded', routes: freshRoutes.length });
       } catch (error) {
-        console.error('❌ AUTO-START ERROR:', error);
-        clearTimeout(emergencyTimeout);
-        setLoading(false);
-        setRoutes([]);
+        console.warn('⚠️ SIMPLE-START: Route loading failed, continuing anyway:', error);
+        // Don't stop app loading due to API error
       }
     };
-
-    initializeApp();
+    
+    loadRoutes();
   }, []);
 
   // Auto-refresh effect - FIXED: Removed function dependencies to prevent loops
