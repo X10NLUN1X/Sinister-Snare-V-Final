@@ -694,8 +694,6 @@ const SnareHardmodeModal = ({ data, onClose, onRouteSelect }) => {
   );
 };
 
-const CommoditySnareModal = ({ isOpen, onClose, onSnare, onRouteSelect, onAlternativeRouteSelect }) => {
-
 const PirateTargetCard = ({ target, onTrack }) => (
   <div className="bg-gradient-to-br from-red-900/20 via-black/50 to-purple-900/20 rounded-lg p-6 border border-red-700/50 hover:border-red-500 transition-all duration-300">
     <div className="flex justify-between items-start mb-4">
