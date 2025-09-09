@@ -52,10 +52,20 @@ async def init_db():
             await client.admin.command('ping')
             db = client.sinister_snare_db
             
-            # Test database operations
-            await db.route_analyses.create_index("route_code", unique=True)
-            await db.route_analyses.create_index("piracy_rating", background=True)
-            await db.route_analyses.create_index("created_at", background=True)
+            # Test database operations - create indexes if they don't exist
+            try:
+                # Check existing indexes first
+                existing_indexes = await db.route_analyses.list_indexes().to_list(length=None)
+                existing_index_names = [idx['name'] for idx in existing_indexes]
+                
+                if 'route_code_1' not in existing_index_names:
+                    await db.route_analyses.create_index("route_code", unique=True)
+                if 'piracy_rating_1' not in existing_index_names:
+                    await db.route_analyses.create_index("piracy_rating", background=True)
+                if 'created_at_1' not in existing_index_names:
+                    await db.route_analyses.create_index("created_at", background=True)
+            except Exception as index_error:
+                logging.warning(f"Index creation failed (may already exist): {index_error}")
             
             logging.info(f"MongoDB connected successfully on attempt {attempt + 1}")
             return True
