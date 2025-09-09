@@ -777,14 +777,14 @@ class RouteAnalyzer:
     
     @staticmethod
     def categorize_risk_level(piracy_score: float) -> str:
-        """Enhanced risk categorization"""
-        if piracy_score >= 90:
+        """FIXED: Realistic risk categorization based on actual piracy score distribution"""
+        if piracy_score >= 75:  # FIXED: Lowered from 90 to 75 for LEGENDARY
             return "LEGENDARY"
-        elif piracy_score >= 80:
+        elif piracy_score >= 70:  # FIXED: Lowered from 80 to 70 for ELITE
             return "ELITE"
-        elif piracy_score >= 65:
+        elif piracy_score >= 60:  # FIXED: Lowered from 65 to 60 for HIGH
             return "HIGH"
-        elif piracy_score >= 45:
+        elif piracy_score >= 40:  # FIXED: Lowered from 45 to 40 for MODERATE
             return "MODERATE"
         elif piracy_score >= 25:
             return "LOW"
