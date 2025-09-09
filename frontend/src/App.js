@@ -1485,7 +1485,7 @@ const SnareModal = ({ isOpen, onClose, snareData }) => {
                 <p className="text-yellow-400 font-bold text-lg">{snareData.estimated_traders_per_hour}</p>
               </div>
               <div>
-                <p className="text-gray-400 text-sm mb-1">Piracy Rating:</p>
+                <p className="text-gray-400 text-sm mb-1">Piracy Score:</p>
                 <p className="text-red-400 font-bold text-lg">{snareData.piracy_rating.toFixed(1)}</p>
               </div>
             </div>
