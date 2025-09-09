@@ -73,6 +73,22 @@
   background: #3b82f6;
 }
 
+/* Pulse Animation for QED Zone */
+.pulse-animation {
+  animation: pulse-qed 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse-qed {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.1);
+  }
+}
+
 .App-header {
   background: linear-gradient(135deg, #7f1d1d 0%, #000000 100%);
   padding: 40px;
