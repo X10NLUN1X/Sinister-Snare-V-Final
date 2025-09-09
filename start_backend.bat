@@ -9,9 +9,18 @@ if not exist ".env" (
     echo Creating .env file...
     echo MONGO_URL="mongodb://localhost:27017" > .env
     echo DB_NAME="sinister_snare_db" >> .env
-    echo CORS_ORIGINS="*" >> .env
-    echo UEX_API_KEY="6b70cf40873c5d6e706e5aa87a5ceab97ac8032b" >> .env
+    echo MONGO_RETRY_ATTEMPTS=3 >> .env
+    echo MONGO_RETRY_DELAY=1000 >> .env
+    echo CORS_ORIGINS="http://localhost:3000,http://localhost:8001" >> .env
+    echo API_TIMEOUT=30 >> .env
+    echo API_RETRY_ATTEMPTS=3 >> .env
+    echo RATE_LIMIT_PER_MINUTE=60 >> .env
     echo LOG_LEVEL="INFO" >> .env
+    echo LOG_FILE="sinister_snare.log" >> .env
+    echo ENABLE_WEB_CRAWLING=true >> .env
+    echo ENABLE_FALLBACK_DATA=true >> .env
+    echo ENABLE_CACHE=true >> .env
+    echo CACHE_TTL_SECONDS=300 >> .env
     echo ✅ .env file created
 )
 
