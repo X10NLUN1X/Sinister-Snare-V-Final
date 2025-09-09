@@ -2360,17 +2360,34 @@ async def get_database_routes(data_type: str = "current"):
                     }
                 },
                 {"$replaceRoot": {"newRoot": "$latest_route"}},  # Replace root with the route data
+                {"$project": {  # ADDED: Exclude ObjectId fields that cause serialization issues
+                    "_id": 0,  # Exclude MongoDB ObjectId
+                    "stored_at": 0  # Exclude stored_at if it contains ObjectId
+                }},
                 {"$sort": {"profit": -1}},  # Sort by profit descending
                 {"$limit": 50}  # Limit to top 50
             ]
             
             routes = await db.route_analyses.aggregate(pipeline).to_list(50)
             
+            # ADDED: Additional ObjectId cleanup for any remaining ObjectId fields
+            clean_routes = []
+            for route in routes:
+                clean_route = {}
+                for key, value in route.items():
+                    # Skip any ObjectId fields or convert them to string
+                    if hasattr(value, '__class__') and 'ObjectId' in str(value.__class__):
+                        clean_route[key] = str(value)
+                    else:
+                        clean_route[key] = value
+                clean_routes.append(clean_route)
+            
             return {
                 "status": "success", 
-                "routes": routes,
+                "routes": clean_routes,  # Use cleaned routes
                 "data_type": "current",
-                "message": f"Showing latest data for {len(routes)} commodities"
+                "count": len(clean_routes),
+                "message": f"Latest routes for each commodity (total: {len(clean_routes)})"
             }
             
     except Exception as e:
