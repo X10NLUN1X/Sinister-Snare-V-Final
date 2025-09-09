@@ -2785,6 +2785,12 @@ logger = logging.getLogger(__name__)
 async def startup_event():
     """Initialize tracking system on startup"""
     global tracking_state
+    
+    # Initialize database with health check and retry mechanism
+    db_success = await init_db()
+    if not db_success:
+        logger.warning("Database initialization failed, continuing with limited functionality")
+    
     tracking_state['active'] = True
     tracking_state['last_update'] = datetime.now(timezone.utc)  # FIX: Set initial update time
     tracking_state['route_count'] = 0
