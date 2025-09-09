@@ -3141,10 +3141,34 @@ function App() {
             </div>
           </button>
           
+          {/* Commodity Snare Kachel - HERVORGEHOBEN */}
+          <button 
+            onClick={() => setCommoditySnareModal(true)}
+            className="p-4 rounded-xl bg-gradient-to-br from-yellow-500 via-yellow-600 to-orange-600 hover:from-yellow-400 hover:via-yellow-500 hover:to-orange-500 transition-all duration-300 transform hover:scale-110 shadow-xl hover:shadow-2xl ring-2 ring-yellow-400"
+          >
+            <div className="text-center">
+              <div className="text-3xl mb-2">💎</div>
+              <div className="text-sm font-bold text-white">COMMODITY SNARE</div>
+              <div className="text-xs opacity-90 text-yellow-100">Premium Tool</div>
+            </div>
+          </button>
+          
+          {/* Refresh Kachel */}
+          <button 
+            onClick={handleManualRefresh}
+            className="p-4 rounded-xl bg-blue-600 hover:bg-blue-700 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-2xl"
+          >
+            <div className="text-center">
+              <div className="text-3xl mb-2">🔄</div>
+              <div className="text-sm font-bold text-white">REFRESH</div>
+              <div className="text-xs opacity-75 text-gray-300">Update Data</div>
+            </div>
+          </button>
+          
           {/* FAQ Kachel */}
           <button 
             onClick={() => setFaqModal(true)}
-            className="p-4 rounded-xl bg-blue-600 hover:bg-blue-700 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-2xl"
+            className="p-4 rounded-xl bg-cyan-600 hover:bg-cyan-700 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-2xl"
           >
             <div className="text-center">
               <div className="text-3xl mb-2">❓</div>
