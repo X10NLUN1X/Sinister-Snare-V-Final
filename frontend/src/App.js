@@ -2831,7 +2831,7 @@ function App() {
   const [selectedRoute, setSelectedRoute] = useState(null);
   const [calculatedSnare, setCalculatedSnare] = useState(null);
 
-  // NEW: Calculate Snare Position Function
+  // NEW: Calculate Snare Position Function - Fixed with empty dependencies
   const calculateSnarePosition = useCallback((route) => {
     if (!route) return;
 
@@ -2882,7 +2882,7 @@ function App() {
     };
 
     setCalculatedSnare(snareData);
-  }, []);
+  }, []); // FIXED: Empty dependency array to prevent infinite re-renders
 
   const fetchApiStatus = useCallback(async () => {
     try {
