@@ -2635,6 +2635,256 @@ async def test_piracy_scoring_system():
     
     return results
 
+async def test_gold_commodity_classification():
+    """Test Gold commodity specifically for piracy score and risk level classification"""
+    results = TestResults()
+    
+    print(f"\n🏆 Testing Gold Commodity Classification for Hardcore Mode")
+    print("Focus: Gold commodity piracy_rating >= 80 should be classified as ELITE for Hardcore Mode filtering")
+    
+    async with httpx.AsyncClient(timeout=30.0) as client:
+        
+        # Test 1: Get all routes and check for Gold commodity
+        try:
+            response = await client.get(f"{BACKEND_URL}/api/routes/analyze?limit=100")
+            if response.status_code == 200:
+                data = response.json()
+                if data.get('status') == 'success':
+                    routes = data.get('routes', [])
+                    
+                    # Find Gold commodity routes
+                    gold_routes = [route for route in routes if 'Gold' in route.get('commodity_name', '')]
+                    
+                    if gold_routes:
+                        print(f"   Found {len(gold_routes)} Gold commodity routes")
+                        
+                        # Log each Gold route's piracy_rating and risk_level
+                        elite_gold_routes = []
+                        legendary_gold_routes = []
+                        
+                        for i, route in enumerate(gold_routes):
+                            piracy_rating = route.get('piracy_rating', 0)
+                            risk_level = route.get('risk_level', 'UNKNOWN')
+                            commodity_name = route.get('commodity_name', '')
+                            origin = route.get('origin_name', '')
+                            destination = route.get('destination_name', '')
+                            
+                            print(f"   Gold Route {i+1}: {commodity_name}")
+                            print(f"     Piracy Rating: {piracy_rating}")
+                            print(f"     Risk Level: {risk_level}")
+                            print(f"     Route: {origin} → {destination}")
+                            
+                            if risk_level == 'ELITE':
+                                elite_gold_routes.append(route)
+                            elif risk_level == 'LEGENDARY':
+                                legendary_gold_routes.append(route)
+                        
+                        # Check if Gold routes with piracy_rating >= 80 are classified as ELITE
+                        high_piracy_gold = [route for route in gold_routes if route.get('piracy_rating', 0) >= 80]
+                        correctly_classified_elite = [route for route in high_piracy_gold if route.get('risk_level') == 'ELITE']
+                        
+                        # Check for LEGENDARY classification (>= 90)
+                        legendary_piracy_gold = [route for route in gold_routes if route.get('piracy_rating', 0) >= 90]
+                        correctly_classified_legendary = [route for route in legendary_piracy_gold if route.get('risk_level') == 'LEGENDARY']
+                        
+                        # Summary of findings
+                        total_hardcore_eligible = len(elite_gold_routes) + len(legendary_gold_routes)
+                        
+                        if high_piracy_gold and len(correctly_classified_elite) == len(high_piracy_gold):
+                            results.add_result(
+                                "Gold ELITE Classification (80+ Piracy Score)",
+                                "PASS",
+                                f"All {len(high_piracy_gold)} Gold routes with piracy_rating >= 80 correctly classified as ELITE. Hardcore Mode eligible: {total_hardcore_eligible} routes"
+                            )
+                        elif high_piracy_gold:
+                            results.add_result(
+                                "Gold ELITE Classification (80+ Piracy Score)",
+                                "FAIL",
+                                f"Found {len(high_piracy_gold)} Gold routes with piracy_rating >= 80, but only {len(correctly_classified_elite)} classified as ELITE. Missing from Hardcore Mode!"
+                            )
+                        else:
+                            # Check if Gold routes exist but have lower piracy scores
+                            max_gold_piracy = max([route.get('piracy_rating', 0) for route in gold_routes]) if gold_routes else 0
+                            results.add_result(
+                                "Gold ELITE Classification (80+ Piracy Score)",
+                                "FAIL",
+                                f"No Gold routes found with piracy_rating >= 80. Highest Gold piracy score: {max_gold_piracy}. This explains why Gold doesn't appear in Hardcore Mode!"
+                            )
+                        
+                        # Test LEGENDARY classification
+                        if legendary_piracy_gold and len(correctly_classified_legendary) == len(legendary_piracy_gold):
+                            results.add_result(
+                                "Gold LEGENDARY Classification (90+ Piracy Score)",
+                                "PASS",
+                                f"All {len(legendary_piracy_gold)} Gold routes with piracy_rating >= 90 correctly classified as LEGENDARY"
+                            )
+                        elif legendary_piracy_gold:
+                            results.add_result(
+                                "Gold LEGENDARY Classification (90+ Piracy Score)",
+                                "FAIL",
+                                f"Found {len(legendary_piracy_gold)} Gold routes with piracy_rating >= 90, but only {len(correctly_classified_legendary)} classified as LEGENDARY"
+                            )
+                        else:
+                            results.add_result(
+                                "Gold LEGENDARY Classification (90+ Piracy Score)",
+                                "PASS",
+                                f"No Gold routes with piracy_rating >= 90 found (acceptable - LEGENDARY is rare)"
+                            )
+                            
+                    else:
+                        results.add_result(
+                            "Gold Commodity Routes Existence",
+                            "FAIL",
+                            f"No Gold commodity routes found in {len(routes)} total routes. This explains why Gold doesn't appear in Hardcore Mode - Gold routes don't exist in the system!"
+                        )
+                        
+                        # Log available commodities for debugging
+                        available_commodities = set(route.get('commodity_name', '') for route in routes)
+                        print(f"   Available commodities: {sorted(list(available_commodities))[:10]}...")
+                        
+                else:
+                    results.add_result(
+                        "Gold Commodity Routes Analysis",
+                        "FAIL",
+                        f"API returned status: {data.get('status')}"
+                    )
+            else:
+                results.add_result(
+                    "Gold Commodity Routes Analysis",
+                    "FAIL",
+                    f"HTTP {response.status_code}: {response.text[:200]}"
+                )
+        except Exception as e:
+            results.add_result(
+                "Gold Commodity Routes Analysis",
+                "FAIL",
+                f"Connection error: {str(e)}"
+            )
+        
+        # Test 2: Test Gold-specific commodity endpoint
+        try:
+            response = await client.get(f"{BACKEND_URL}/api/snare/commodity?commodity_name=Gold")
+            if response.status_code == 200:
+                data = response.json()
+                if data.get('status') == 'success':
+                    gold_analysis = data.get('analysis', {})
+                    total_routes = gold_analysis.get('total_routes', 0)
+                    profitable_routes = gold_analysis.get('profitable_routes', 0)
+                    snare_points = data.get('snare_points', [])
+                    
+                    if total_routes > 0:
+                        print(f"   Gold Commodity Analysis:")
+                        print(f"     Total Routes: {total_routes}")
+                        print(f"     Profitable Routes: {profitable_routes}")
+                        print(f"     Snare Points: {len(snare_points)}")
+                        
+                        # Check piracy ratings in snare points
+                        elite_snare_points = [point for point in snare_points if point.get('piracy_rating', 0) >= 80]
+                        legendary_snare_points = [point for point in snare_points if point.get('piracy_rating', 0) >= 90]
+                        
+                        if elite_snare_points or legendary_snare_points:
+                            results.add_result(
+                                "Gold Commodity Snare Analysis",
+                                "PASS",
+                                f"Gold commodity endpoint working - {total_routes} routes, {len(elite_snare_points)} ELITE snare points, {len(legendary_snare_points)} LEGENDARY snare points"
+                            )
+                        else:
+                            max_piracy = max([point.get('piracy_rating', 0) for point in snare_points]) if snare_points else 0
+                            results.add_result(
+                                "Gold Commodity Snare Analysis",
+                                "FAIL",
+                                f"Gold commodity found but no ELITE/LEGENDARY snare points. Max piracy rating: {max_piracy}. This confirms Gold won't appear in Hardcore Mode!"
+                            )
+                    else:
+                        results.add_result(
+                            "Gold Commodity Snare Analysis",
+                            "FAIL",
+                            "Gold commodity endpoint returns 0 routes - Gold commodity not available in current data"
+                        )
+                else:
+                    results.add_result(
+                        "Gold Commodity Snare Analysis",
+                        "FAIL",
+                        f"Gold commodity API returned status: {data.get('status')}"
+                    )
+            else:
+                results.add_result(
+                    "Gold Commodity Snare Analysis",
+                    "FAIL",
+                    f"HTTP {response.status_code}: {response.text[:200]}"
+                )
+        except Exception as e:
+            results.add_result(
+                "Gold Commodity Snare Analysis",
+                "FAIL",
+                f"Connection error: {str(e)}"
+            )
+        
+        # Test 3: Check Hardcore Mode filtering logic by testing ELITE and LEGENDARY routes
+        try:
+            response = await client.get(f"{BACKEND_URL}/api/routes/analyze?limit=100")
+            if response.status_code == 200:
+                data = response.json()
+                if data.get('status') == 'success':
+                    routes = data.get('routes', [])
+                    
+                    # Find all ELITE and LEGENDARY routes (what Hardcore Mode should show)
+                    elite_routes = [route for route in routes if route.get('risk_level') == 'ELITE']
+                    legendary_routes = [route for route in routes if route.get('risk_level') == 'LEGENDARY']
+                    hardcore_routes = elite_routes + legendary_routes
+                    
+                    # Check commodities in Hardcore Mode
+                    hardcore_commodities = set(route.get('commodity_name', '') for route in hardcore_routes)
+                    gold_in_hardcore = 'Gold' in hardcore_commodities or any('Gold' in commodity for commodity in hardcore_commodities)
+                    
+                    print(f"   Hardcore Mode Analysis:")
+                    print(f"     ELITE Routes: {len(elite_routes)}")
+                    print(f"     LEGENDARY Routes: {len(legendary_routes)}")
+                    print(f"     Total Hardcore Routes: {len(hardcore_routes)}")
+                    print(f"     Hardcore Commodities: {sorted(list(hardcore_commodities))}")
+                    print(f"     Gold in Hardcore Mode: {gold_in_hardcore}")
+                    
+                    if hardcore_routes:
+                        if gold_in_hardcore:
+                            results.add_result(
+                                "Hardcore Mode Gold Filtering",
+                                "PASS",
+                                f"Gold commodity found in Hardcore Mode ({len(hardcore_routes)} total ELITE/LEGENDARY routes)"
+                            )
+                        else:
+                            results.add_result(
+                                "Hardcore Mode Gold Filtering",
+                                "FAIL",
+                                f"Gold commodity NOT found in Hardcore Mode. Available commodities: {list(hardcore_commodities)[:5]}... This confirms the user's report!"
+                            )
+                    else:
+                        results.add_result(
+                            "Hardcore Mode Gold Filtering",
+                            "FAIL",
+                            "No ELITE or LEGENDARY routes found - Hardcore Mode would be empty!"
+                        )
+                        
+                else:
+                    results.add_result(
+                        "Hardcore Mode Gold Filtering",
+                        "FAIL",
+                        f"API returned status: {data.get('status')}"
+                    )
+            else:
+                results.add_result(
+                    "Hardcore Mode Gold Filtering",
+                    "FAIL",
+                    f"HTTP {response.status_code}: {response.text[:200]}"
+                )
+        except Exception as e:
+            results.add_result(
+                "Hardcore Mode Gold Filtering",
+                "FAIL",
+                f"Connection error: {str(e)}"
+            )
+    
+    return results
+
 async def main():
     """Run all tests"""
     print("🏴‍☠️ SINISTER SNARE BACKEND API TEST SUITE")
@@ -2642,7 +2892,13 @@ async def main():
     
     all_results = TestResults()
     
-    # Test URGENT PIRACY SCORING SYSTEM FIRST (highest priority)
+    # Test GOLD COMMODITY CLASSIFICATION FIRST (PRIORITY TEST from review request)
+    gold_results = await test_gold_commodity_classification()
+    all_results.results.extend(gold_results.results)
+    all_results.passed += gold_results.passed
+    all_results.failed += gold_results.failed
+    
+    # Test URGENT PIRACY SCORING SYSTEM (highest priority)
     piracy_results = await test_piracy_scoring_system()
     all_results.results.extend(piracy_results.results)
     all_results.passed += piracy_results.passed
