@@ -3381,7 +3381,7 @@ function App() {
     initializeApp();
   }, []);
 
-  // Auto-refresh effect
+  // Auto-refresh effect - FIXED: Removed function dependencies to prevent loops
   useEffect(() => {
     if (!autoRefresh) return;
     
@@ -3398,7 +3398,7 @@ function App() {
     }, 3600000); // Refresh every 60 minutes (60 * 60 * 1000)
 
     return () => clearInterval(interval);
-  }, [autoRefresh, activeTab, fetchRoutes, fetchTargets, fetchAlerts, fetchApiStatus, fetchTrackingStatus]);
+  }, [autoRefresh, activeTab]); // FIXED: Only depend on primitive values, not functions
 
   if (loading) {
     return (
