@@ -556,6 +556,84 @@ const RouteCard = ({ route, onSelect, onAlternativeRouteSelect }) => {
   );
 };
 
+const FAQModal = ({ isOpen, onClose }) => {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-gray-800 rounded-lg p-6 max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto border border-blue-600">
+        <div className="flex justify-between items-center mb-6">
+          <h3 className="text-blue-400 text-2xl font-bold">❓ FAQ - Piracy Intelligence Guide</h3>
+          <button onClick={onClose} className="text-gray-400 hover:text-white text-xl">✕</button>
+        </div>
+
+        <div className="space-y-6">
+          <div className="bg-gray-900/50 rounded-lg p-4 border border-gray-700">
+            <h4 className="text-red-400 text-lg font-bold mb-3">🎯 Risk Level</h4>
+            <p className="text-gray-300 mb-3">Indicates the profitability and danger classification of a trading route from a pirate's perspective.</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div className="bg-purple-900/30 p-3 rounded">
+                <div className="text-purple-300 font-bold">👑 LEGENDARY</div>
+                <div className="text-sm text-gray-400">Ultra-rare, extreme security, highest rewards</div>
+              </div>
+              <div className="bg-red-900/30 p-3 rounded">
+                <div className="text-red-300 font-bold">🔥 ELITE</div>
+                <div className="text-sm text-gray-400">Highest value, heavy security, premium cargo</div>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-gray-900/50 rounded-lg p-4 border border-gray-700">
+            <h4 className="text-red-400 text-lg font-bold mb-3">🏴‍☠️ Piracy Rating (0-100)</h4>
+            <p className="text-gray-300 mb-3">Realistic score based on actual Star Citizen player behavior indicating interception probability.</p>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <div className="bg-red-900/30 p-3 rounded text-center">
+                <div className="text-red-300 font-bold">70-100</div>
+                <div className="text-sm text-gray-400">TOP TARGET</div>
+              </div>
+              <div className="bg-gray-700/30 p-3 rounded text-center">
+                <div className="text-gray-400 font-bold">&lt;25</div>
+                <div className="text-sm text-gray-400">LOW TRAFFIC</div>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-gray-900/50 rounded-lg p-4 border border-gray-700">
+            <h4 className="text-yellow-400 text-lg font-bold mb-3">💰 ROI (Return on Investment)</h4>
+            <p className="text-gray-300 mb-3">Percentage profit relative to initial investment.</p>
+          </div>
+
+          <div className="bg-gray-900/50 rounded-lg p-4 border border-gray-700">
+            <h4 className="text-purple-400 text-lg font-bold mb-3">📏 Distance</h4>
+            <p className="text-gray-300 mb-3">Travel distance between origin and destination in kilometers.</p>
+          </div>
+
+          <div className="bg-gray-900/50 rounded-lg p-4 border border-gray-700">
+            <h4 className="text-blue-400 text-lg font-bold mb-3">🚦 Traffic Score</h4>
+            <p className="text-gray-300 mb-3">Estimated player activity on this route.</p>
+          </div>
+
+          <div className="bg-gray-900/50 rounded-lg p-4 border border-gray-700">
+            <h4 className="text-green-400 text-lg font-bold mb-3">💎 Investment</h4>
+            <p className="text-gray-300 mb-3">Total capital required to fully load cargo bay with this commodity.</p>
+          </div>
+        </div>
+
+        <div className="mt-6 text-center">
+          <button 
+            onClick={onClose}
+            className="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded text-white font-bold"
+          >
+            Got it! 🏴‍☠️
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const CommoditySnareModal = ({ isOpen, onClose, onSnare, onRouteSelect, onAlternativeRouteSelect }) => {
+
 const PirateTargetCard = ({ target, onTrack }) => (
   <div className="bg-gradient-to-br from-red-900/20 via-black/50 to-purple-900/20 rounded-lg p-6 border border-red-700/50 hover:border-red-500 transition-all duration-300">
     <div className="flex justify-between items-start mb-4">
