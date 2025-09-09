@@ -2531,6 +2531,241 @@ async def shutdown_db_client():
     if client:
         client.close()
 
+# Advanced Quantum Interdiction Calculator
+class InterdictionCalculator:
+    """Advanced calculations for optimal QED-Snare positioning and route interdiction."""
+    
+    QED_RADIUS = 20000  # 20km radius for RSI Mantis QED field
+    QUANTUM_SPEED = 0.2 * 299792458  # 20% speed of light for quantum travel
+    
+    def __init__(self):
+        self.cached_intercepts = {}
+        
+    def calculate_intercept_point(self, 
+                                  route_start: np.ndarray, 
+                                  route_end: np.ndarray,
+                                  target_speed: float,
+                                  mantis_position: np.ndarray,
+                                  mantis_max_speed: float = 1235) -> Dict:
+        """
+        Calculate optimal intercept point along a quantum route.
+        
+        Args:
+            route_start: 3D coordinates of route start
+            route_end: 3D coordinates of route end
+            target_speed: Target's quantum travel speed (m/s)
+            mantis_position: Current position of Mantis
+            mantis_max_speed: Max speed of Mantis (m/s)
+        
+        Returns:
+            Dictionary with intercept details
+        """
+        
+        # Vector from start to end
+        route_vector = route_end - route_start
+        route_length = np.linalg.norm(route_vector)
+        
+        if route_length == 0:
+            return {'error': 'Invalid route - start and end are the same'}
+            
+        route_direction = route_vector / route_length
+        
+        # Find closest point on route to mantis position
+        t = np.dot(mantis_position - route_start, route_direction)
+        t = np.clip(t, 0, route_length)
+        closest_point = route_start + t * route_direction
+        
+        # Distance from mantis to closest point
+        distance_to_route = np.linalg.norm(mantis_position - closest_point)
+        
+        if distance_to_route > self.QED_RADIUS:
+            # Need to move to intercept
+            intercept_data = self._calculate_movement_intercept(
+                route_start, route_end, mantis_position, 
+                target_speed, mantis_max_speed
+            )
+        else:
+            # Already in range
+            intercept_data = {
+                'intercept_point': closest_point.tolist(),
+                'time_to_position': 0,
+                'already_in_range': True,
+                'mantis_travel_distance': 0
+            }
+        
+        # Calculate coverage zone
+        coverage = self._calculate_coverage_zone(
+            np.array(intercept_data['intercept_point']), route_start, route_end
+        )
+        intercept_data['coverage'] = coverage
+        
+        return intercept_data
+    
+    def _calculate_movement_intercept(self, 
+                                     route_start: np.ndarray,
+                                     route_end: np.ndarray,
+                                     mantis_pos: np.ndarray,
+                                     target_speed: float,
+                                     mantis_speed: float) -> Dict:
+        """Calculate where Mantis needs to move to intercept target."""
+        
+        def objective(t):
+            # Position of target at time t
+            route_vec = route_end - route_start
+            route_length = np.linalg.norm(route_vec)
+            if route_length == 0:
+                return float('inf')
+                
+            route_dir = route_vec / route_length
+            
+            # Limit target position to route bounds
+            target_distance = min(target_speed * t, route_length)
+            target_pos = route_start + route_dir * target_distance
+            
+            # Distance mantis needs to travel
+            mantis_distance = np.linalg.norm(target_pos - mantis_pos)
+            
+            # Time for mantis to reach that position
+            mantis_time = mantis_distance / mantis_speed if mantis_speed > 0 else float('inf')
+            
+            # We want mantis_time == t (simultaneous arrival)
+            return abs(mantis_time - t)
+        
+        try:
+            # Find optimal intercept time
+            result = minimize(objective, x0=[10], bounds=[(0, 1000)], method='L-BFGS-B')
+            intercept_time = result.x[0]
+            
+            # Calculate intercept position
+            route_vec = route_end - route_start
+            route_length = np.linalg.norm(route_vec)
+            route_dir = route_vec / route_length if route_length > 0 else np.array([0, 0, 0])
+            
+            target_distance = min(target_speed * intercept_time, route_length)
+            intercept_point = route_start + route_dir * target_distance
+            
+            return {
+                'intercept_point': intercept_point.tolist(),
+                'time_to_position': intercept_time,
+                'mantis_travel_distance': float(np.linalg.norm(intercept_point - mantis_pos)),
+                'success_probability': self._calculate_success_probability(intercept_time)
+            }
+        except Exception as e:
+            logging.error(f"Error in movement intercept calculation: {e}")
+            return {
+                'intercept_point': route_start.tolist(),
+                'time_to_position': 0,
+                'mantis_travel_distance': 0,
+                'success_probability': 0.0
+            }
+    
+    def _calculate_coverage_zone(self, 
+                                 mantis_pos: np.ndarray,
+                                 route_start: np.ndarray,
+                                 route_end: np.ndarray) -> Dict:
+        """Calculate the portion of route covered by QED field."""
+        
+        route_vector = route_end - route_start
+        route_length = np.linalg.norm(route_vector)
+        
+        if route_length == 0:
+            return {'coverage_length': 0, 'coverage_percentage': 0}
+            
+        route_dir = route_vector / route_length
+        
+        # Project mantis position onto route line
+        t = np.dot(mantis_pos - route_start, route_dir)
+        projection = route_start + t * route_dir
+        
+        # Distance from mantis to route line
+        perpendicular_dist = np.linalg.norm(mantis_pos - projection)
+        
+        if perpendicular_dist >= self.QED_RADIUS:
+            return {'coverage_length': 0, 'coverage_percentage': 0}
+        
+        # Calculate coverage length using Pythagorean theorem
+        half_coverage = np.sqrt(self.QED_RADIUS**2 - perpendicular_dist**2)
+        
+        # Coverage start and end points on route
+        coverage_start = max(0, t - half_coverage)
+        coverage_end = min(route_length, t + half_coverage)
+        coverage_length = coverage_end - coverage_start
+        
+        return {
+            'coverage_length': float(coverage_length),
+            'coverage_percentage': float((coverage_length / route_length) * 100),
+            'coverage_start_point': (route_start + route_dir * coverage_start).tolist(),
+            'coverage_end_point': (route_start + route_dir * coverage_end).tolist(),
+            'perpendicular_distance': float(perpendicular_dist)
+        }
+    
+    def calculate_multi_route_coverage(self, 
+                                      routes: List[Tuple[np.ndarray, np.ndarray]],
+                                      mantis_position: np.ndarray) -> Dict:
+        """Find optimal position to cover multiple quantum routes."""
+        
+        if not routes:
+            return {'error': 'No routes provided'}
+            
+        def coverage_objective(pos):
+            pos_3d = np.array([pos[0], pos[1], pos[2]])
+            total_coverage = 0
+            
+            for route_start, route_end in routes:
+                coverage = self._calculate_coverage_zone(pos_3d, route_start, route_end)
+                total_coverage += coverage['coverage_percentage']
+            
+            return -total_coverage  # Negative because we minimize
+        
+        try:
+            # Initial guess: centroid of all route midpoints
+            midpoints = [(s + e) / 2 for s, e in routes]
+            initial_pos = np.mean(midpoints, axis=0)
+            
+            # Optimize position
+            result = minimize(
+                coverage_objective,
+                x0=initial_pos,
+                method='L-BFGS-B',
+                options={'maxiter': 1000}
+            )
+            
+            optimal_position = np.array(result.x)
+            
+            # Calculate coverage for each route at optimal position
+            route_coverages = []
+            for i, (start, end) in enumerate(routes):
+                coverage = self._calculate_coverage_zone(optimal_position, start, end)
+                route_coverages.append({
+                    'route_index': i,
+                    'coverage': coverage,
+                    'route_name': f"Route_{i}"
+                })
+            
+            return {
+                'optimal_position': optimal_position.tolist(),
+                'total_coverage_score': float(-result.fun),
+                'route_coverages': route_coverages,
+                'movement_required': float(np.linalg.norm(optimal_position - mantis_position))
+            }
+        except Exception as e:
+            logging.error(f"Error in multi-route coverage calculation: {e}")
+            return {'error': f'Calculation failed: {str(e)}'}
+    
+    def _calculate_success_probability(self, intercept_time: float) -> float:
+        """Calculate probability of successful interdiction based on timing."""
+        if intercept_time <= 5:
+            return 0.95  # Very high chance for quick intercepts
+        elif intercept_time <= 30:
+            return 0.8 - (intercept_time - 5) * 0.02  # Decrease over time
+        elif intercept_time <= 60:
+            return 0.5 - (intercept_time - 30) * 0.01  # Further decrease
+        else:
+            return max(0.1, 0.2 - (intercept_time - 60) * 0.005)  # Minimum 10%
+
+# Initialize interdiction calculator
+interdiction_calc = InterdictionCalculator()
+
 # Main execution
 if __name__ == "__main__":
     import uvicorn
