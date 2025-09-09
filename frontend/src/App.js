@@ -2535,6 +2535,12 @@ function App() {
   const [dbStats, setDbStats] = useState(null);
   const [dataSource, setDataSource] = useState('web'); // Default: Web Crawling only
   const [showAverageData, setShowAverageData] = useState(false); // Toggle between average and current data
+  
+  // NEW: SnarePlan hidden panel state
+  const [snarePlanExpanded, setSnarePlanExpanded] = useState(false);
+  const [snarePlanModal, setSnarePlanModal] = useState(false);
+  const [selectedRoute, setSelectedRoute] = useState(null);
+  const [calculatedSnare, setCalculatedSnare] = useState(null);
 
   const fetchApiStatus = useCallback(async () => {
     try {
