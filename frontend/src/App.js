@@ -640,14 +640,14 @@ const SnareHardmodeModal = ({ data, onClose, onRouteSelect }) => {
       <div className="bg-gray-800 rounded-lg p-6 w-[95vw] h-[95vh] overflow-y-auto border border-red-600">
         <div className="flex justify-between items-center mb-6">
           <div>
-            <h3 className="text-red-400 text-2xl font-bold">⚡ SNARE HARDMODE</h3>
-            <p className="text-gray-400 text-sm mt-1">Premium ELITE & LEGENDARY targets only</p>
+            <h3 className="text-red-400 text-2xl font-bold">⚡ HARDCORE MODE</h3>
+            <p className="text-gray-400 text-sm mt-1">All ELITE & LEGENDARY routes - No limits, maximum challenge</p>
           </div>
           <button onClick={onClose} className="text-gray-400 hover:text-white text-xl">✕</button>
         </div>
 
         {/* Stats Bar */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
           <div className="bg-red-900/30 rounded-lg p-3 text-center border border-red-600">
             <div className="text-red-300 text-xl font-bold">{data.stats.elite_count}</div>
             <div className="text-gray-400 text-xs">ELITE Routes</div>
@@ -656,9 +656,13 @@ const SnareHardmodeModal = ({ data, onClose, onRouteSelect }) => {
             <div className="text-purple-300 text-xl font-bold">{data.stats.legendary_count}</div>
             <div className="text-gray-400 text-xs">LEGENDARY Routes</div>
           </div>
+          <div className="bg-yellow-900/30 rounded-lg p-3 text-center border border-yellow-600">
+            <div className="text-yellow-300 text-xl font-bold">{data.stats.total_routes}</div>
+            <div className="text-gray-400 text-xs">Total Routes</div>
+          </div>
           <div className="bg-orange-900/30 rounded-lg p-3 text-center border border-orange-600">
             <div className="text-orange-300 text-xl font-bold">{data.stats.avg_piracy_rating.toFixed(1)}</div>
-            <div className="text-gray-400 text-xs">Avg Piracy Rating</div>
+            <div className="text-gray-400 text-xs">Avg Piracy Score</div>
           </div>
           <div className="bg-green-900/30 rounded-lg p-3 text-center border border-green-600">
             <div className="text-green-300 text-xl font-bold">{(data.stats.total_profit / 1000000).toFixed(1)}M</div>
