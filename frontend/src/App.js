@@ -975,52 +975,167 @@ const AdvancedSnareplanModal = ({ isOpen, onClose, routes }) => {
 
         {/* Individual Route Analysis */}
         <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
-          <h4 className="text-white text-lg font-bold mb-4">📊 Individual Route Analysis</h4>
+          <h4 className="text-white text-lg font-bold mb-4">📊 Individual Route Tactical Analysis</h4>
           
           <div className="space-y-4">
-            {interdictionData.single_route_intercepts?.map((routeData, index) => (
-              <div key={index} className="bg-black/30 rounded-lg p-4 border border-gray-600">
-                <div className="flex justify-between items-start mb-3">
-                  <div>
-                    <h5 className="text-purple-400 font-bold">{routeData.route_name}</h5>
-                    <div className="text-gray-400 text-sm">Route #{routeData.route_index + 1}</div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-green-400 font-bold text-lg">
-                      {(routeData.intercept_data?.coverage?.coverage_percentage || 0).toFixed(1)}%
+            {interdictionData.single_route_intercepts?.map((routeData, index) => {
+              const route = selectedRoutes[index];
+              const interceptData = routeData.intercept_data;
+              const successProb = (interceptData?.success_probability || 0) * 100;
+              const coveragePerc = interceptData?.coverage?.coverage_percentage || 0;
+              
+              // Calculate threat level based on success probability and coverage
+              let threatLevel = 'LOW';
+              let threatColor = 'text-green-400';
+              if (successProb >= 80 && coveragePerc >= 60) {
+                threatLevel = 'EXTREME';
+                threatColor = 'text-red-400';
+              } else if (successProb >= 60 && coveragePerc >= 40) {
+                threatLevel = 'HIGH';
+                threatColor = 'text-orange-400';
+              } else if (successProb >= 40 && coveragePerc >= 20) {
+                threatLevel = 'MODERATE';
+                threatColor = 'text-yellow-400';
+              }
+              
+              return (
+                <div key={index} className="bg-black/30 rounded-lg p-4 border border-gray-600">
+                  <div className="flex justify-between items-start mb-4">
+                    <div className="flex-1">
+                      <div className="flex items-center space-x-3 mb-2">
+                        <h5 className="text-purple-400 font-bold text-lg">{routeData.route_name}</h5>
+                        <span className={`px-2 py-1 rounded text-xs font-bold ${threatColor} bg-gray-800 border`}>
+                          {threatLevel} THREAT
+                        </span>
+                      </div>
+                      <div className="text-gray-400 text-sm mb-1">Route #{routeData.route_index + 1} • {route?.route_code}</div>
+                      <div className="text-gray-500 text-xs">
+                        {route?.origin_name} → {route?.destination_name}
+                      </div>
                     </div>
-                    <div className="text-gray-400 text-xs">Coverage</div>
+                    <div className="text-right">
+                      <div className="text-green-400 font-bold text-2xl">
+                        {coveragePerc.toFixed(1)}%
+                      </div>
+                      <div className="text-gray-400 text-xs">QED Coverage</div>
+                    </div>
+                  </div>
+                  
+                  {/* Tactical Metrics */}
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                    <div className="bg-gray-800/50 rounded p-3 text-center">
+                      <div className="text-green-400 font-bold text-lg">
+                        {successProb.toFixed(1)}%
+                      </div>
+                      <div className="text-gray-400 text-xs">Success Rate</div>
+                    </div>
+                    
+                    <div className="bg-gray-800/50 rounded p-3 text-center">
+                      <div className="text-yellow-400 font-bold text-lg">
+                        {(interceptData?.time_to_position || 0).toFixed(1)}s
+                      </div>
+                      <div className="text-gray-400 text-xs">Time to Position</div>
+                    </div>
+                    
+                    <div className="bg-gray-800/50 rounded p-3 text-center">
+                      <div className="text-blue-400 font-bold text-lg">
+                        {((interceptData?.mantis_travel_distance || 0) / 1000).toFixed(1)}km
+                      </div>
+                      <div className="text-gray-400 text-xs">Travel Distance</div>
+                    </div>
+                    
+                    <div className="bg-gray-800/50 rounded p-3 text-center">
+                      <div className="text-purple-400 font-bold text-lg">
+                        {((interceptData?.coverage?.coverage_length || 0) / 1000).toFixed(1)}km
+                      </div>
+                      <div className="text-gray-400 text-xs">Route Coverage</div>
+                    </div>
+                  </div>
+                  
+                  {/* Intercept Coordinates */}
+                  <div className="bg-gray-900/50 rounded p-4 mb-4">
+                    <h6 className="text-purple-400 font-bold text-sm mb-3">🎯 Optimal Intercept Coordinates</h6>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="text-center">
+                        <div className="text-white font-mono text-lg">
+                          {(interceptData?.intercept_point?.[0] || 0).toFixed(0)}
+                        </div>
+                        <div className="text-gray-400 text-xs">X-Axis (East/West)</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-white font-mono text-lg">
+                          {(interceptData?.intercept_point?.[1] || 0).toFixed(0)}
+                        </div>
+                        <div className="text-gray-400 text-xs">Y-Axis (North/South)</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-white font-mono text-lg">
+                          {(interceptData?.intercept_point?.[2] || 0).toFixed(0)}
+                        </div>
+                        <div className="text-gray-400 text-xs">Z-Axis (Up/Down)</div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Tactical Assessment */}
+                  <div className="bg-red-900/20 rounded p-4 border border-red-800/50">
+                    <h6 className="text-red-400 font-bold text-sm mb-3">⚠️ Tactical Assessment</h6>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                      <div>
+                        <div className="text-gray-400 mb-1">Interdiction Viability:</div>
+                        <div className="text-white">
+                          {successProb >= 80 ? '🟢 Highly Viable' : 
+                           successProb >= 60 ? '🟡 Viable' : 
+                           successProb >= 40 ? '🟠 Challenging' : '🔴 High Risk'}
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <div className="text-gray-400 mb-1">Route Coverage:</div>
+                        <div className="text-white">
+                          {coveragePerc >= 60 ? '🟢 Excellent Coverage' : 
+                           coveragePerc >= 40 ? '🟡 Good Coverage' : 
+                           coveragePerc >= 20 ? '🟠 Limited Coverage' : '🔴 Poor Coverage'}
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <div className="text-gray-400 mb-1">Response Time:</div>
+                        <div className="text-white">
+                          {(interceptData?.time_to_position || 0) <= 10 ? '🟢 Immediate' :
+                           (interceptData?.time_to_position || 0) <= 30 ? '🟡 Quick' :
+                           (interceptData?.time_to_position || 0) <= 60 ? '🟠 Delayed' : '🔴 Slow'}
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <div className="text-gray-400 mb-1">Profit Potential:</div>
+                        <div className="text-white">
+                          {(route?.profit || 0) >= 1000000 ? '🟢 High Value' :
+                           (route?.profit || 0) >= 500000 ? '🟡 Moderate Value' :
+                           (route?.profit || 0) >= 100000 ? '🟠 Low Value' : '🔴 Minimal Value'}
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Tactical Recommendation */}
+                    <div className="mt-4 pt-3 border-t border-red-800/50">
+                      <div className="text-red-400 font-bold text-xs mb-2">📋 Tactical Recommendation:</div>
+                      <div className="text-gray-300 text-xs">
+                        {threatLevel === 'EXTREME' ? 
+                          `🎯 PRIORITY TARGET: Excellent interdiction opportunity with ${successProb.toFixed(0)}% success rate and ${coveragePerc.toFixed(0)}% route coverage. Immediate deployment recommended.` :
+                         threatLevel === 'HIGH' ?
+                          `⚡ HIGH PRIORITY: Good interdiction potential. Position at coordinates and prepare QED activation within ${(interceptData?.time_to_position || 0).toFixed(0)} seconds.` :
+                         threatLevel === 'MODERATE' ?
+                          `⚠️ MODERATE TARGET: Viable but challenging. Consider alternative positioning or wait for better opportunities.` :
+                          `🚫 LOW PRIORITY: Poor interdiction conditions. Success probability and coverage too low for effective operation.`
+                        }
+                      </div>
+                    </div>
                   </div>
                 </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
-                  <div>
-                    <div className="text-gray-400 mb-1">Intercept Point</div>
-                    <div className="text-white font-mono">
-                      X: {routeData.intercept_data?.intercept_point?.[0]?.toFixed(0) || 0}<br/>
-                      Y: {routeData.intercept_data?.intercept_point?.[1]?.toFixed(0) || 0}<br/>  
-                      Z: {routeData.intercept_data?.intercept_point?.[2]?.toFixed(0) || 0}
-                    </div>
-                  </div>
-                  <div>
-                    <div className="text-gray-400 mb-1">Time to Position</div>
-                    <div className="text-white">{routeData.intercept_data?.time_to_position?.toFixed(1) || 0}s</div>
-                    
-                    <div className="text-gray-400 mb-1 mt-2">Travel Distance</div>
-                    <div className="text-white">{(routeData.intercept_data?.mantis_travel_distance / 1000)?.toFixed(1) || 0}km</div>
-                  </div>
-                  <div>
-                    <div className="text-gray-400 mb-1">Success Probability</div>
-                    <div className="text-green-400 font-bold">
-                      {((routeData.intercept_data?.success_probability || 0) * 100).toFixed(1)}%
-                    </div>
-                    
-                    <div className="text-gray-400 mb-1 mt-2">Coverage Length</div>
-                    <div className="text-white">{(routeData.intercept_data?.coverage?.coverage_length / 1000)?.toFixed(1) || 0}km</div>
-                  </div>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </div>
