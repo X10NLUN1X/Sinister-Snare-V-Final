@@ -337,7 +337,7 @@ class StarProfitClient:
                     "destination_name": f"Pyro - Rat's Nest" if i % 3 == 0 else f"Stanton - Port Olisar",
                     "profit": commodity.get('sell_price', 0) - commodity.get('buy_price', 0),
                     "investment": commodity.get('buy_price', 0) * random.randint(100, 1000),
-                    "roi": ((commodity.get('sell_price', 0) - commodity.get('buy_price', 0)) / max(commodity.get('buy_price', 1), 1)) * 100,
+                    "roi": self._calculate_safe_roi(commodity.get('sell_price', 0), commodity.get('buy_price', 0)),
                     "distance": random.randint(45000, 85000),
                     "score": min(100, max(10, commodity.get('sell_price', 0) / 1000)),
                     "last_seen": datetime.now(timezone.utc).isoformat()
