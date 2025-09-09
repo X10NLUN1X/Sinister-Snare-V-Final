@@ -1338,6 +1338,64 @@ async def get_interception_points(
         logging.error(f"Error in get_interception_points: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+@api_router.post("/interception/calculate")
+async def calculate_advanced_interdiction(request: Dict[str, Any]):
+    """Calculate advanced interdiction positioning for specific routes"""
+    try:
+        routes_data = request.get('routes', [])
+        mantis_position = request.get('mantis_position', [0, 0, 0])
+        
+        if not routes_data:
+            raise HTTPException(status_code=400, detail="No routes provided")
+        
+        # Convert routes to numpy arrays
+        routes_3d = []
+        for route in routes_data:
+            origin = route.get('origin_coordinates', [0, 0, 0])
+            destination = route.get('destination_coordinates', [0, 0, 0])
+            routes_3d.append((np.array(origin), np.array(destination)))
+        
+        mantis_pos = np.array(mantis_position)
+        
+        # Calculate single route intercepts
+        single_route_results = []
+        for i, (start, end) in enumerate(routes_3d):
+            intercept_result = interdiction_calc.calculate_intercept_point(
+                start, end, 
+                target_speed=60000000,  # 60M m/s quantum travel
+                mantis_position=mantis_pos
+            )
+            
+            single_route_results.append({
+                'route_index': i,
+                'route_name': routes_data[i].get('name', f'Route_{i}'),
+                'intercept_data': intercept_result
+            })
+        
+        # Calculate multi-route optimal position
+        multi_route_result = interdiction_calc.calculate_multi_route_coverage(
+            routes_3d, mantis_pos
+        )
+        
+        return {
+            "status": "success",
+            "calculation_type": "advanced_interdiction",
+            "mantis_current_position": mantis_position,
+            "total_routes_analyzed": len(routes_data),
+            "single_route_intercepts": single_route_results,
+            "multi_route_optimization": multi_route_result,
+            "quantum_parameters": {
+                "qed_radius_km": interdiction_calc.QED_RADIUS / 1000,
+                "quantum_speed_c": 0.2,
+                "mantis_max_speed_ms": 1235
+            },
+            "calculated_at": datetime.now(timezone.utc).isoformat()
+        }
+        
+    except Exception as e:
+        logging.error(f"Error in calculate_advanced_interdiction: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 @api_router.get("/alerts")
 async def get_alerts(
     priority: Optional[str] = Query(default=None),
