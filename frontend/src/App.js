@@ -3817,6 +3817,12 @@ function App() {
         onClose={() => setFaqModal(false)}
       />
       
+      <AdvancedSnareplanModal 
+        isOpen={advancedSnareplanModal}
+        onClose={() => setAdvancedSnareplanModal(false)}
+        routes={routes}
+      />
+      
       <SnareHardmodeModal 
         data={snareHardmodeModal}
         onClose={() => setSnareHardmodeModal(null)}
