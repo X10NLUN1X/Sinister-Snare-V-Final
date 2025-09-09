@@ -3212,6 +3212,80 @@ function App() {
             <span>Auto-refresh (60 min)</span>
           </label>
         </div>
+        
+        {/* HIDDEN SNAREPLAN PANEL - Expandable with Arrow */}
+        <div className="mt-6">
+          <div className="flex items-center justify-center">
+            <button
+              onClick={() => setSnarePlanExpanded(!snarePlanExpanded)}
+              className="flex items-center space-x-2 bg-gradient-to-r from-red-900 to-red-800 hover:from-red-800 hover:to-red-700 px-4 py-2 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg border border-red-600"
+            >
+              <span className="text-red-400 text-sm font-bold">🏴‍☠️ Advanced Piracy Tools</span>
+              <span className={`text-red-400 transition-transform duration-300 ${snarePlanExpanded ? 'rotate-180' : ''}`}>
+                ▼
+              </span>
+            </button>
+          </div>
+          
+          {/* Expandable SnarePlan Panel */}
+          {snarePlanExpanded && (
+            <div className="mt-4 bg-gradient-to-br from-gray-900 via-gray-800 to-red-900/30 rounded-xl p-6 border-2 border-red-800 shadow-2xl animate-fadeIn">
+              <div className="text-center mb-6">
+                <h3 className="text-2xl font-bold text-red-400 mb-2">🎯 Quantum Interdiction Planning</h3>
+                <p className="text-gray-300 text-sm">Select a route for automated snare calculation</p>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Sinister Snare Button */}
+                <button
+                  onClick={() => setSnarePlanModal(true)}
+                  className="p-6 rounded-xl bg-gradient-to-br from-red-600 via-red-700 to-red-800 hover:from-red-500 hover:via-red-600 hover:to-red-700 transition-all duration-300 transform hover:scale-105 shadow-xl border-2 border-red-500"
+                >
+                  <div className="text-center">
+                    <div className="text-4xl mb-3">🎯</div>
+                    <div className="text-lg font-bold text-white">SINISTER SNARE</div>
+                    <div className="text-sm text-red-200 mt-1">Quantum Interdiction Calculator</div>
+                  </div>
+                </button>
+                
+                {/* Real-time Statistics */}
+                <div className="p-6 rounded-xl bg-gray-800/50 border border-gray-700">
+                  <h4 className="text-red-400 font-bold mb-3">📊 Live Interdiction Stats</h4>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-gray-400">Active Routes:</span>
+                      <span className="text-white font-mono">{routes.length}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-400">High-Value Targets:</span>
+                      <span className="text-red-400 font-mono">{routes.filter(r => r.piracy_rating >= 70).length}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-400">Inter-System Routes:</span>
+                      <span className="text-orange-400 font-mono">
+                        {routes.filter(r => {
+                          const origin = r.origin_name?.split(' - ')[0] || '';
+                          const dest = r.destination_name?.split(' - ')[0] || '';
+                          return origin !== dest;
+                        }).length}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-400">System-Internal:</span>
+                      <span className="text-green-400 font-mono">
+                        {routes.filter(r => {
+                          const origin = r.origin_name?.split(' - ')[0] || '';
+                          const dest = r.destination_name?.split(' - ')[0] || '';
+                          return origin === dest;
+                        }).length}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Content */}
