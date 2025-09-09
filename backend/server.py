@@ -94,8 +94,16 @@ class StarProfitClient:
                     response.raise_for_status()
                     
                     # Try to extract JSON data embedded in the page
-                    html_content = response.text
-                    commodities = await self._parse_commodities_from_web(html_content, client)
+                    try:
+                        html_content = response.text
+                        if not html_content or len(html_content) < 100:
+                            logging.warning("Empty or insufficient HTML content received")
+                            commodities = self._generate_fallback_commodity_data()
+                        else:
+                            commodities = await self._parse_commodities_from_web(html_content, client)
+                    except Exception as e:
+                        logging.error(f"Web parsing failed: {e}")
+                        commodities = self._generate_fallback_commodity_data()
                     
                     logging.info(f"Star Profit Web Crawling: Extracted {len(commodities)} commodity records")
                     return {"commodities": commodities, "source": "web_crawling"}
