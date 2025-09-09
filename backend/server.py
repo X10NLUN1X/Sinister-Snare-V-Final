@@ -35,6 +35,51 @@ LOG_LEVEL="INFO"
     load_dotenv(ROOT_DIR / '.env')
     print("✅ Default .env file created")
 
+async def init_db():
+    """Initialize database with health check and retry mechanism"""
+    global db, client
+    
+    retry_attempts = 3
+    retry_delay = 1  # seconds
+    
+    for attempt in range(retry_attempts):
+        try:
+            if not client:
+                mongo_url = os.environ.get('MONGO_URL', 'mongodb://localhost:27017')
+                client = AsyncIOMotorClient(mongo_url, maxPoolSize=50, minPoolSize=10, serverSelectionTimeoutMS=5000)
+                
+            # Health check
+            await client.admin.command('ping')
+            db = client.sinister_snare_db
+            
+            # Test database operations
+            await db.route_analyses.create_index("route_code", unique=True)
+            await db.route_analyses.create_index("piracy_rating", background=True)
+            await db.route_analyses.create_index("created_at", background=True)
+            
+            logging.info(f"MongoDB connected successfully on attempt {attempt + 1}")
+            return True
+            
+        except Exception as e:
+            logging.error(f"MongoDB connection attempt {attempt + 1} failed: {e}")
+            if attempt < retry_attempts - 1:
+                await asyncio.sleep(retry_delay)
+                retry_delay *= 2  # Exponential backoff
+            else:
+                logging.critical("MongoDB connection failed after all retry attempts")
+                return False
+
+async def check_mongodb_health() -> bool:
+    """Check MongoDB connection health"""
+    try:
+        if client:
+            await client.admin.command('ping')
+            return True
+        return False
+    except Exception as e:
+        logging.error(f"MongoDB health check failed: {e}")
+        return False
+
 # MongoDB connection with fallback and optimized timeouts
 mongo_url = os.environ.get('MONGO_URL', 'mongodb://localhost:27017')
 db_name = os.environ.get('DB_NAME', 'sinister_snare_db')
