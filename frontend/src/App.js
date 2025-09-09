@@ -584,7 +584,7 @@ const FAQModal = ({ isOpen, onClose }) => {
           </div>
 
           <div className="bg-gray-900/50 rounded-lg p-4 border border-gray-700">
-            <h4 className="text-red-400 text-lg font-bold mb-3">🏴‍☠️ Piracy Rating (0-100)</h4>
+            <h4 className="text-red-400 text-lg font-bold mb-3">🏴‍☠️ Piracy Score (0-100)</h4>
             <p className="text-gray-300 mb-3">Realistic score based on actual Star Citizen player behavior indicating interception probability.</p>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               <div className="bg-red-900/30 p-3 rounded text-center">
