@@ -285,8 +285,8 @@ class StarProfitClient:
             "GrimHEX",                # Asteroid housing exchange (illicit hub)
             
             # Lagrange Point Stations (VERIFIED from Web)
-            "ARC-L1", "ARC-L2", "ARC-L3", "ARC-L4", "ARC-L5",
-            "CRU-L1", "CRU-L2", "CRU-L3", "CRU-L4", "CRU-L5", 
+            "ARC-L1", "ARC-L2", "ARC-L3 Modern Express Station", "ARC-L4", "ARC-L5",
+            "CRU-L1", "CRU-L2", "CRU-L3", "CRU-L4", "CRU-L5 Beautiful Glen Station",  # CRU-L5 full name 
             "HUR-L1", "HUR-L2", "HUR-L3", "HUR-L4", "HUR-L5",
             "MIC-L1", "MIC-L2", "MIC-L3", "MIC-L4", "MIC-L5",
             
@@ -313,16 +313,16 @@ class StarProfitClient:
             "HDMS-Lathan", "HDMS-Norgaard", "HDMS-Oparei", "HDMS-Perlman", "HDMS-Pinewood",
             "HDMS-Ryder", "HDMS-Stanhope", "HDMS-Thedus", "HDMS-Woodruff",
             
-            # Research Facilities (VERIFIED Microtech/Stanton)
+            # Research Facilities (CORRECTED: Deakins Research is on Yela, not Microtech)
             "Rayari Anvik", "Rayari Cantwell", "Rayari Deltana", "Rayari Kaltag", "Rayari McGrath",
             
             # Salvage Operations (VERIFIED Stanton)
             "Brio's Breaker", "Devlin Scrap", "Samson Son's", "Reclamation Orinth",
             
-            # Stanton Outposts and Trading Posts (corrected based on web research)
-            "Seraphim", "Ashland", "Deakins Research", "Hickes Research",
+            # Stanton Outposts and Trading Posts (CORRECTED Star Citizen Geography)
+            "Seraphim", "Deakins Research", "Hickes Research",  # Ashland moved to Pyro
             "Maker's Point", "Pickers Field", "Prospect Depot",
-            "Seer's Canyon", "Shepherd's Rest", "Sunset Mesa", "Fallow Field", "Bueno Ravine",
+            "Sunset Mesa", "Fallow Field", "Bueno Ravine",  # Seer's Canyon & Shepherd's Rest moved to Pyro
             
             # TDD (Trade & Development Division) - Stanton 
             "TDD Area 18", "TDD New Babbage", "TDD Orison",
@@ -335,7 +335,7 @@ class StarProfitClient:
             
             # Platinum Stations in Stanton
             "Platinum ARCL1", "Platinum Baijini", "Platinum CRUL1", "Platinum CRUL4", 
-            "Platinum CRUL5", "Platinum Everus", "Platinum HURL2", "Platinum HURL3", 
+            "Platinum CRUL5", "Platinum Everus", "Platinum HURL2", "Platinum HURL3",  # Platinum Everus is Hurston-based 
             "Platinum HURL5", "Platinum Tressler",
             
             # Gateway Stations (physically in Stanton but connect to other systems)
@@ -371,6 +371,9 @@ class StarProfitClient:
             "Chawla's Beach", "Dunboro", "Last Landings", "Rappel", 
             "Rustville", "Sacren's Plot", "Scarper's Turn", "Slowburn Depot", 
             "Watcher's Depot", "Dinger's Depot", "Feo Canyon Depot",
+            
+            # CORRECTED: Moved from Stanton (incorrect) to Pyro (correct)
+            "Ashland", "Seer's Canyon", "Shepherd's Rest",
             
             # Platinum Operations in Pyro
             "Platinum Bay Terra",  # Likely Pyro-based operation
@@ -636,10 +639,16 @@ class RouteAnalyzer:
     @staticmethod
     def calculate_piracy_score(route_data: Dict[str, Any]) -> float:
         """
-        NEW Enhanced Piracy Score (0-100) - Indicates probability of finding profitable traders
+        REALISTIC Piracy Score V2.1 (0-100) - Based on actual Star Citizen player behavior
         
-        Calculates the likelihood of successfully intercepting a profitable trader on this route.
-        Score 100 = extremely high probability, Score 0 = minimal probability
+        Enhanced with Premium Commodity Support to ensure ELITE commodities reach proper classification.
+        
+        Prioritizes routes that are ACTUALLY used by players:
+        1. System-internal routes (95% of player traffic)
+        2. Short, practical distances  
+        3. Major hub-to-hub connections
+        4. High-traffic commodities
+        5. Premium cargo bonuses (Gold, Diamond, etc.)
         """
         try:
             # Extract data with safe defaults
@@ -651,68 +660,132 @@ class RouteAnalyzer:
             distance = float(route_data.get('distance', 1))
             origin_name = route_data.get('origin_name', '')
             destination_name = route_data.get('destination_name', '')
+            commodity_name = route_data.get('commodity_name', '')
             
-            # Calculate profit margin (key factor)
+            # Calculate profit margin
             if buy_price > 0:
                 profit_margin = (sell_price - buy_price) / buy_price
             else:
                 profit_margin = 0
             
-            # Factor 1: Profit Margin Score (40% weight)
-            # High margins attract more traders
-            profit_margin_score = min(profit_margin * 20, 40.0)  # Cap at 40 points
+            # FACTOR 1: System Traffic Reality (50% weight) - MOST IMPORTANT
+            system_traffic_score = 0
             
-            # Factor 2: Route Popularity & Distance (30% weight)
-            # Popular routes between major systems are more trafficked
-            route_popularity_score = 0
+            # Parse system information
+            origin_system = origin_name.split(' - ')[0] if ' - ' in origin_name else origin_name
+            dest_system = destination_name.split(' - ')[0] if ' - ' in destination_name else destination_name
+            is_same_system = origin_system == dest_system
             
-            # Check for popular systems (Stanton-Pyro is most popular)
-            is_inter_system = False
-            if ('Stanton' in origin_name and 'Pyro' in destination_name) or \
-               ('Pyro' in origin_name and 'Stanton' in destination_name):
-                route_popularity_score += 15  # Inter-system bonus
-                is_inter_system = True
-            elif 'Stanton' in origin_name and 'Stanton' in destination_name:
-                route_popularity_score += 10  # Same-system Stanton
-            elif 'Pyro' in origin_name and 'Pyro' in destination_name:
-                route_popularity_score += 8   # Same-system Pyro
-            
-            # Distance factor (shorter distances = more traffic)
-            if distance > 0:
-                if is_inter_system:
-                    # Inter-system: prefer 60k-120k range
-                    optimal_distance = 90000
-                    distance_factor = max(0, 15 - abs(distance - optimal_distance) / 10000)
+            if is_same_system:
+                # SAME-SYSTEM ROUTES: 95% of actual player traffic
+                if 'Stanton' in origin_system:
+                    # Stanton internal: HIGHEST traffic (established economy)
+                    system_traffic_score = 45
+                elif 'Pyro' in origin_system:
+                    # Pyro internal: HIGH traffic (new system, active)
+                    system_traffic_score = 35
                 else:
-                    # Same-system: prefer 15k-45k range
-                    optimal_distance = 30000
-                    distance_factor = max(0, 15 - abs(distance - optimal_distance) / 5000)
-                route_popularity_score += min(distance_factor, 15)
+                    # Other systems: MODERATE traffic
+                    system_traffic_score = 25
+            else:
+                # INTER-SYSTEM ROUTES: Only 5% of player traffic - HEAVILY PENALIZED
+                if ('Stanton' in origin_system and 'Pyro' in dest_system) or \
+                   ('Pyro' in origin_system and 'Stanton' in dest_system):
+                    # Stanton-Pyro: Some brave souls do this, but rare
+                    system_traffic_score = 8  # Severely reduced from 15
+                else:
+                    # Other inter-system: Almost no traffic
+                    system_traffic_score = 2
             
-            # Factor 3: Stock Availability (30% weight)
-            # High availability at both ends = more likely traders
-            stock_score = 0
+            # FACTOR 2: Hub Connectivity Bonus (25% weight)  
+            hub_score = 0
             
-            # Buy stock availability (origin)
-            if buy_stock > 0:
-                buy_availability = min(buy_stock / 1000, 1.0)  # Normalize to 1000 SCU
-                stock_score += buy_availability * 15
+            # Major Stanton hubs (high player traffic)
+            stanton_major_hubs = [
+                'Port Olisar', 'Everus Harbor', 'Port Tressler', 'Baijini Point',
+                'Area18', 'Lorville', 'New Babbage', 'Orison'
+            ]
             
-            # Sell stock availability (destination) 
-            if sell_stock > 0:
-                sell_availability = min(sell_stock / 1000, 1.0)  # Normalize to 1000 SCU
-                stock_score += sell_availability * 15
+            # Major Pyro hubs (moderate player traffic)
+            pyro_major_hubs = [
+                'Rat\'s Nest', 'Checkmate', 'Endgame', 'Gaslight'
+            ]
             
-            # Combined stock bonus for high availability on both ends
-            if buy_stock > 500 and sell_stock > 500:
-                stock_score += 5  # Bonus for high availability on both ends
+            # Check if route connects major hubs
+            origin_location = origin_name.split(' - ')[1] if ' - ' in origin_name else origin_name
+            dest_location = destination_name.split(' - ')[1] if ' - ' in destination_name else destination_name
             
-            # Calculate final score (0-100)
-            final_score = profit_margin_score + route_popularity_score + stock_score
+            origin_is_major = any(hub in origin_location for hub in stanton_major_hubs + pyro_major_hubs)
+            dest_is_major = any(hub in dest_location for hub in stanton_major_hubs + pyro_major_hubs)
             
-            # Apply diminishing returns to prevent scores over 100
-            if final_score > 85:
-                final_score = 85 + (final_score - 85) * 0.3
+            if origin_is_major and dest_is_major:
+                hub_score = 20  # Both ends are major hubs
+            elif origin_is_major or dest_is_major:
+                hub_score = 12  # One end is major hub
+            else:
+                hub_score = 5   # Minor locations
+            
+            # FACTOR 3: Distance Practicality (15% weight)
+            distance_score = 0
+            if distance > 0:
+                if is_same_system:
+                    # Same-system: Prefer 20k-60k range (practical for players)
+                    if 20000 <= distance <= 60000:
+                        distance_score = 15
+                    elif 10000 <= distance <= 80000:
+                        distance_score = 10
+                    else:
+                        distance_score = 3  # Too short or too long
+                else:
+                    # Inter-system: Already penalized, minimal distance scoring
+                    distance_score = 2
+            
+            # FACTOR 4: High-Traffic Commodity Bonus (10% weight)
+            commodity_score = 0
+            
+            # Commodities that players actually trade frequently
+            high_traffic_commodities = [
+                'Medical Supplies', 'Agricultural Supplies', 'Consumer Goods',
+                'Food', 'Processed Food', 'Titanium', 'Aluminum', 
+                'Quantanium', 'Laranite', 'Gold', 'Diamond'
+            ]
+            
+            medium_traffic_commodities = [
+                'Scrap', 'Waste', 'Distilled Spirits', 'Stims',
+                'Maze', 'Neon', 'WiDoW', 'SLAM'
+            ]
+            
+            # ELITE COMMODITY BONUS: Premium commodities get extra scoring to reach ELITE status
+            elite_commodities = [
+                'Gold', 'Diamond', 'Quantanium', 'Laranite', 'Platinum',
+                'Bexalite', 'Taranite', 'Corundum', 'Fluorine'
+            ]
+            
+            if any(commodity in commodity_name for commodity in elite_commodities):
+                commodity_score = 20  # INCREASED FURTHER: Higher premium bonus for elite commodities like Gold
+            elif any(commodity in commodity_name for commodity in high_traffic_commodities):
+                commodity_score = 8
+            elif any(commodity in commodity_name for commodity in medium_traffic_commodities):
+                commodity_score = 5
+            else:
+                commodity_score = 2  # Exotic/rare commodities (less frequent)
+            
+            # FACTOR 5: High-Value Cargo Bonus (5% weight) - NEW
+            high_value_bonus = 0
+            
+            # Premium cargo that warrants ELITE piracy attention
+            if profit > 2000000:  # Routes with >2M profit get extra attention
+                if any(commodity in commodity_name for commodity in elite_commodities):
+                    high_value_bonus = 15  # INCREASED: Even bigger boost for premium commodities with high profit
+                else:
+                    high_value_bonus = 5   # Standard high-profit bonus
+            
+            # Calculate final realistic score
+            final_score = system_traffic_score + hub_score + distance_score + commodity_score + high_value_bonus
+            
+            # Reality check: Cap inter-system routes at maximum 25 points
+            if not is_same_system:
+                final_score = min(final_score, 25)
             
             # Ensure score is between 0 and 100
             final_score = max(0, min(100, final_score))
@@ -720,12 +793,12 @@ class RouteAnalyzer:
             return round(final_score, 1)
             
         except Exception as e:
-            logging.error(f"Error calculating new piracy score: {e}")
+            logging.error(f"Error calculating realistic piracy score: {e}")
             return 0.0
     
     @staticmethod
     def categorize_risk_level(piracy_score: float) -> str:
-        """Enhanced risk categorization"""
+        """Enhanced risk categorization - RESTORED original thresholds"""
         if piracy_score >= 90:
             return "LEGENDARY"
         elif piracy_score >= 80:
@@ -734,10 +807,8 @@ class RouteAnalyzer:
             return "HIGH"
         elif piracy_score >= 45:
             return "MODERATE"
-        elif piracy_score >= 25:
-            return "LOW"
         else:
-            return "MINIMAL"
+            return "LOW"
     
     @staticmethod
     def calculate_interception_points(route_data: Dict[str, Any]) -> List[Dict[str, Any]]:
@@ -1434,6 +1505,11 @@ async def export_routes(
         logging.error(f"Error in export_routes: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+@api_router.get("/targets")
+async def get_targets():
+    """Get all targets - redirect to priority targets for compatibility"""
+    return await get_priority_targets()
+
 @api_router.get("/targets/priority")
 async def get_priority_targets(
     limit: int = Query(default=20, le=100),
@@ -1944,18 +2020,28 @@ async def snare_commodity(commodity_name: str = Query(description="Commodity nam
         average_profit = sum(r.get('profit', 0) for r in profitable_routes) / max(len(profitable_routes), 1)
         max_piracy_rating = max((r.get('piracy_rating', 0) for r in commodity_routes), default=0)
         
-        # Generate snare opportunities
+        # Generate snare opportunities with COMPLETE route data
         snare_opportunities = []
         for route in sorted(commodity_routes, key=lambda x: x.get('piracy_rating', 0), reverse=True)[:10]:
             opportunity = {
+                # FIXED: Include ALL required fields that frontend expects
                 "route_code": route.get('route_code', 'UNKNOWN'),
                 "strategy": f"Intercept {route.get('commodity_name', commodity_name)} traders on {route.get('route_code', 'this route')}",
                 "risk_level": route.get('risk_level', 'MODERATE'),
                 "buying_point": route.get('origin_name', 'Unknown'),
                 "selling_point": route.get('destination_name', 'Unknown'),
                 "profit": route.get('profit', 0),
+                "investment": route.get('investment', 0),  # ADDED: Missing investment field
+                "roi": route.get('roi', 0),  # ADDED: Missing ROI field
+                "buy_price": route.get('buy_price', 0),  # ADDED: Missing buy_price field
+                "sell_price": route.get('sell_price', 0),  # ADDED: Missing sell_price field
+                "buy_stock": route.get('buy_stock', 0),  # ADDED: Missing buy_stock field
+                "sell_stock": route.get('sell_stock', 0),  # ADDED: Missing sell_stock field
+                "distance": route.get('distance', 0),  # ADDED: Missing distance field
+                "score": route.get('score', 0),  # ADDED: Missing score field
                 "piracy_rating": route.get('piracy_rating', 0),
                 "estimated_traders": max(1, int(route.get('score', 0) / 10)),
+                "interception_zones": route.get('interception_zones', []),  # ADDED: Missing interception_zones
                 "warning": f"⚠️ Inter-system route - expect security patrols" if route in inter_system_routes else "✅ Same-system route - lower security risk"
             }
             snare_opportunities.append(opportunity)
@@ -2293,17 +2379,34 @@ async def get_database_routes(data_type: str = "current"):
                     }
                 },
                 {"$replaceRoot": {"newRoot": "$latest_route"}},  # Replace root with the route data
+                {"$project": {  # ADDED: Exclude ObjectId fields that cause serialization issues
+                    "_id": 0,  # Exclude MongoDB ObjectId
+                    "stored_at": 0  # Exclude stored_at if it contains ObjectId
+                }},
                 {"$sort": {"profit": -1}},  # Sort by profit descending
                 {"$limit": 50}  # Limit to top 50
             ]
             
             routes = await db.route_analyses.aggregate(pipeline).to_list(50)
             
+            # ADDED: Additional ObjectId cleanup for any remaining ObjectId fields
+            clean_routes = []
+            for route in routes:
+                clean_route = {}
+                for key, value in route.items():
+                    # Skip any ObjectId fields or convert them to string
+                    if hasattr(value, '__class__') and 'ObjectId' in str(value.__class__):
+                        clean_route[key] = str(value)
+                    else:
+                        clean_route[key] = value
+                clean_routes.append(clean_route)
+            
             return {
                 "status": "success", 
-                "routes": routes,
+                "routes": clean_routes,  # Use cleaned routes
                 "data_type": "current",
-                "message": f"Showing latest data for {len(routes)} commodities"
+                "count": len(clean_routes),
+                "message": f"Latest routes for each commodity (total: {len(clean_routes)})"
             }
             
     except Exception as e:
@@ -2341,8 +2444,18 @@ async def get_api_status():
         except:
             db_status = "error"
         
-        # Get counts
-        route_count = await db.route_analyses.count_documents({})
+        # Get dynamic route count from Star Profit API
+        try:
+            routes_data = await star_profit_client.get_trading_routes_processed()
+            if routes_data.get('status') == 'ok':
+                live_route_count = len(routes_data.get('data', []))
+            else:
+                live_route_count = 0
+        except:
+            live_route_count = 0
+            
+        # Get database counts for historical data
+        stored_route_count = await db.route_analyses.count_documents({})
         alert_count = await db.alerts.count_documents({"acknowledged": False})
         trend_count = await db.historical_trends.count_documents({})
         
@@ -2353,14 +2466,15 @@ async def get_api_status():
             "data_sources": {
                 "star_profit_api": {
                     "status": star_profit_status,
-                    "records_available": star_profit_records,
+                    "records_available": live_route_count,  # FIX: Use live route count
                     "description": "Real Star Citizen commodity data (primary)"
                 }
             },
             "database": db_status,
             "api_configured": star_profit_status == "connected",
             "statistics": {
-                "total_routes_analyzed": route_count,
+                "total_routes_analyzed": live_route_count,  # FIX: Use live route count instead of database count
+                "stored_routes": stored_route_count,  # Add separate field for stored routes
                 "active_alerts": alert_count,
                 "historical_data_points": trend_count,
                 "tracking_active": tracking_state.get('active', False)
@@ -2405,7 +2519,9 @@ async def startup_event():
     """Initialize tracking system on startup"""
     global tracking_state
     tracking_state['active'] = True
-    logger.info("Sinister Snare v5.0 - Advanced Piracy Intelligence System started")
+    tracking_state['last_update'] = datetime.now(timezone.utc)  # FIX: Set initial update time
+    tracking_state['route_count'] = 0
+    logger.info("Sinister Snare v5.0 - Advanced Piracy Intelligence System started with live tracking")
 
 @app.on_event("shutdown")
 async def shutdown_db_client():

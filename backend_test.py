@@ -2074,6 +2074,1037 @@ async def test_bidirectional_alternative_routes():
     
     return results
 
+async def test_specific_review_issues():
+    """Test the specific issues mentioned in the current review request"""
+    results = TestResults()
+    
+    print(f"\n🔍 Testing Specific Review Request Issues")
+    print("Focus: Database Stats Issue, Live Tracking Issue, Overall System Status")
+    
+    async with httpx.AsyncClient(timeout=30.0) as client:
+        
+        # Test 1: Database Stats Issue - /api/routes/analyze
+        try:
+            response = await client.get(f"{BACKEND_URL}/api/routes/analyze?limit=5")
+            if response.status_code == 200:
+                data = response.json()
+                if data.get('status') == 'success':
+                    routes = data.get('routes', [])
+                    total_routes = data.get('total_routes', 0)
+                    
+                    # Check if routes are returned properly
+                    if len(routes) > 0 and total_routes > 0:
+                        # Check if data structure is correct for IndexedDB storage
+                        sample_route = routes[0]
+                        required_fields = ['id', 'commodity_name', 'origin_name', 'destination_name', 'profit', 'piracy_rating']
+                        missing_fields = [field for field in required_fields if field not in sample_route]
+                        
+                        if not missing_fields:
+                            results.add_result(
+                                "Database Stats - Routes Analysis",
+                                "PASS",
+                                f"Routes endpoint returning data correctly: {total_routes} total routes, {len(routes)} returned. All required fields present for IndexedDB storage.",
+                                {"total_routes": total_routes, "returned_routes": len(routes), "sample_fields": list(sample_route.keys())}
+                            )
+                        else:
+                            results.add_result(
+                                "Database Stats - Routes Analysis",
+                                "FAIL",
+                                f"Routes returned but missing required fields for IndexedDB: {missing_fields}",
+                                {"missing_fields": missing_fields, "available_fields": list(sample_route.keys())}
+                            )
+                    else:
+                        results.add_result(
+                            "Database Stats - Routes Analysis",
+                            "FAIL",
+                            f"Routes endpoint not returning proper data: {len(routes)} routes, {total_routes} total",
+                            {"routes_count": len(routes), "total_routes": total_routes}
+                        )
+                else:
+                    results.add_result(
+                        "Database Stats - Routes Analysis",
+                        "FAIL",
+                        f"Routes analysis endpoint returned error status: {data.get('status')}",
+                        data
+                    )
+            else:
+                results.add_result(
+                    "Database Stats - Routes Analysis",
+                    "FAIL",
+                    f"Routes analysis endpoint HTTP error: {response.status_code}",
+                    {"status_code": response.status_code, "response": response.text[:200]}
+                )
+        except Exception as e:
+            results.add_result(
+                "Database Stats - Routes Analysis",
+                "FAIL",
+                f"Connection error to routes analysis endpoint: {str(e)}"
+            )
+        
+        # Test 2: Live Tracking Issue - /api/tracking/status
+        try:
+            response = await client.get(f"{BACKEND_URL}/api/tracking/status")
+            if response.status_code == 200:
+                data = response.json()
+                if data.get('status') == 'success':
+                    tracking = data.get('tracking', {})
+                    uptime_minutes = tracking.get('uptime_minutes', 0)
+                    last_update = tracking.get('last_update')
+                    route_count = tracking.get('route_count', 0)
+                    active = tracking.get('active', False)
+                    
+                    # Check if uptime_minutes is working correctly (should be > 0 if system has been running)
+                    if uptime_minutes >= 0:  # Allow 0 for fresh starts, but should be calculated
+                        # Check if last_update is properly initialized
+                        if last_update is not None:
+                            results.add_result(
+                                "Live Tracking - Uptime Minutes Fix",
+                                "PASS",
+                                f"Tracking status working correctly: uptime_minutes={uptime_minutes}, last_update={last_update}, route_count={route_count}, active={active}",
+                                {"uptime_minutes": uptime_minutes, "last_update": last_update, "route_count": route_count, "active": active}
+                            )
+                        else:
+                            results.add_result(
+                                "Live Tracking - Uptime Minutes Fix",
+                                "FAIL",
+                                f"last_update not initialized properly: {last_update}. This causes uptime calculation issues.",
+                                {"uptime_minutes": uptime_minutes, "last_update": last_update}
+                            )
+                    else:
+                        results.add_result(
+                            "Live Tracking - Uptime Minutes Fix",
+                            "FAIL",
+                            f"uptime_minutes calculation issue: {uptime_minutes} (should be >= 0)",
+                            {"uptime_minutes": uptime_minutes, "tracking_data": tracking}
+                        )
+                else:
+                    results.add_result(
+                        "Live Tracking - Uptime Minutes Fix",
+                        "FAIL",
+                        f"Tracking status endpoint returned error: {data.get('status')}",
+                        data
+                    )
+            else:
+                results.add_result(
+                    "Live Tracking - Uptime Minutes Fix",
+                    "FAIL",
+                    f"Tracking status endpoint HTTP error: {response.status_code}",
+                    {"status_code": response.status_code, "response": response.text[:200]}
+                )
+        except Exception as e:
+            results.add_result(
+                "Live Tracking - Uptime Minutes Fix",
+                "FAIL",
+                f"Connection error to tracking status endpoint: {str(e)}"
+            )
+        
+        # Test 3: Overall System Status - /api/status
+        try:
+            response = await client.get(f"{BACKEND_URL}/api/status")
+            if response.status_code == 200:
+                data = response.json()
+                status = data.get('status')
+                
+                if status in ['operational', 'ok']:
+                    # Check system components
+                    database_status = data.get('database', 'unknown')
+                    star_profit_api = data.get('star_profit_api', 'unknown')
+                    route_count = data.get('route_count', 0)
+                    
+                    # Verify system is reporting correct numbers
+                    if route_count > 0:
+                        results.add_result(
+                            "Overall System Status",
+                            "PASS",
+                            f"System status operational: status={status}, database={database_status}, star_profit_api={star_profit_api}, route_count={route_count}",
+                            {"status": status, "database": database_status, "star_profit_api": star_profit_api, "route_count": route_count}
+                        )
+                    else:
+                        results.add_result(
+                            "Overall System Status",
+                            "FAIL",
+                            f"System operational but route_count is 0. This may indicate database stats issue.",
+                            {"status": status, "route_count": route_count, "full_status": data}
+                        )
+                else:
+                    results.add_result(
+                        "Overall System Status",
+                        "FAIL",
+                        f"System status not operational: {status}",
+                        data
+                    )
+            else:
+                results.add_result(
+                    "Overall System Status",
+                    "FAIL",
+                    f"System status endpoint HTTP error: {response.status_code}",
+                    {"status_code": response.status_code, "response": response.text[:200]}
+                )
+        except Exception as e:
+            results.add_result(
+                "Overall System Status",
+                "FAIL",
+                f"Connection error to system status endpoint: {str(e)}"
+            )
+        
+        # Test 4: Cross-check Database Stats vs Routes Analysis
+        try:
+            # Get system status route count
+            status_response = await client.get(f"{BACKEND_URL}/api/status")
+            routes_response = await client.get(f"{BACKEND_URL}/api/routes/analyze?limit=20")
+            
+            if status_response.status_code == 200 and routes_response.status_code == 200:
+                status_data = status_response.json()
+                routes_data = routes_response.json()
+                
+                status_route_count = status_data.get('route_count', 0)
+                actual_routes_returned = len(routes_data.get('routes', []))
+                total_routes_available = routes_data.get('total_routes', 0)
+                
+                # Check if numbers are consistent
+                if status_route_count > 0 and actual_routes_returned > 0:
+                    results.add_result(
+                        "Database Stats Consistency Check",
+                        "PASS",
+                        f"Database stats consistent: status reports {status_route_count} routes, analysis returns {actual_routes_returned}/{total_routes_available} routes",
+                        {"status_route_count": status_route_count, "actual_routes": actual_routes_returned, "total_available": total_routes_available}
+                    )
+                elif status_route_count == 0 and actual_routes_returned == 0:
+                    results.add_result(
+                        "Database Stats Consistency Check",
+                        "PASS",
+                        "Both endpoints consistently report 0 routes (system may be initializing)",
+                        {"status_route_count": status_route_count, "actual_routes": actual_routes_returned}
+                    )
+                else:
+                    results.add_result(
+                        "Database Stats Consistency Check",
+                        "FAIL",
+                        f"Inconsistent route counts: status={status_route_count}, actual={actual_routes_returned}. This indicates the database stats issue.",
+                        {"status_route_count": status_route_count, "actual_routes": actual_routes_returned, "total_available": total_routes_available}
+                    )
+            else:
+                results.add_result(
+                    "Database Stats Consistency Check",
+                    "FAIL",
+                    f"Could not fetch both endpoints for comparison: status={status_response.status_code}, routes={routes_response.status_code}"
+                )
+        except Exception as e:
+            results.add_result(
+                "Database Stats Consistency Check",
+                "FAIL",
+                f"Error during consistency check: {str(e)}"
+            )
+    
+    return results
+
+async def test_piracy_scoring_system():
+    """Test the Realistic Piracy Scoring System V2.0 - Inter-System Route Bug Verification"""
+    results = TestResults()
+    
+    print(f"\n🎯 Testing Piracy Scoring System V2.0 - Inter-System Route Bug Verification")
+    print("URGENT BUG VERIFICATION: Testing Inter-System route piracy scoring caps")
+    print("Expected: Inter-System routes ≤ 25, System-internal routes 30-80+")
+    
+    async with httpx.AsyncClient(timeout=60.0) as client:
+        
+        # Test 1: Backend API Verification - Inter-System Routes Capped at 25
+        try:
+            response = await client.get(f"{BACKEND_URL}/api/routes/analyze?limit=50")
+            if response.status_code == 200:
+                data = response.json()
+                if data.get('status') == 'success':
+                    routes = data.get('routes', [])
+                    
+                    if routes:
+                        inter_system_routes = []
+                        same_system_routes = []
+                        
+                        for route in routes:
+                            origin_name = route.get('origin_name', '')
+                            destination_name = route.get('destination_name', '')
+                            piracy_rating = route.get('piracy_rating', 0)
+                            
+                            # Parse system information
+                            origin_system = origin_name.split(' - ')[0] if ' - ' in origin_name else origin_name
+                            dest_system = destination_name.split(' - ')[0] if ' - ' in destination_name else destination_name
+                            
+                            route_info = {
+                                'route_code': route.get('route_code', 'unknown'),
+                                'commodity_name': route.get('commodity_name', 'unknown'),
+                                'origin_name': origin_name,
+                                'destination_name': destination_name,
+                                'origin_system': origin_system,
+                                'dest_system': dest_system,
+                                'piracy_rating': piracy_rating,
+                                'is_inter_system': origin_system != dest_system
+                            }
+                            
+                            if origin_system != dest_system:
+                                inter_system_routes.append(route_info)
+                            else:
+                                same_system_routes.append(route_info)
+                        
+                        # Check Inter-System routes have piracy_rating ≤ 25
+                        inter_system_violations = [r for r in inter_system_routes if r['piracy_rating'] > 25]
+                        
+                        # Check System-internal routes have higher scores (30-80+)
+                        same_system_low_scores = [r for r in same_system_routes if r['piracy_rating'] < 30]
+                        
+                        if len(inter_system_violations) == 0 and len(inter_system_routes) > 0:
+                            results.add_result(
+                                "Inter-System Routes Piracy Cap (≤25)",
+                                "PASS",
+                                f"✅ All {len(inter_system_routes)} Inter-System routes have piracy_rating ≤ 25. Max score: {max([r['piracy_rating'] for r in inter_system_routes]) if inter_system_routes else 0}"
+                            )
+                        elif len(inter_system_routes) == 0:
+                            results.add_result(
+                                "Inter-System Routes Piracy Cap (≤25)",
+                                "PASS",
+                                "No Inter-System routes found in current data (acceptable)"
+                            )
+                        else:
+                            violation_details = []
+                            for violation in inter_system_violations[:3]:  # Show first 3 violations
+                                violation_details.append(f"{violation['origin_system']}→{violation['dest_system']}: {violation['piracy_rating']}")
+                            
+                            results.add_result(
+                                "Inter-System Routes Piracy Cap (≤25)",
+                                "FAIL",
+                                f"❌ {len(inter_system_violations)}/{len(inter_system_routes)} Inter-System routes exceed 25 points. Violations: {'; '.join(violation_details)}"
+                            )
+                        
+                        # Verify System-internal routes have higher scores
+                        if len(same_system_routes) > 0:
+                            avg_same_system_score = sum(r['piracy_rating'] for r in same_system_routes) / len(same_system_routes)
+                            avg_inter_system_score = sum(r['piracy_rating'] for r in inter_system_routes) / len(inter_system_routes) if inter_system_routes else 0
+                            
+                            if avg_same_system_score > avg_inter_system_score and len(same_system_low_scores) < len(same_system_routes) * 0.3:
+                                results.add_result(
+                                    "System-Internal vs Inter-System Score Distribution",
+                                    "PASS",
+                                    f"✅ System-internal routes have higher scores. Avg same-system: {avg_same_system_score:.1f}, Avg inter-system: {avg_inter_system_score:.1f}"
+                                )
+                            else:
+                                results.add_result(
+                                    "System-Internal vs Inter-System Score Distribution",
+                                    "FAIL",
+                                    f"❌ Score distribution incorrect. Avg same-system: {avg_same_system_score:.1f}, Avg inter-system: {avg_inter_system_score:.1f}, Low same-system scores: {len(same_system_low_scores)}"
+                                )
+                        
+                    else:
+                        results.add_result(
+                            "Inter-System Routes Piracy Cap (≤25)",
+                            "FAIL",
+                            "No routes returned from API"
+                        )
+                else:
+                    results.add_result(
+                        "Inter-System Routes Piracy Cap (≤25)",
+                        "FAIL",
+                        f"API returned status: {data.get('status')}"
+                    )
+            else:
+                results.add_result(
+                    "Inter-System Routes Piracy Cap (≤25)",
+                    "FAIL",
+                    f"HTTP {response.status_code}: {response.text[:200]}"
+                )
+        except Exception as e:
+            results.add_result(
+                "Inter-System Routes Piracy Cap (≤25)",
+                "FAIL",
+                f"Connection error: {str(e)}"
+            )
+        
+        # Test 2: Aluminum Route Specific Test - Pyro → Stanton should be 25 (not 72.9)
+        try:
+            response = await client.get(f"{BACKEND_URL}/api/routes/analyze?limit=100")
+            if response.status_code == 200:
+                data = response.json()
+                if data.get('status') == 'success':
+                    routes = data.get('routes', [])
+                    
+                    # Look for Aluminum routes from Pyro to Stanton
+                    aluminum_pyro_stanton_routes = []
+                    
+                    for route in routes:
+                        commodity_name = route.get('commodity_name', '').lower()
+                        origin_name = route.get('origin_name', '')
+                        destination_name = route.get('destination_name', '')
+                        piracy_rating = route.get('piracy_rating', 0)
+                        
+                        # Check if it's Aluminum commodity
+                        if 'aluminum' in commodity_name or 'aluminium' in commodity_name:
+                            # Check if it's Pyro → Stanton
+                            if 'pyro' in origin_name.lower() and 'stanton' in destination_name.lower():
+                                aluminum_pyro_stanton_routes.append({
+                                    'route_code': route.get('route_code', 'unknown'),
+                                    'commodity_name': route.get('commodity_name', 'unknown'),
+                                    'origin_name': origin_name,
+                                    'destination_name': destination_name,
+                                    'piracy_rating': piracy_rating
+                                })
+                            
+                            # Also check for the specific route mentioned: Megumi Refueling → Everus Harbor
+                            if ('megumi' in origin_name.lower() and 'everus' in destination_name.lower()) or \
+                               ('megumi' in destination_name.lower() and 'everus' in origin_name.lower()):
+                                aluminum_pyro_stanton_routes.append({
+                                    'route_code': route.get('route_code', 'unknown'),
+                                    'commodity_name': route.get('commodity_name', 'unknown'),
+                                    'origin_name': origin_name,
+                                    'destination_name': destination_name,
+                                    'piracy_rating': piracy_rating,
+                                    'is_specific_route': True
+                                })
+                    
+                    if aluminum_pyro_stanton_routes:
+                        # Check if all Aluminum Pyro→Stanton routes have piracy_rating = 25 (not 72.9)
+                        correct_scores = [r for r in aluminum_pyro_stanton_routes if r['piracy_rating'] == 25]
+                        high_scores = [r for r in aluminum_pyro_stanton_routes if r['piracy_rating'] > 50]  # Like the reported 72.9
+                        
+                        if len(correct_scores) > 0 and len(high_scores) == 0:
+                            specific_route = next((r for r in aluminum_pyro_stanton_routes if r.get('is_specific_route')), aluminum_pyro_stanton_routes[0])
+                            results.add_result(
+                                "Aluminum Pyro→Stanton Route Specific Test",
+                                "PASS",
+                                f"✅ Aluminum Pyro→Stanton route shows correct piracy_rating: {specific_route['piracy_rating']} (not 72.9). Route: {specific_route['origin_name']} → {specific_route['destination_name']}"
+                            )
+                        else:
+                            problem_routes = []
+                            for route in high_scores[:2]:  # Show first 2 problem routes
+                                problem_routes.append(f"{route['origin_name']} → {route['destination_name']}: {route['piracy_rating']}")
+                            
+                            results.add_result(
+                                "Aluminum Pyro→Stanton Route Specific Test",
+                                "FAIL",
+                                f"❌ Aluminum Pyro→Stanton routes still show high scores. Problem routes: {'; '.join(problem_routes)}"
+                            )
+                    else:
+                        results.add_result(
+                            "Aluminum Pyro→Stanton Route Specific Test",
+                            "PASS",
+                            "No Aluminum Pyro→Stanton routes found in current data (acceptable - depends on market conditions)"
+                        )
+                else:
+                    results.add_result(
+                        "Aluminum Pyro→Stanton Route Specific Test",
+                        "FAIL",
+                        f"API returned status: {data.get('status')}"
+                    )
+            else:
+                results.add_result(
+                    "Aluminum Pyro→Stanton Route Specific Test",
+                    "FAIL",
+                    f"HTTP {response.status_code}: {response.text[:200]}"
+                )
+        except Exception as e:
+            results.add_result(
+                "Aluminum Pyro→Stanton Route Specific Test",
+                "FAIL",
+                f"Connection error: {str(e)}"
+            )
+        
+        # Test 3: Score Distribution Verification - Detailed Analysis
+        try:
+            response = await client.get(f"{BACKEND_URL}/api/routes/analyze?limit=100")
+            if response.status_code == 200:
+                data = response.json()
+                if data.get('status') == 'success':
+                    routes = data.get('routes', [])
+                    
+                    if routes:
+                        # Categorize routes by system type
+                        stanton_internal = []
+                        pyro_internal = []
+                        inter_system = []
+                        
+                        for route in routes:
+                            origin_name = route.get('origin_name', '')
+                            destination_name = route.get('destination_name', '')
+                            piracy_rating = route.get('piracy_rating', 0)
+                            
+                            origin_system = origin_name.split(' - ')[0] if ' - ' in origin_name else origin_name
+                            dest_system = destination_name.split(' - ')[0] if ' - ' in destination_name else destination_name
+                            
+                            route_info = {
+                                'commodity_name': route.get('commodity_name', 'unknown'),
+                                'origin_name': origin_name,
+                                'destination_name': destination_name,
+                                'piracy_rating': piracy_rating
+                            }
+                            
+                            if origin_system == dest_system:
+                                if 'stanton' in origin_system.lower():
+                                    stanton_internal.append(route_info)
+                                elif 'pyro' in origin_system.lower():
+                                    pyro_internal.append(route_info)
+                            else:
+                                inter_system.append(route_info)
+                        
+                        # Calculate statistics
+                        stanton_avg = sum(r['piracy_rating'] for r in stanton_internal) / len(stanton_internal) if stanton_internal else 0
+                        pyro_avg = sum(r['piracy_rating'] for r in pyro_internal) / len(pyro_internal) if pyro_internal else 0
+                        inter_avg = sum(r['piracy_rating'] for r in inter_system) / len(inter_system) if inter_system else 0
+                        
+                        stanton_max = max([r['piracy_rating'] for r in stanton_internal]) if stanton_internal else 0
+                        pyro_max = max([r['piracy_rating'] for r in pyro_internal]) if pyro_internal else 0
+                        inter_max = max([r['piracy_rating'] for r in inter_system]) if inter_system else 0
+                        
+                        # Verify expected score distribution
+                        expected_distribution = True
+                        issues = []
+                        
+                        # Inter-system routes should be ≤ 25
+                        if inter_max > 25:
+                            expected_distribution = False
+                            issues.append(f"Inter-system max {inter_max} > 25")
+                        
+                        # System-internal routes should be 30-80+
+                        if stanton_internal and stanton_avg < 30:
+                            expected_distribution = False
+                            issues.append(f"Stanton internal avg {stanton_avg:.1f} < 30")
+                        
+                        if pyro_internal and pyro_avg < 30:
+                            expected_distribution = False
+                            issues.append(f"Pyro internal avg {pyro_avg:.1f} < 30")
+                        
+                        # System-internal should have higher scores than inter-system
+                        if inter_system and (stanton_internal or pyro_internal):
+                            max_internal_avg = max(stanton_avg, pyro_avg)
+                            if inter_avg >= max_internal_avg:
+                                expected_distribution = False
+                                issues.append(f"Inter-system avg {inter_avg:.1f} >= internal avg {max_internal_avg:.1f}")
+                        
+                        if expected_distribution:
+                            results.add_result(
+                                "Score Distribution Verification",
+                                "PASS",
+                                f"✅ Correct score distribution: Stanton-internal avg {stanton_avg:.1f} (max {stanton_max}), Pyro-internal avg {pyro_avg:.1f} (max {pyro_max}), Inter-system avg {inter_avg:.1f} (max {inter_max})"
+                            )
+                        else:
+                            results.add_result(
+                                "Score Distribution Verification",
+                                "FAIL",
+                                f"❌ Incorrect score distribution. Issues: {'; '.join(issues)}"
+                            )
+                        
+                        # Additional verification: Check specific route types
+                        pyro_stanton_routes = [r for r in inter_system if 
+                                             ('pyro' in r['origin_name'].lower() and 'stanton' in r['destination_name'].lower()) or
+                                             ('stanton' in r['origin_name'].lower() and 'pyro' in r['destination_name'].lower())]
+                        
+                        if pyro_stanton_routes:
+                            pyro_stanton_violations = [r for r in pyro_stanton_routes if r['piracy_rating'] > 25]
+                            if len(pyro_stanton_violations) == 0:
+                                results.add_result(
+                                    "Pyro↔Stanton Routes Verification",
+                                    "PASS",
+                                    f"✅ All {len(pyro_stanton_routes)} Pyro↔Stanton routes have piracy_rating ≤ 25"
+                                )
+                            else:
+                                results.add_result(
+                                    "Pyro↔Stanton Routes Verification",
+                                    "FAIL",
+                                    f"❌ {len(pyro_stanton_violations)}/{len(pyro_stanton_routes)} Pyro↔Stanton routes exceed 25 points"
+                                )
+                    else:
+                        results.add_result(
+                            "Score Distribution Verification",
+                            "FAIL",
+                            "No routes returned for distribution analysis"
+                        )
+                else:
+                    results.add_result(
+                        "Score Distribution Verification",
+                        "FAIL",
+                        f"API returned status: {data.get('status')}"
+                    )
+            else:
+                results.add_result(
+                    "Score Distribution Verification",
+                    "FAIL",
+                    f"HTTP {response.status_code}: {response.text[:200]}"
+                )
+        except Exception as e:
+            results.add_result(
+                "Score Distribution Verification",
+                "FAIL",
+                f"Connection error: {str(e)}"
+            )
+    
+    return results
+
+async def test_gold_commodity_piracy_scoring():
+    """Test Gold commodity piracy scoring improvements for Hardcore Mode - V2.1 Enhanced Algorithm"""
+    results = TestResults()
+    
+    print(f"\n🏆 Testing Gold Commodity Piracy Scoring V2.1 - Enhanced Premium Commodity Algorithm")
+    print("Focus: Gold commodity routes achieving ELITE status (80+ piracy score) for Hardcore Mode")
+    
+    async with httpx.AsyncClient(timeout=60.0) as client:
+        
+        # Test 1: Get all routes with updated scoring (limit=100 as requested)
+        try:
+            response = await client.get(f"{BACKEND_URL}/api/routes/analyze?limit=100")
+            if response.status_code == 200:
+                data = response.json()
+                if data.get('status') == 'success':
+                    routes = data.get('routes', [])
+                    total_routes = len(routes)
+                    
+                    results.add_result(
+                        "Routes Analysis with Updated Scoring (limit=100)",
+                        "PASS",
+                        f"Successfully retrieved {total_routes} routes with updated piracy scoring algorithm V2.1"
+                    )
+                    
+                    # Test 2: Check specifically for Gold commodity routes
+                    gold_routes = []
+                    for route in routes:
+                        commodity_name = route.get('commodity_name', '').lower()
+                        if 'gold' in commodity_name:
+                            gold_routes.append(route)
+                    
+                    if gold_routes:
+                        results.add_result(
+                            "Gold Commodity Routes Detection",
+                            "PASS",
+                            f"Found {len(gold_routes)} Gold commodity routes in the system"
+                        )
+                        
+                        # Test 3: Log Gold routes' NEW piracy_rating and risk_level
+                        print(f"\n📊 GOLD COMMODITY ROUTES ANALYSIS:")
+                        print(f"{'='*80}")
+                        
+                        elite_gold_routes = 0
+                        legendary_gold_routes = 0
+                        
+                        for i, route in enumerate(gold_routes, 1):
+                            commodity_name = route.get('commodity_name', 'Unknown')
+                            piracy_rating = route.get('piracy_rating', 0)
+                            risk_level = route.get('risk_level', 'UNKNOWN')
+                            origin = route.get('origin_name', 'Unknown')
+                            destination = route.get('destination_name', 'Unknown')
+                            profit = route.get('profit', 0)
+                            
+                            print(f"Gold Route #{i}:")
+                            print(f"  Commodity: {commodity_name}")
+                            print(f"  NEW Piracy Rating: {piracy_rating}")
+                            print(f"  NEW Risk Level: {risk_level}")
+                            print(f"  Route: {origin} → {destination}")
+                            print(f"  Profit: {profit:,.0f} aUEC")
+                            print(f"  {'='*60}")
+                            
+                            # Count ELITE and LEGENDARY routes
+                            if piracy_rating >= 90:
+                                legendary_gold_routes += 1
+                            elif piracy_rating >= 80:
+                                elite_gold_routes += 1
+                        
+                        # Test 4: Verify Gold commodities achieve piracy_rating >= 80 (ELITE)
+                        if elite_gold_routes > 0 or legendary_gold_routes > 0:
+                            results.add_result(
+                                "Gold Commodities Achieve ELITE Status (≥80 piracy score)",
+                                "PASS",
+                                f"SUCCESS! Found {elite_gold_routes} ELITE Gold routes (80-89) and {legendary_gold_routes} LEGENDARY Gold routes (90+)"
+                            )
+                        else:
+                            max_gold_score = max([route.get('piracy_rating', 0) for route in gold_routes]) if gold_routes else 0
+                            results.add_result(
+                                "Gold Commodities Achieve ELITE Status (≥80 piracy score)",
+                                "FAIL",
+                                f"CRITICAL: No Gold routes achieve ELITE status. Highest Gold piracy score: {max_gold_score}"
+                            )
+                        
+                        # Test 5: Check Gold routes are classified as "ELITE" or "LEGENDARY"
+                        elite_classified_gold = [route for route in gold_routes if route.get('risk_level') in ['ELITE', 'LEGENDARY']]
+                        
+                        if elite_classified_gold:
+                            results.add_result(
+                                "Gold Routes Classified as ELITE/LEGENDARY",
+                                "PASS",
+                                f"SUCCESS! {len(elite_classified_gold)} Gold routes properly classified as ELITE/LEGENDARY"
+                            )
+                        else:
+                            gold_risk_levels = [route.get('risk_level', 'UNKNOWN') for route in gold_routes]
+                            results.add_result(
+                                "Gold Routes Classified as ELITE/LEGENDARY",
+                                "FAIL",
+                                f"CRITICAL: No Gold routes classified as ELITE/LEGENDARY. Risk levels found: {set(gold_risk_levels)}"
+                            )
+                    else:
+                        results.add_result(
+                            "Gold Commodity Routes Detection",
+                            "FAIL",
+                            "CRITICAL: No Gold commodity routes found in the system"
+                        )
+                    
+                    # Test 6: Check for ANY ELITE/LEGENDARY routes (Hardcore Mode availability)
+                    elite_routes = [route for route in routes if route.get('risk_level') in ['ELITE', 'LEGENDARY']]
+                    elite_count = len([route for route in routes if route.get('piracy_rating', 0) >= 80])
+                    legendary_count = len([route for route in routes if route.get('piracy_rating', 0) >= 90])
+                    
+                    if elite_routes or elite_count > 0:
+                        results.add_result(
+                            "Hardcore Mode Route Availability (ELITE/LEGENDARY routes exist)",
+                            "PASS",
+                            f"SUCCESS! Found {elite_count} ELITE routes (80+) and {legendary_count} LEGENDARY routes (90+). Hardcore Mode will have {len(elite_routes)} routes available."
+                        )
+                        
+                        # Log top ELITE/LEGENDARY routes for verification
+                        print(f"\n🎯 TOP ELITE/LEGENDARY ROUTES FOR HARDCORE MODE:")
+                        print(f"{'='*80}")
+                        
+                        top_elite_routes = sorted([route for route in routes if route.get('piracy_rating', 0) >= 80], 
+                                                key=lambda x: x.get('piracy_rating', 0), reverse=True)[:5]
+                        
+                        for i, route in enumerate(top_elite_routes, 1):
+                            commodity_name = route.get('commodity_name', 'Unknown')
+                            piracy_rating = route.get('piracy_rating', 0)
+                            risk_level = route.get('risk_level', 'UNKNOWN')
+                            origin = route.get('origin_name', 'Unknown')
+                            destination = route.get('destination_name', 'Unknown')
+                            
+                            print(f"#{i} ELITE Route:")
+                            print(f"  Commodity: {commodity_name}")
+                            print(f"  Piracy Rating: {piracy_rating}")
+                            print(f"  Risk Level: {risk_level}")
+                            print(f"  Route: {origin} → {destination}")
+                            print(f"  {'='*60}")
+                        
+                    else:
+                        results.add_result(
+                            "Hardcore Mode Route Availability (ELITE/LEGENDARY routes exist)",
+                            "FAIL",
+                            "CRITICAL: No ELITE or LEGENDARY routes found. Hardcore Mode would be empty!"
+                        )
+                    
+                    # Test 7: Verify the fix for empty Hardcore Mode issue
+                    hardcore_mode_routes = [route for route in routes if route.get('piracy_rating', 0) >= 80]
+                    
+                    if len(hardcore_mode_routes) > 0:
+                        results.add_result(
+                            "Empty Hardcore Mode Issue Fix Verification",
+                            "PASS",
+                            f"SUCCESS! Hardcore Mode fix verified - {len(hardcore_mode_routes)} routes now available for Hardcore Mode (piracy_rating ≥ 80)"
+                        )
+                    else:
+                        results.add_result(
+                            "Empty Hardcore Mode Issue Fix Verification",
+                            "FAIL",
+                            "CRITICAL: Empty Hardcore Mode issue NOT FIXED - no routes with piracy_rating ≥ 80 found"
+                        )
+                    
+                    # Test 8: Enhanced Piracy Scoring Algorithm V2.1 Verification
+                    # Check for premium commodity bonuses
+                    premium_commodities = ['Gold', 'Diamond', 'Quantanium', 'Laranite', 'Platinum', 'Bexalite']
+                    premium_routes_found = []
+                    
+                    for route in routes:
+                        commodity_name = route.get('commodity_name', '')
+                        for premium in premium_commodities:
+                            if premium.lower() in commodity_name.lower():
+                                premium_routes_found.append({
+                                    'commodity': commodity_name,
+                                    'piracy_rating': route.get('piracy_rating', 0),
+                                    'risk_level': route.get('risk_level', 'UNKNOWN')
+                                })
+                                break
+                    
+                    if premium_routes_found:
+                        high_scoring_premium = [route for route in premium_routes_found if route['piracy_rating'] >= 70]
+                        
+                        if high_scoring_premium:
+                            results.add_result(
+                                "Enhanced Piracy Scoring V2.1 - Premium Commodity Bonuses",
+                                "PASS",
+                                f"SUCCESS! Premium commodity bonuses working - {len(high_scoring_premium)} premium commodities with high scores (≥70)"
+                            )
+                        else:
+                            results.add_result(
+                                "Enhanced Piracy Scoring V2.1 - Premium Commodity Bonuses",
+                                "FAIL",
+                                f"Premium commodities found but scores too low. Max premium score: {max([r['piracy_rating'] for r in premium_routes_found]) if premium_routes_found else 0}"
+                            )
+                    else:
+                        results.add_result(
+                            "Enhanced Piracy Scoring V2.1 - Premium Commodity Bonuses",
+                            "FAIL",
+                            "No premium commodities (Gold, Diamond, Quantanium, etc.) found in route analysis"
+                        )
+                    
+                else:
+                    results.add_result(
+                        "Routes Analysis with Updated Scoring (limit=100)",
+                        "FAIL",
+                        f"API returned status: {data.get('status')}"
+                    )
+            else:
+                results.add_result(
+                    "Routes Analysis with Updated Scoring (limit=100)",
+                    "FAIL",
+                    f"HTTP {response.status_code}: {response.text[:200]}"
+                )
+        except Exception as e:
+            results.add_result(
+                "Routes Analysis with Updated Scoring (limit=100)",
+                "FAIL",
+                f"Connection error: {str(e)}"
+            )
+    
+    return results
+
+async def test_gold_commodity_classification():
+    """Test Gold commodity specifically for piracy score and risk level classification"""
+    results = TestResults()
+    
+    print(f"\n🏆 Testing Gold Commodity Classification for Hardcore Mode")
+    print("Focus: Gold commodity piracy_rating >= 80 should be classified as ELITE for Hardcore Mode filtering")
+    
+    async with httpx.AsyncClient(timeout=30.0) as client:
+        
+        # Test 1: Get all routes and check for Gold commodity
+        try:
+            response = await client.get(f"{BACKEND_URL}/api/routes/analyze?limit=100")
+            if response.status_code == 200:
+                data = response.json()
+                if data.get('status') == 'success':
+                    routes = data.get('routes', [])
+                    
+                    # Find Gold commodity routes
+                    gold_routes = [route for route in routes if 'Gold' in route.get('commodity_name', '')]
+                    
+                    if gold_routes:
+                        print(f"   Found {len(gold_routes)} Gold commodity routes")
+                        
+                        # Log each Gold route's piracy_rating and risk_level
+                        elite_gold_routes = []
+                        legendary_gold_routes = []
+                        
+                        for i, route in enumerate(gold_routes):
+                            piracy_rating = route.get('piracy_rating', 0)
+                            risk_level = route.get('risk_level', 'UNKNOWN')
+                            commodity_name = route.get('commodity_name', '')
+                            origin = route.get('origin_name', '')
+                            destination = route.get('destination_name', '')
+                            
+                            print(f"   Gold Route {i+1}: {commodity_name}")
+                            print(f"     Piracy Rating: {piracy_rating}")
+                            print(f"     Risk Level: {risk_level}")
+                            print(f"     Route: {origin} → {destination}")
+                            
+                            if risk_level == 'ELITE':
+                                elite_gold_routes.append(route)
+                            elif risk_level == 'LEGENDARY':
+                                legendary_gold_routes.append(route)
+                        
+                        # Check if Gold routes with piracy_rating >= 80 are classified as ELITE
+                        high_piracy_gold = [route for route in gold_routes if route.get('piracy_rating', 0) >= 80]
+                        correctly_classified_elite = [route for route in high_piracy_gold if route.get('risk_level') == 'ELITE']
+                        
+                        # Check for LEGENDARY classification (>= 90)
+                        legendary_piracy_gold = [route for route in gold_routes if route.get('piracy_rating', 0) >= 90]
+                        correctly_classified_legendary = [route for route in legendary_piracy_gold if route.get('risk_level') == 'LEGENDARY']
+                        
+                        # Summary of findings
+                        total_hardcore_eligible = len(elite_gold_routes) + len(legendary_gold_routes)
+                        
+                        if high_piracy_gold and len(correctly_classified_elite) == len(high_piracy_gold):
+                            results.add_result(
+                                "Gold ELITE Classification (80+ Piracy Score)",
+                                "PASS",
+                                f"All {len(high_piracy_gold)} Gold routes with piracy_rating >= 80 correctly classified as ELITE. Hardcore Mode eligible: {total_hardcore_eligible} routes"
+                            )
+                        elif high_piracy_gold:
+                            results.add_result(
+                                "Gold ELITE Classification (80+ Piracy Score)",
+                                "FAIL",
+                                f"Found {len(high_piracy_gold)} Gold routes with piracy_rating >= 80, but only {len(correctly_classified_elite)} classified as ELITE. Missing from Hardcore Mode!"
+                            )
+                        else:
+                            # Check if Gold routes exist but have lower piracy scores
+                            max_gold_piracy = max([route.get('piracy_rating', 0) for route in gold_routes]) if gold_routes else 0
+                            results.add_result(
+                                "Gold ELITE Classification (80+ Piracy Score)",
+                                "FAIL",
+                                f"No Gold routes found with piracy_rating >= 80. Highest Gold piracy score: {max_gold_piracy}. This explains why Gold doesn't appear in Hardcore Mode!"
+                            )
+                        
+                        # Test LEGENDARY classification
+                        if legendary_piracy_gold and len(correctly_classified_legendary) == len(legendary_piracy_gold):
+                            results.add_result(
+                                "Gold LEGENDARY Classification (90+ Piracy Score)",
+                                "PASS",
+                                f"All {len(legendary_piracy_gold)} Gold routes with piracy_rating >= 90 correctly classified as LEGENDARY"
+                            )
+                        elif legendary_piracy_gold:
+                            results.add_result(
+                                "Gold LEGENDARY Classification (90+ Piracy Score)",
+                                "FAIL",
+                                f"Found {len(legendary_piracy_gold)} Gold routes with piracy_rating >= 90, but only {len(correctly_classified_legendary)} classified as LEGENDARY"
+                            )
+                        else:
+                            results.add_result(
+                                "Gold LEGENDARY Classification (90+ Piracy Score)",
+                                "PASS",
+                                f"No Gold routes with piracy_rating >= 90 found (acceptable - LEGENDARY is rare)"
+                            )
+                            
+                    else:
+                        results.add_result(
+                            "Gold Commodity Routes Existence",
+                            "FAIL",
+                            f"No Gold commodity routes found in {len(routes)} total routes. This explains why Gold doesn't appear in Hardcore Mode - Gold routes don't exist in the system!"
+                        )
+                        
+                        # Log available commodities for debugging
+                        available_commodities = set(route.get('commodity_name', '') for route in routes)
+                        print(f"   Available commodities: {sorted(list(available_commodities))[:10]}...")
+                        
+                else:
+                    results.add_result(
+                        "Gold Commodity Routes Analysis",
+                        "FAIL",
+                        f"API returned status: {data.get('status')}"
+                    )
+            else:
+                results.add_result(
+                    "Gold Commodity Routes Analysis",
+                    "FAIL",
+                    f"HTTP {response.status_code}: {response.text[:200]}"
+                )
+        except Exception as e:
+            results.add_result(
+                "Gold Commodity Routes Analysis",
+                "FAIL",
+                f"Connection error: {str(e)}"
+            )
+        
+        # Test 2: Test Gold-specific commodity endpoint
+        try:
+            response = await client.get(f"{BACKEND_URL}/api/snare/commodity?commodity_name=Gold")
+            if response.status_code == 200:
+                data = response.json()
+                if data.get('status') == 'success':
+                    gold_analysis = data.get('analysis', {})
+                    total_routes = gold_analysis.get('total_routes', 0)
+                    profitable_routes = gold_analysis.get('profitable_routes', 0)
+                    snare_points = data.get('snare_points', [])
+                    
+                    if total_routes > 0:
+                        print(f"   Gold Commodity Analysis:")
+                        print(f"     Total Routes: {total_routes}")
+                        print(f"     Profitable Routes: {profitable_routes}")
+                        print(f"     Snare Points: {len(snare_points)}")
+                        
+                        # Check piracy ratings in snare points
+                        elite_snare_points = [point for point in snare_points if point.get('piracy_rating', 0) >= 80]
+                        legendary_snare_points = [point for point in snare_points if point.get('piracy_rating', 0) >= 90]
+                        
+                        if elite_snare_points or legendary_snare_points:
+                            results.add_result(
+                                "Gold Commodity Snare Analysis",
+                                "PASS",
+                                f"Gold commodity endpoint working - {total_routes} routes, {len(elite_snare_points)} ELITE snare points, {len(legendary_snare_points)} LEGENDARY snare points"
+                            )
+                        else:
+                            max_piracy = max([point.get('piracy_rating', 0) for point in snare_points]) if snare_points else 0
+                            results.add_result(
+                                "Gold Commodity Snare Analysis",
+                                "FAIL",
+                                f"Gold commodity found but no ELITE/LEGENDARY snare points. Max piracy rating: {max_piracy}. This confirms Gold won't appear in Hardcore Mode!"
+                            )
+                    else:
+                        results.add_result(
+                            "Gold Commodity Snare Analysis",
+                            "FAIL",
+                            "Gold commodity endpoint returns 0 routes - Gold commodity not available in current data"
+                        )
+                else:
+                    results.add_result(
+                        "Gold Commodity Snare Analysis",
+                        "FAIL",
+                        f"Gold commodity API returned status: {data.get('status')}"
+                    )
+            else:
+                results.add_result(
+                    "Gold Commodity Snare Analysis",
+                    "FAIL",
+                    f"HTTP {response.status_code}: {response.text[:200]}"
+                )
+        except Exception as e:
+            results.add_result(
+                "Gold Commodity Snare Analysis",
+                "FAIL",
+                f"Connection error: {str(e)}"
+            )
+        
+        # Test 3: Check Hardcore Mode filtering logic by testing ELITE and LEGENDARY routes
+        try:
+            response = await client.get(f"{BACKEND_URL}/api/routes/analyze?limit=100")
+            if response.status_code == 200:
+                data = response.json()
+                if data.get('status') == 'success':
+                    routes = data.get('routes', [])
+                    
+                    # Find all ELITE and LEGENDARY routes (what Hardcore Mode should show)
+                    elite_routes = [route for route in routes if route.get('risk_level') == 'ELITE']
+                    legendary_routes = [route for route in routes if route.get('risk_level') == 'LEGENDARY']
+                    hardcore_routes = elite_routes + legendary_routes
+                    
+                    # Check commodities in Hardcore Mode
+                    hardcore_commodities = set(route.get('commodity_name', '') for route in hardcore_routes)
+                    gold_in_hardcore = 'Gold' in hardcore_commodities or any('Gold' in commodity for commodity in hardcore_commodities)
+                    
+                    print(f"   Hardcore Mode Analysis:")
+                    print(f"     ELITE Routes: {len(elite_routes)}")
+                    print(f"     LEGENDARY Routes: {len(legendary_routes)}")
+                    print(f"     Total Hardcore Routes: {len(hardcore_routes)}")
+                    print(f"     Hardcore Commodities: {sorted(list(hardcore_commodities))}")
+                    print(f"     Gold in Hardcore Mode: {gold_in_hardcore}")
+                    
+                    if hardcore_routes:
+                        if gold_in_hardcore:
+                            results.add_result(
+                                "Hardcore Mode Gold Filtering",
+                                "PASS",
+                                f"Gold commodity found in Hardcore Mode ({len(hardcore_routes)} total ELITE/LEGENDARY routes)"
+                            )
+                        else:
+                            results.add_result(
+                                "Hardcore Mode Gold Filtering",
+                                "FAIL",
+                                f"Gold commodity NOT found in Hardcore Mode. Available commodities: {list(hardcore_commodities)[:5]}... This confirms the user's report!"
+                            )
+                    else:
+                        results.add_result(
+                            "Hardcore Mode Gold Filtering",
+                            "FAIL",
+                            "No ELITE or LEGENDARY routes found - Hardcore Mode would be empty!"
+                        )
+                        
+                else:
+                    results.add_result(
+                        "Hardcore Mode Gold Filtering",
+                        "FAIL",
+                        f"API returned status: {data.get('status')}"
+                    )
+            else:
+                results.add_result(
+                    "Hardcore Mode Gold Filtering",
+                    "FAIL",
+                    f"HTTP {response.status_code}: {response.text[:200]}"
+                )
+        except Exception as e:
+            results.add_result(
+                "Hardcore Mode Gold Filtering",
+                "FAIL",
+                f"Connection error: {str(e)}"
+            )
+    
+    return results
+
 async def main():
     """Run all tests"""
     print("🏴‍☠️ SINISTER SNARE BACKEND API TEST SUITE")
@@ -2081,7 +3112,32 @@ async def main():
     
     all_results = TestResults()
     
-    # Test NEW Bidirectional Alternative Routes functionality FIRST (current review request priority)
+    # Test GOLD COMMODITY PIRACY SCORING V2.1 FIRST (PRIMARY FOCUS from review request)
+    print("\n🎯 PRIORITY TEST: Gold Commodity Piracy Scoring V2.1 Enhanced Algorithm")
+    gold_scoring_results = await test_gold_commodity_piracy_scoring()
+    all_results.results.extend(gold_scoring_results.results)
+    all_results.passed += gold_scoring_results.passed
+    all_results.failed += gold_scoring_results.failed
+    
+    # Test GOLD COMMODITY CLASSIFICATION (secondary priority)
+    gold_classification_results = await test_gold_commodity_classification()
+    all_results.results.extend(gold_classification_results.results)
+    all_results.passed += gold_classification_results.passed
+    all_results.failed += gold_classification_results.failed
+    
+    # Test URGENT PIRACY SCORING SYSTEM (high priority)
+    piracy_results = await test_piracy_scoring_system()
+    all_results.results.extend(piracy_results.results)
+    all_results.passed += piracy_results.passed
+    all_results.failed += piracy_results.failed
+    
+    # Test SPECIFIC REVIEW ISSUES (high priority)
+    review_issues_results = await test_specific_review_issues()
+    all_results.results.extend(review_issues_results.results)
+    all_results.passed += review_issues_results.passed
+    all_results.failed += review_issues_results.failed
+    
+    # Test NEW Bidirectional Alternative Routes functionality (current review request priority)
     bidirectional_results = await test_bidirectional_alternative_routes()
     all_results.results.extend(bidirectional_results.results)
     all_results.passed += bidirectional_results.passed

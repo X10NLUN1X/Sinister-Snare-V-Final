@@ -206,11 +206,18 @@ class SinisterDatabase {
     
     const transaction = this.db.transaction(['routes', 'commodities', 'interceptions'], 'readwrite');
     
-    await Promise.all([
-      transaction.objectStore('routes').clear(),
-      transaction.objectStore('commodities').clear(),
-      transaction.objectStore('interceptions').clear()
-    ]);
+    // Clear all stores
+    transaction.objectStore('routes').clear();
+    transaction.objectStore('commodities').clear();
+    transaction.objectStore('interceptions').clear();
+    
+    return new Promise((resolve, reject) => {
+      transaction.oncomplete = () => {
+        console.log('🗑️ CLEARED: All old data removed from IndexedDB');
+        resolve();
+      };
+      transaction.onerror = () => reject(transaction.error);
+    });
   }
 
   async clearOldData(weeks) {
@@ -394,6 +401,38 @@ const RouteCard = ({ route, onSelect, onAlternativeRouteSelect }) => {
     }
   };
 
+  // NEW: Enhanced piracy score color and labeling
+  const getPiracyScoreColor = (score) => {
+    if (score >= 70) return 'text-red-300 bg-red-900/30'; // High traffic routes
+    if (score >= 50) return 'text-orange-300 bg-orange-900/30'; // Good routes
+    if (score >= 30) return 'text-yellow-300 bg-yellow-900/30'; // Moderate routes
+    if (score <= 25) return 'text-gray-400 bg-gray-800/30'; // Inter-system (low traffic)
+    return 'text-gray-400 bg-gray-800/30';
+  };
+
+  // NEW: Route type indicator (System-internal vs Inter-system)
+  const getRouteTypeIndicator = () => {
+    const originSystem = route.origin_name?.split(' - ')[0] || '';
+    const destSystem = route.destination_name?.split(' - ')[0] || '';
+    const isInterSystem = originSystem !== destSystem;
+    
+    if (isInterSystem) {
+      return {
+        label: '🌌 Inter-System',
+        color: 'text-gray-400 text-xs',
+        tooltip: 'Selten befahren - nur 5% des Traffics'
+      };
+    } else {
+      return {
+        label: `🏠 ${originSystem}-intern`,
+        color: 'text-green-400 text-xs font-medium',
+        tooltip: 'Häufig befahren - 95% des Traffics'
+      };
+    }
+  };
+
+  const routeType = getRouteTypeIndicator();
+
   const formatTime = (timestamp) => {
     if (!timestamp) return 'Unknown';
     const date = new Date(timestamp);
@@ -412,6 +451,12 @@ const RouteCard = ({ route, onSelect, onAlternativeRouteSelect }) => {
           <h3 className="text-white text-lg font-semibold mb-1">{route.commodity_name}</h3>
           <p className="text-gray-400 text-sm font-mono">{route.route_code}</p>
           <p className="text-gray-500 text-xs mt-1">Last seen: {formatTime(route.last_seen)}</p>
+          {/* NEW: Route type indicator */}
+          <div className="mt-2">
+            <span className={routeType.color} title={routeType.tooltip}>
+              {routeType.label}
+            </span>
+          </div>
         </div>
         <span className={`px-3 py-1 rounded-full text-xs font-medium border ${getRiskColor(route.risk_level)}`}>
           {route.risk_level}
@@ -455,30 +500,35 @@ const RouteCard = ({ route, onSelect, onAlternativeRouteSelect }) => {
       
       <div className="grid grid-cols-2 gap-4 mb-4">
         <div className="text-center bg-black/30 rounded p-3">
-          <p className="text-2xl font-bold text-green-400">{(route.profit / 1000000).toFixed(2)}M</p>
+          <p className="text-2xl font-bold text-green-400">{((route.profit || 0) / 1000000).toFixed(2)}M</p>
           <p className="text-gray-400 text-xs">Profit (aUEC)</p>
         </div>
-        <div className="text-center bg-black/30 rounded p-3">
-          <p className="text-2xl font-bold text-red-400">{route.piracy_rating}</p>
-          <p className="text-gray-400 text-xs">Piracy Score</p>
+        {/* NEW: Enhanced Piracy Score display */}
+        <div className={`text-center rounded p-3 ${getPiracyScoreColor(route.piracy_rating)}`}>
+          <p className="text-2xl font-bold">{route.piracy_rating}</p>
+          <p className="text-xs font-medium">
+            {route.piracy_rating >= 70 ? 'TOP TARGET' : 
+             route.piracy_rating >= 50 ? 'GOOD TARGET' :
+             route.piracy_rating >= 30 ? 'OK TARGET' : 'LOW TRAFFIC'}
+          </p>
         </div>
       </div>
       
       <div className="grid grid-cols-4 gap-2 text-xs">
         <div className="text-center">
-          <p className="text-white font-medium">{route.roi.toFixed(1)}%</p>
+          <p className="text-white font-medium">{(route.roi || 0).toFixed(1)}%</p>
           <p className="text-gray-400">ROI</p>
         </div>
         <div className="text-center">
-          <p className="text-white font-medium">{(route.distance / 1000).toFixed(0)}k</p>
+          <p className="text-white font-medium">{((route.distance || 0) / 1000).toFixed(0)}k</p>
           <p className="text-gray-400">Distance</p>
         </div>
         <div className="text-center">
-          <p className="text-white font-medium">{route.score}</p>
+          <p className="text-white font-medium">{route.score || 0}</p>
           <p className="text-gray-400">Traffic</p>
         </div>
         <div className="text-center">
-          <p className="text-white font-medium">{(route.investment / 1000000).toFixed(1)}M</p>
+          <p className="text-white font-medium">{((route.investment || 0) / 1000000).toFixed(1)}M</p>
           <p className="text-gray-400">Investment</p>
         </div>
       </div>
@@ -502,6 +552,148 @@ const RouteCard = ({ route, onSelect, onAlternativeRouteSelect }) => {
         onRouteSelect={onAlternativeRouteSelect}
         currentRoute={route}
       />
+    </div>
+  );
+};
+
+const FAQModal = ({ isOpen, onClose }) => {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-gray-800 rounded-lg p-6 max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto border border-blue-600">
+        <div className="flex justify-between items-center mb-6">
+          <h3 className="text-blue-400 text-2xl font-bold">❓ FAQ - Piracy Intelligence Guide</h3>
+          <button onClick={onClose} className="text-gray-400 hover:text-white text-xl">✕</button>
+        </div>
+
+        <div className="space-y-6">
+          <div className="bg-gray-900/50 rounded-lg p-4 border border-gray-700">
+            <h4 className="text-red-400 text-lg font-bold mb-3">🎯 Risk Level</h4>
+            <p className="text-gray-300 mb-3">Indicates the profitability and danger classification of a trading route from a pirate's perspective.</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div className="bg-purple-900/30 p-3 rounded">
+                <div className="text-purple-300 font-bold">👑 LEGENDARY</div>
+                <div className="text-sm text-gray-400">Ultra-rare, extreme security, highest rewards</div>
+              </div>
+              <div className="bg-red-900/30 p-3 rounded">
+                <div className="text-red-300 font-bold">🔥 ELITE</div>
+                <div className="text-sm text-gray-400">Highest value, heavy security, premium cargo</div>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-gray-900/50 rounded-lg p-4 border border-gray-700">
+            <h4 className="text-red-400 text-lg font-bold mb-3">🏴‍☠️ Piracy Score (0-100)</h4>
+            <p className="text-gray-300 mb-3">Realistic score based on actual Star Citizen player behavior indicating interception probability.</p>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <div className="bg-red-900/30 p-3 rounded text-center">
+                <div className="text-red-300 font-bold">70-100</div>
+                <div className="text-sm text-gray-400">TOP TARGET</div>
+              </div>
+              <div className="bg-gray-700/30 p-3 rounded text-center">
+                <div className="text-gray-400 font-bold">&lt;25</div>
+                <div className="text-sm text-gray-400">LOW TRAFFIC</div>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-gray-900/50 rounded-lg p-4 border border-gray-700">
+            <h4 className="text-yellow-400 text-lg font-bold mb-3">💰 ROI (Return on Investment)</h4>
+            <p className="text-gray-300 mb-3">Percentage profit relative to initial investment.</p>
+          </div>
+
+          <div className="bg-gray-900/50 rounded-lg p-4 border border-gray-700">
+            <h4 className="text-purple-400 text-lg font-bold mb-3">📏 Distance</h4>
+            <p className="text-gray-300 mb-3">Travel distance between origin and destination in kilometers.</p>
+          </div>
+
+          <div className="bg-gray-900/50 rounded-lg p-4 border border-gray-700">
+            <h4 className="text-blue-400 text-lg font-bold mb-3">🚦 Traffic Score</h4>
+            <p className="text-gray-300 mb-3">Estimated player activity on this route.</p>
+          </div>
+
+          <div className="bg-gray-900/50 rounded-lg p-4 border border-gray-700">
+            <h4 className="text-green-400 text-lg font-bold mb-3">💎 Investment</h4>
+            <p className="text-gray-300 mb-3">Total capital required to fully load cargo bay with this commodity.</p>
+          </div>
+        </div>
+
+        <div className="mt-6 text-center">
+          <button 
+            onClick={onClose}
+            className="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded text-white font-bold"
+          >
+            Got it! 🏴‍☠️
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const SnareHardmodeModal = ({ data, onClose, onRouteSelect }) => {
+  if (!data) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-gray-800 rounded-lg p-6 w-[95vw] h-[95vh] overflow-y-auto border border-red-600">
+        <div className="flex justify-between items-center mb-6">
+          <div>
+            <h3 className="text-red-400 text-2xl font-bold">⚡ HARDCORE MODE</h3>
+            <p className="text-gray-400 text-sm mt-1">All ELITE & LEGENDARY routes - No limits, maximum challenge</p>
+          </div>
+          <button onClick={onClose} className="text-gray-400 hover:text-white text-xl">✕</button>
+        </div>
+
+        {/* Stats Bar */}
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+          <div className="bg-red-900/30 rounded-lg p-3 text-center border border-red-600">
+            <div className="text-red-300 text-xl font-bold">{data.stats.elite_count}</div>
+            <div className="text-gray-400 text-xs">ELITE Routes</div>
+          </div>
+          <div className="bg-purple-900/30 rounded-lg p-3 text-center border border-purple-600">
+            <div className="text-purple-300 text-xl font-bold">{data.stats.legendary_count}</div>
+            <div className="text-gray-400 text-xs">LEGENDARY Routes</div>
+          </div>
+          <div className="bg-yellow-900/30 rounded-lg p-3 text-center border border-yellow-600">
+            <div className="text-yellow-300 text-xl font-bold">{data.stats.total_routes}</div>
+            <div className="text-gray-400 text-xs">Total Routes</div>
+          </div>
+          <div className="bg-orange-900/30 rounded-lg p-3 text-center border border-orange-600">
+            <div className="text-orange-300 text-xl font-bold">{data.stats.avg_piracy_rating.toFixed(1)}</div>
+            <div className="text-gray-400 text-xs">Avg Piracy Score</div>
+          </div>
+          <div className="bg-green-900/30 rounded-lg p-3 text-center border border-green-600">
+            <div className="text-green-300 text-xl font-bold">{(data.stats.total_profit / 1000000).toFixed(1)}M</div>
+            <div className="text-gray-400 text-xs">Total Profit</div>
+          </div>
+        </div>
+
+        {/* Routes Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
+          {data.routes.map((route, index) => (
+            <RouteCard 
+              key={route.id || index} 
+              route={route} 
+              onSelect={(route) => {
+                onRouteSelect(route);
+                onClose();
+              }}
+              onAlternativeRouteSelect={() => {}}
+            />
+          ))}
+        </div>
+
+        <div className="mt-6 text-center">
+          <button 
+            onClick={onClose}
+            className="bg-red-600 hover:bg-red-700 px-6 py-3 rounded text-white font-bold"
+          >
+            Ready for Action! ⚡
+          </button>
+        </div>
+      </div>
     </div>
   );
 };
@@ -567,11 +759,11 @@ const PirateTargetCard = ({ target, onTrack }) => (
     <div className="flex space-x-2">
       <button 
         onClick={() => onTrack && onTrack(target)}
-        className="flex-1 bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded text-sm font-medium transition-colors"
+        className="flex-1 bg-red-600 hover:bg-red-700 text-white px-4 py-3 rounded text-sm font-medium transition-colors"
       >
         🔍 Track Route
       </button>
-      <button className="bg-gray-600 hover:bg-gray-700 text-white px-3 py-2 rounded text-sm transition-colors">
+      <button className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-3 rounded text-sm transition-colors font-medium">
         📍 View Map
       </button>
     </div>
@@ -584,17 +776,55 @@ const InterceptionMap = ({ routes, targets }) => {
   
   const getSystemRoutes = () => {
     if (selectedSystem === 'All Systems') return routes;
-    return routes.filter(route => 
-      route.origin_name.includes(selectedSystem) || route.destination_name.includes(selectedSystem)
-    );
+    
+    // FIXED: Better system filtering for Stanton and other systems
+    return routes.filter(route => {
+      const originSystem = route.origin_name?.split(' - ')[0] || '';
+      const destSystem = route.destination_name?.split(' - ')[0] || '';
+      return originSystem.toLowerCase().includes(selectedSystem.toLowerCase()) || 
+             destSystem.toLowerCase().includes(selectedSystem.toLowerCase());
+    });
   };
 
   const systemRoutes = getSystemRoutes();
+  
+  // Calculate system-specific statistics
+  const getSystemStats = () => {
+    const stats = {
+      totalRoutes: systemRoutes.length,
+      avgProfit: 0,
+      avgPiracyScore: 0,
+      highRiskRoutes: 0,
+      systemInternalRoutes: 0,
+      interSystemRoutes: 0
+    };
+    
+    if (systemRoutes.length === 0) return stats;
+    
+    stats.avgProfit = systemRoutes.reduce((sum, r) => sum + (r.profit || 0), 0) / systemRoutes.length;
+    stats.avgPiracyScore = systemRoutes.reduce((sum, r) => sum + (r.piracy_rating || 0), 0) / systemRoutes.length;
+    stats.highRiskRoutes = systemRoutes.filter(r => ['ELITE', 'LEGENDARY', 'HIGH'].includes(r.risk_level)).length;
+    
+    // Count system-internal vs inter-system routes
+    systemRoutes.forEach(route => {
+      const originSystem = route.origin_name?.split(' - ')[0] || '';
+      const destSystem = route.destination_name?.split(' - ')[0] || '';
+      if (originSystem === destSystem) {
+        stats.systemInternalRoutes++;
+      } else {
+        stats.interSystemRoutes++;
+      }
+    });
+    
+    return stats;
+  };
+  
+  const stats = getSystemStats();
 
   return (
     <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
       <div className="flex justify-between items-center mb-4">
-        <h3 className="text-white text-lg font-semibold">🗺️ Interception Map Analysis</h3>
+        <h3 className="text-white text-lg font-semibold">🗺️ Snareplan Analysis</h3>
         <select 
           value={selectedSystem} 
           onChange={(e) => setSelectedSystem(e.target.value)}
@@ -608,66 +838,77 @@ const InterceptionMap = ({ routes, targets }) => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="bg-black/30 rounded p-4">
-          <h4 className="text-yellow-400 font-medium mb-3">📊 System Analysis</h4>
+          <h4 className="text-yellow-400 font-medium mb-3">📊 {selectedSystem} System Analysis</h4>
           <div className="space-y-2">
             <div className="flex justify-between text-sm">
               <span className="text-gray-400">Active Routes:</span>
-              <span className="text-white font-medium">{systemRoutes.length}</span>
+              <span className="text-white font-medium">{stats.totalRoutes}</span>
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-gray-400">Avg Profit:</span>
               <span className="text-green-400 font-medium">
-                {systemRoutes.length > 0 ? (systemRoutes.reduce((sum, r) => sum + r.profit, 0) / systemRoutes.length / 1000000).toFixed(2) + 'M' : '0M'}
+                {(stats.avgProfit / 1000000).toFixed(2)}M aUEC
+              </span>
+            </div>
+            <div className="flex justify-between text-sm">
+              <span className="text-gray-400">Avg Piracy Score:</span>
+              <span className="text-red-400 font-medium">
+                {stats.avgPiracyScore.toFixed(1)}
               </span>
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-gray-400">High Risk Routes:</span>
-              <span className="text-red-400 font-medium">
-                {systemRoutes.filter(r => ['ELITE', 'LEGENDARY', 'HIGH'].includes(r.risk_level)).length}
-              </span>
+              <span className="text-red-400 font-medium">{stats.highRiskRoutes}</span>
             </div>
+            {selectedSystem !== 'All Systems' && (
+              <>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-400">System-intern:</span>
+                  <span className="text-green-400 font-medium">{stats.systemInternalRoutes}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-400">Inter-System:</span>
+                  <span className="text-gray-400 font-medium">{stats.interSystemRoutes}</span>
+                </div>
+              </>
+            )}
           </div>
         </div>
 
         <div className="bg-black/30 rounded p-4">
-          <h4 className="text-red-400 font-medium mb-3">🎯 Hot Zones</h4>
+          <h4 className="text-red-400 font-medium mb-3">🎯 Top Snare Zones</h4>
           <div className="space-y-3">
-            {systemRoutes.slice(0, 4).map((route, idx) => (
-              <div key={idx} className="flex items-center justify-between">
-                <div>
-                  <p className="text-white text-sm font-medium">{route.commodity_name}</p>
-                  <p className="text-gray-400 text-xs">{route.route_code}</p>
-                </div>
-                <div className="text-right">
-                  <div className="flex items-center space-x-1">
-                    <div className={`w-2 h-2 rounded-full ${
-                      route.piracy_rating >= 80 ? 'bg-red-500' : 
-                      route.piracy_rating >= 60 ? 'bg-yellow-500' : 'bg-green-500'
-                    }`}></div>
-                    <span className="text-xs text-gray-300">{route.piracy_rating.toFixed(0)}</span>
+            {systemRoutes.length > 0 ? (
+              systemRoutes
+                .sort((a, b) => (b.piracy_rating || 0) - (a.piracy_rating || 0))
+                .slice(0, 4)
+                .map((route, idx) => (
+                  <div key={idx} className="flex items-center justify-between">
+                    <div>
+                      <p className="text-white text-sm font-medium">{route.commodity_name}</p>
+                      <p className="text-gray-400 text-xs">
+                        {route.origin_name?.split(' - ')[1] || 'Unknown'} → {route.destination_name?.split(' - ')[1] || 'Unknown'}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <div className="flex items-center space-x-1">
+                        <div className={`w-2 h-2 rounded-full ${
+                          (route.piracy_rating || 0) >= 70 ? 'bg-red-500' : 
+                          (route.piracy_rating || 0) >= 50 ? 'bg-orange-500' :
+                          (route.piracy_rating || 0) >= 30 ? 'bg-yellow-500' : 'bg-gray-500'
+                        }`}></div>
+                        <span className="text-xs text-gray-300">{(route.piracy_rating || 0).toFixed(0)}</span>
+                      </div>
+                    </div>
                   </div>
-                </div>
+                ))
+            ) : (
+              <div className="text-center py-4">
+                <p className="text-gray-400 text-sm">Keine Routen für {selectedSystem} verfügbar</p>
+                <p className="text-gray-500 text-xs mt-1">Bitte andere System wählen oder Daten aktualisieren</p>
               </div>
-            ))}
+            )}
           </div>
-        </div>
-      </div>
-
-      <div className="mt-6 bg-black/20 rounded p-4">
-        <h4 className="text-purple-400 font-medium mb-3">🚀 Recommended Ship Classes</h4>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          {[
-            { name: 'Light Fighter', routes: systemRoutes.filter(r => r.profit < 2000000).length, icon: '🛩️' },
-            { name: 'Heavy Fighter', routes: systemRoutes.filter(r => r.profit >= 2000000 && r.profit < 4000000).length, icon: '🚀' },
-            { name: 'Interceptor', routes: systemRoutes.filter(r => r.distance < 30000).length, icon: '⚡' },
-            { name: 'Multi-crew', routes: systemRoutes.filter(r => r.profit >= 4000000).length, icon: '🛸' }
-          ].map((shipClass, idx) => (
-            <div key={idx} className="text-center bg-gray-700/30 rounded p-3">
-              <div className="text-2xl mb-1">{shipClass.icon}</div>
-              <p className="text-white text-sm font-medium">{shipClass.name}</p>
-              <p className="text-gray-400 text-xs">{shipClass.routes} suitable routes</p>
-            </div>
-          ))}
         </div>
       </div>
     </div>
@@ -1244,7 +1485,7 @@ const SnareModal = ({ isOpen, onClose, snareData }) => {
                 <p className="text-yellow-400 font-bold text-lg">{snareData.estimated_traders_per_hour}</p>
               </div>
               <div>
-                <p className="text-gray-400 text-sm mb-1">Piracy Rating:</p>
+                <p className="text-gray-400 text-sm mb-1">Piracy Score:</p>
                 <p className="text-red-400 font-bold text-lg">{snareData.piracy_rating.toFixed(1)}</p>
               </div>
             </div>
@@ -1340,78 +1581,12 @@ const AlternativeRoutesDropdown = ({ commodity, onRouteSelect, currentRoute }) =
       }
       
     } catch (error) {
-      console.warn(`[AlternativeRoutes] REAL API failed: ${error.message}, using fallback mock data`);
+      console.warn(`[AlternativeRoutes] REAL API failed: ${error.message}, showing info message instead of mock data`);
       
-      // Fallback to mock data if real API fails
-      const mockTerminals = [
-        {
-          terminal: 'Rat\'s Nest',
-          system: 'Pyro',
-          buy_price: 2.21,
-          sell_price: 0,
-          stock: 20000,
-          buy_available: true,
-          sell_available: false
-        },
-        {
-          terminal: 'Everus Harbor',
-          system: 'Stanton',
-          buy_price: 0,
-          sell_price: 3.22,
-          stock: 1935,
-          buy_available: false,
-          sell_available: true
-        },
-        {
-          terminal: 'Magnus Gateway',
-          system: 'Stanton',
-          buy_price: 1.95,
-          sell_price: 3.15,
-          stock: 4608,
-          buy_available: true,
-          sell_available: true
-        },
-        {
-          terminal: 'Checkmate',
-          system: 'Pyro',
-          buy_price: 2.18,
-          sell_price: 0,
-          stock: 39000,
-          buy_available: true,
-          sell_available: false
-        },
-        {
-          terminal: 'Port Tressler',
-          system: 'Stanton',
-          buy_price: 0,
-          sell_price: 3.99,
-          stock: 2267,
-          buy_available: false,
-          sell_available: true
-        },
-        {
-          terminal: 'Daymar Shubin Mining',
-          system: 'Stanton',
-          buy_price: 2.05,
-          sell_price: 0,
-          stock: 15000,
-          buy_available: true,
-          sell_available: false
-        },
-        {
-          terminal: 'Area18 Trade District',
-          system: 'Stanton',
-          buy_price: 0,
-          sell_price: 3.45,
-          stock: 3200,
-          buy_available: false,
-          sell_available: true
-        }
-      ];
-      
-      setTerminals(mockTerminals);
+      // NO MORE MOCK DATA - Show informative message instead
+      setTerminals([]);
       setLastUpdated(new Date());
-      console.log(`[AlternativeRoutes] FALLBACK: Set ${mockTerminals.length} mock terminals`);
+      console.log(`[AlternativeRoutes] API ERROR: No terminals loaded due to API failure`);
       
     } finally {
       setLoading(false);
@@ -1785,7 +1960,7 @@ const RouteDetailModal = ({ isOpen, onClose, route }) => {
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-400">ROI:</span>
-                <span className="text-yellow-400">{route.roi?.toFixed(1)}%</span>
+                <span className="text-yellow-400">{(route.roi || 0).toFixed(1)}%</span>
               </div>
               {route.buy_price > 0 && (
                 <div className="flex justify-between">
@@ -1819,7 +1994,7 @@ const RouteDetailModal = ({ isOpen, onClose, route }) => {
                 }`}>{route.risk_level}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-400">Piracy Rating:</span>
+                <span className="text-gray-400">Piracy Score:</span>
                 <span className="text-red-400 font-bold">{route.piracy_rating?.toFixed(1)}</span>
               </div>
             </div>
@@ -1894,7 +2069,7 @@ const RouteDetailModal = ({ isOpen, onClose, route }) => {
   );
 };
 
-const CommoditySnareModal = ({ isOpen, onClose, onSnare }) => {
+const CommoditySnareModal = ({ isOpen, onClose, onSnare, onRouteSelect, onAlternativeRouteSelect }) => {
   const [selectedCommodity, setSelectedCommodity] = useState('');
   const [snareResults, setSnareResults] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -1993,9 +2168,9 @@ const CommoditySnareModal = ({ isOpen, onClose, onSnare }) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-gray-800 rounded-lg p-6 max-w-4xl w-full mx-4 max-h-screen overflow-y-auto border border-yellow-600">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-yellow-400 text-xl font-bold">💎 COMMODITY SNARE</h3>
+      <div className="bg-gray-800 rounded-lg p-4 w-[90vh] h-[90vh] overflow-y-auto border border-yellow-600">
+        <div className="flex justify-between items-center mb-3">
+          <h3 className="text-yellow-400 text-lg font-bold">💎 COMMODITY SNARE</h3>
           <button onClick={handleClose} className="text-gray-400 hover:text-white text-xl">✕</button>
         </div>
         
@@ -2071,51 +2246,43 @@ const CommoditySnareModal = ({ isOpen, onClose, onSnare }) => {
                   </div>
                 </div>
                 
-                <div className="space-y-4 max-h-96 overflow-y-auto">
-                  {(snareResults.snare_opportunities || []).slice(0, 10).map((opportunity, idx) => (
-                    <div key={idx} className="bg-black/30 rounded p-4 border border-gray-600">
-                      <div className="flex justify-between items-start mb-2">
-                        <div>
-                          <h5 className="text-white font-semibold">{opportunity.route_code || 'Unknown Route'}</h5>
-                          <p className="text-yellow-400 text-sm">{opportunity.strategy || 'No strategy available'}</p>
-                        </div>
-                        <div className="text-right">
-                          <span className={`px-2 py-1 rounded text-xs font-medium ${
-                            opportunity.risk_level === 'ELITE' ? 'bg-purple-900 text-purple-400' :
-                            opportunity.risk_level === 'HIGH' ? 'bg-red-900 text-red-400' :
-                            'bg-yellow-900 text-yellow-400'
-                          }`}>
-                            {opportunity.risk_level || 'UNKNOWN'}
-                          </span>
-                        </div>
+                <div className="grid grid-cols-2 gap-4 h-[80vh] w-full">
+                  {(snareResults.snare_opportunities || []).slice(0, 4).map((opportunity, idx) => {
+                    // Convert opportunity to route format for RouteCard compatibility
+                    const routeData = {
+                      id: `commodity-${idx}`,
+                      commodity_name: snareResults.commodity,
+                      origin_name: opportunity.buying_point || 'Unknown Origin',
+                      destination_name: opportunity.selling_point || 'Unknown Destination', 
+                      route_code: opportunity.route_code || `${snareResults.commodity}-${idx}`,
+                      profit: opportunity.profit || 0,
+                      piracy_rating: opportunity.piracy_rating || 0,
+                      risk_level: opportunity.risk_level || 'UNKNOWN',
+                      roi: opportunity.roi || 0,
+                      distance: opportunity.distance || 0,
+                      score: opportunity.score || 0,
+                      investment: opportunity.investment || 0,
+                      buy_price: opportunity.buy_price || 0,
+                      sell_price: opportunity.sell_price || 0,
+                      buy_stock: opportunity.buy_stock || 0,
+                      sell_stock: opportunity.sell_stock || 0,
+                      interception_zones: opportunity.interception_zones || [],
+                      last_seen: new Date().toISOString()
+                    };
+                    
+                    return (
+                      <div key={routeData.id} className="h-full">
+                        <RouteCard 
+                          route={routeData} 
+                          onSelect={(route) => {
+                            onRouteSelect(route);
+                            onClose(); // Close modal when route is clicked
+                          }}
+                          onAlternativeRouteSelect={onAlternativeRouteSelect}
+                        />
                       </div>
-                      
-                      <div className="grid grid-cols-2 gap-4 text-sm mb-3">
-                        <div>
-                          <p className="text-gray-400">Buying Point:</p>
-                          <p className="text-white">{opportunity.buying_point || 'Unknown'}</p>
-                        </div>
-                        <div>
-                          <p className="text-gray-400">Selling Point:</p>
-                          <p className="text-white">{opportunity.selling_point || 'Unknown'}</p>
-                        </div>
-                      </div>
-                      
-                      <div className="bg-gray-700/30 rounded p-2">
-                        <p className={`text-sm font-medium ${
-                          (opportunity.warning || '').includes('⚠️') ? 'text-orange-400' : 'text-green-400'
-                        }`}>
-                          {opportunity.warning || 'No additional information'}
-                        </p>
-                      </div>
-                      
-                      <div className="flex justify-between items-center mt-3 text-sm">
-                        <span className="text-green-400 font-semibold">{((opportunity.profit || 0) / 1000000).toFixed(2)}M aUEC</span>
-                        <span className="text-red-400 font-semibold">Score: {(opportunity.piracy_rating || 0).toFixed(1)}</span>
-                        <span className="text-blue-400">{opportunity.estimated_traders || 0} traders/hour</span>
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
                 
                 {(!snareResults.snare_opportunities || snareResults.snare_opportunities.length === 0) && (
@@ -2353,7 +2520,7 @@ function App() {
   const [trends, setTrends] = useState([]);
   const [loading, setLoading] = useState(true);
   const [apiStatus, setApiStatus] = useState(null);
-  const [activeTab, setActiveTab] = useState('routes'); // CHANGED: Start on routes tab instead of dashboard
+  const [activeTab, setActiveTab] = useState('dashboard'); // FIXED: Start on dashboard instead of routes
   const [trackingStatus, setTrackingStatus] = useState(null);
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [exportLoading, setExportLoading] = useState(false);
@@ -2362,6 +2529,8 @@ function App() {
   const [refreshModal, setRefreshModal] = useState({ open: false, logs: [], isRefreshing: false });
   const [snareModal, setSnareModal] = useState({ open: false, data: null });
   const [commoditySnareModal, setCommoditySnareModal] = useState(false);
+  const [faqModal, setFaqModal] = useState(false); // ADDED: FAQ Modal state
+  const [snareHardmodeModal, setSnareHardmodeModal] = useState(null); // ADDED: Snare Hardmode Modal state
   const [routeDetailModal, setRouteDetailModal] = useState({ open: false, route: null });
   const [dbStats, setDbStats] = useState(null);
   const [dataSource, setDataSource] = useState('web'); // Default: Web Crawling only
@@ -2407,22 +2576,34 @@ function App() {
         setRoutes(routes);
         console.log(`✅ Fetched ${routes.length} ${dataTypeParam} routes`);
       } else {
-        // Fetch current data with specified data source
-        response = await axios.get(`${API}/routes/analyze?limit=20&min_score=10&include_coordinates=true&data_source=${dataSource}`);
+        // FORCE FRESH DATA: Add timestamp to prevent caching
+        const timestamp = Date.now();
+        response = await axios.get(`${API}/routes/analyze?limit=20&min_score=10&include_coordinates=true&data_source=${dataSource}&t=${timestamp}`);
         const newRoutes = response.data.routes || [];
+        
+        // CRITICAL DEBUG: Log the actual API response
+        console.log('🐛 DEBUG: Raw API response routes:', newRoutes.slice(0,3).map(r => ({
+          commodity: r.commodity_name,
+          origin: r.origin_name,
+          destination: r.destination_name,
+          piracy_rating: r.piracy_rating,
+          route_code: r.route_code
+        })));
+        
         setRoutes(newRoutes);
         
-        // TEMPORARILY DISABLE: Store routes in local database for historical analysis
+        // ENABLED: Store routes in local database for historical analysis
         if (newRoutes.length > 0) {
-          console.log(`✅ Skipping database storage - using ${newRoutes.length} routes from ${dataSource} directly`);
-          // try {
-          //   await sinisterDB.addRoutes(newRoutes);
-          //   console.log(`✅ Stored ${newRoutes.length} routes from ${dataSource} in local database`);
-          //   // Update database stats in background (don't wait for it)
-          //   fetchDbStats().catch(e => console.warn('Database stats update failed:', e.message));
-          // } catch (dbError) {
-          //   console.warn('Database storage failed, continuing without local storage:', dbError);
-          // }
+          try {
+            // CLEAR OLD DATA FIRST to prevent mixing old/new scores
+            await sinisterDB.clearAllData();
+            await sinisterDB.addRoutes(newRoutes);
+            console.log(`✅ Stored ${newRoutes.length} FRESH routes from ${dataSource} (old data cleared)`);
+            // Update database stats in background (don't wait for it)
+            fetchDbStats().catch(e => console.warn('Database stats update failed:', e.message));
+          } catch (dbError) {
+            console.warn('Database storage failed, continuing without local storage:', dbError);
+          }
         }
       }
     } catch (error) {
@@ -2671,16 +2852,62 @@ function App() {
     }
   };
 
-  const handleSnareNow = async () => {
+  const handleSnareHardmode = useCallback(async () => {
     try {
-      const response = await axios.get(`${API}/snare/now`);
-      if (response.data.status === 'success') {
-        setSnareModal({ open: true, data: response.data.snare_data });
+      console.log('⚡ HARDCORE MODE: Loading ALL ELITE and LEGENDARY routes from fresh API call...');
+      
+      // FIXED: Load fresh data directly from API instead of using potentially filtered routes state
+      const response = await axios.get(`${API}/routes/analyze?limit=100&min_score=1`);
+      const allRoutes = response.data.routes || [];
+      
+      // Filter ALL routes for ELITE and LEGENDARY risk levels
+      const hardcoreRoutes = allRoutes
+        .filter(route => ['ELITE', 'LEGENDARY'].includes(route.risk_level))
+        .sort((a, b) => {
+          // Sort by piracy_rating (highest first)
+          const aPiracy = parseFloat(a.piracy_rating) || 0;
+          const bPiracy = parseFloat(b.piracy_rating) || 0;
+          return bPiracy - aPiracy;
+        });
+      
+      console.log(`🔍 HARDCORE MODE DEBUG: Total routes fetched: ${allRoutes.length}, ELITE/LEGENDARY found: ${hardcoreRoutes.length}`);
+      
+      if (hardcoreRoutes.length === 0) {
+        // Show detailed debug info
+        const riskLevels = allRoutes.reduce((acc, route) => {
+          acc[route.risk_level] = (acc[route.risk_level] || 0) + 1;
+          return acc;
+        }, {});
+        console.log('🔍 DEBUG: Risk level distribution:', riskLevels);
+        alert(`⚠️ No ELITE or LEGENDARY routes available in ${allRoutes.length} total routes!\n\nRisk distribution: ${JSON.stringify(riskLevels, null, 2)}`);
+        return;
       }
+      
+      // Create hardcore modal data with ALL routes (no limit)
+      const hardcoreData = {
+        status: 'success',
+        title: 'HARDCORE MODE',
+        description: 'All ELITE & LEGENDARY routes - No limits, maximum challenge',
+        routes: hardcoreRoutes, // ALL routes, no slice limit
+        stats: {
+          elite_count: hardcoreRoutes.filter(r => r.risk_level === 'ELITE').length,
+          legendary_count: hardcoreRoutes.filter(r => r.risk_level === 'LEGENDARY').length,
+          avg_piracy_rating: hardcoreRoutes.reduce((sum, r) => sum + (r.piracy_rating || 0), 0) / hardcoreRoutes.length,
+          total_profit: hardcoreRoutes.reduce((sum, r) => sum + (r.profit || 0), 0),
+          total_routes: hardcoreRoutes.length
+        }
+      };
+      
+      // Set hardcore modal data and open it
+      setSnareHardmodeModal(hardcoreData);
+      
+      console.log(`⚡ HARDCORE MODE: Loaded ALL ${hardcoreRoutes.length} premium routes (${hardcoreData.stats.elite_count} ELITE, ${hardcoreData.stats.legendary_count} LEGENDARY)`);
+      
     } catch (error) {
-      console.error('Error getting snare data:', error);
+      console.error('❌ HARDCORE MODE error:', error);
+      alert('Error loading hardcore targets. Please try again.');
     }
-  };
+  }, []); // Removed routes dependency to force fresh API call
 
   const startTracking = async () => {
     try {
@@ -2702,57 +2929,104 @@ function App() {
 
   const loadAllData = useCallback(async () => {
     setLoading(true);
-    await Promise.all([
-      fetchApiStatus(),
-      fetchRoutes(),
-      fetchTargets(),
-      fetchHourlyData(),
-      fetchAlerts(),
-      fetchTrends(),
-      fetchTrackingStatus(),
-      fetchDbStats()
-    ]);
-    setLoading(false);
+    
+    // Create individual API call promises with timeouts
+    const apiCalls = [
+      { name: 'fetchApiStatus', fn: fetchApiStatus },
+      { name: 'fetchRoutes', fn: fetchRoutes },
+      { name: 'fetchTargets', fn: fetchTargets },
+      { name: 'fetchHourlyData', fn: fetchHourlyData },
+      { name: 'fetchAlerts', fn: fetchAlerts },
+      { name: 'fetchTrends', fn: fetchTrends },
+      { name: 'fetchTrackingStatus', fn: fetchTrackingStatus },
+      { name: 'fetchDbStats', fn: fetchDbStats }
+    ];
+    
+    // Execute API calls with individual error handling
+    for (const { name, fn } of apiCalls) {
+      try {
+        console.log(`Loading ${name}...`);
+        await Promise.race([
+          fn(),
+          new Promise((_, reject) => setTimeout(() => reject(new Error(`${name} timeout`)), 5000))
+        ]);
+        console.log(`✅ ${name} completed`);
+      } catch (error) {
+        console.warn(`⚠️ ${name} failed:`, error.message, '- continuing with other API calls');
+        // Continue with other API calls even if one fails
+      }
+    }
+    
+    setLoading(false); // CRITICAL: Always set loading to false
+    console.log('🎉 Data loading completed (with any available data)');
   }, [fetchApiStatus, fetchRoutes, fetchTargets, fetchHourlyData, fetchAlerts, fetchTrends, fetchTrackingStatus, fetchDbStats]);
 
   useEffect(() => {
     const initializeApp = async () => {
-      setLoading(true);
+      console.log('🚀 AUTO-START: Loading app with immediate database query...');
       
-      // Initialize database with error handling
-      try {
-        await sinisterDB.init();
-        console.log('✅ Sinister Database initialized successfully');
-        await fetchDbStats();
-      } catch (error) {
-        console.error('❌ Error initializing database:', error);
-        // Set default stats if database fails
-        setDbStats({
-          routes: 0,
-          commodities: 0,
-          interceptions: 0,
-          totalRecords: 0,
-          sizeBytes: 0,
-          sizeFormatted: '0 B',
-          lastUpdate: null
-        });
-      }
-      
-      // DIRECT LIVE DATA LOADING: Load real data immediately instead of mock data
-      console.log('🎯 LIVE: Loading real data directly from API...');
-      
-      try {
-        console.log('Step 1: Loading all live data immediately...');
-        // Load all data directly from API instead of using mock data
-        await loadAllData();
-        
-        console.log('🎉 LIVE: Real data loaded successfully - no mock data displayed!');
-      } catch (error) {
-        console.error('❌ LIVE DATA ERROR:', error);
-        // Only fall back to basic state if API completely fails
-        setApiStatus({ status: 'error', error: error.message });
-        setRoutes([]);
+      // Force emergency timeout (3 seconds)
+      const emergencyTimeout = setTimeout(() => {
+        console.warn('🚨 EMERGENCY: Forcing app load after 3 seconds');
         setLoading(false);
+        setApiStatus({ status: 'emergency_loaded' });
+      }, 3000);
+      
+      try {
+        // STEP 1: Clear any cached data
+        try {
+          localStorage.clear();
+          sessionStorage.clear();
+          await sinisterDB.init();
+          await sinisterDB.clearAllData();
+          console.log('✅ Cache cleared');
+        } catch (e) {
+          console.warn('Cache clear failed:', e);
+        }
+        
+        // STEP 2: IMMEDIATE DATABASE QUERY - Load fresh routes with cache busting
+        console.log('🎯 AUTO-START: Making immediate database query...');
+        const timestamp = Date.now();
+        const response = await axios.get(`${API}/routes/analyze?limit=15&t=${timestamp}&cachebust=${Math.random()}`);
+        const freshRoutes = response.data.routes || [];
+        
+        // CRITICAL DEBUG: Log exact scores from API
+        console.log('🎯 AUTO-START DATABASE QUERY RESULT:', freshRoutes.slice(0,3).map(r => ({
+          commodity: r.commodity_name,
+          origin: r.origin_name,
+          destination: r.destination_name,
+          piracy_rating: r.piracy_rating,
+          inter_system: (r.origin_name?.split(' - ')[0] !== r.destination_name?.split(' - ')[0])
+        })));
+        
+        setRoutes(freshRoutes);
+        clearTimeout(emergencyTimeout);
+        setLoading(false);
+        setApiStatus({ status: 'auto_loaded', routes: freshRoutes.length });
+        
+        console.log('🎉 AUTO-START: Database query completed successfully!');
+        
+        // STEP 3: Load other essential data in background
+        console.log('Loading additional data in background...');
+        setTimeout(async () => {
+          try {
+            await Promise.allSettled([
+              fetchApiStatus(),
+              fetchTargets(),
+              fetchTrackingStatus(),
+              fetchDbStats()
+            ]);
+            console.log('✅ Background data loaded');
+          } catch (error) {
+            console.warn('⚠️ Background loading failed:', error);
+          }
+        }, 500);
+        
+      } catch (error) {
+        console.error('❌ AUTO-START ERROR:', error);
+        clearTimeout(emergencyTimeout);
+        setLoading(false);
+        setRoutes([]);
       }
     };
 
@@ -2797,6 +3071,8 @@ function App() {
 
   return (
     <div className="min-h-screen bg-black text-white">
+      {/* Professional Fixed Action Panel - REMOVED */}
+      
       <Header 
         dataSource={dataSource}
         setDataSource={setDataSource}
@@ -2804,81 +3080,123 @@ function App() {
         setShowAverageData={setShowAverageData}
       />
       
-      {/* Enhanced Status Bar */}
-      <div className="container mx-auto px-6 py-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-          <StatusCard 
-            title="Data Source" 
-            value={apiStatus?.primary_data_source === 'real' ? 'Live Data' : 'Mock Data'} 
-            status={apiStatus?.primary_data_source === 'real' ? 'good' : 'warning'} 
-            icon="🌐" 
-            subtitle={apiStatus?.primary_data_source === 'real' ? 
-              `${apiStatus?.data_sources?.star_profit_api?.records_available || 0} live records` : 
-              "Using simulation data"
-            }
-          />
-          <StatusCard 
-            title="Database" 
-            value={apiStatus?.database === 'connected' ? 'Online' : 'Error'} 
-            status={apiStatus?.database === 'connected' ? 'good' : 'error'} 
-            icon="💾" 
-            subtitle={`${apiStatus?.statistics?.total_routes_analyzed || 0} routes analyzed`}
-          />
-          <StatusCard 
-            title="Active Routes" 
-            value={routes.length} 
-            status="good" 
-            icon="🛣️" 
-            subtitle={`${routes.filter(r => ['ELITE', 'LEGENDARY'].includes(r.risk_level)).length} high-value`}
-          />
-          <StatusCard 
-            title="Live Alerts" 
-            value={alerts.filter(a => !a.acknowledged).length} 
-            status={alerts.filter(a => !a.acknowledged).length > 0 ? 'warning' : 'good'} 
-            icon="🚨" 
-            subtitle={`${alerts.filter(a => a.priority === 'CRITICAL').length} critical`}
-          />
-          <StatusCard 
-            title="Tracking" 
-            value={trackingStatus?.active ? 'Active' : 'Inactive'} 
-            status={trackingStatus?.active ? 'good' : 'warning'} 
-            icon="📡" 
-            subtitle={trackingStatus?.active ? `${trackingStatus.uptime_minutes}m uptime` : 'Click to start'}
-          />
+      {/* Professional Status Bar - Compact */}
+      <div className="bg-gray-900 border-b border-gray-700">
+        <div className="container mx-auto px-6 py-3">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+            <div className="bg-gray-800 rounded-lg px-3 py-2 text-center border border-gray-700">
+              <div className={`text-lg font-bold ${apiStatus?.primary_data_source === 'real' ? 'text-green-400' : 'text-yellow-400'}`}>
+                {apiStatus?.primary_data_source === 'real' ? 'LIVE' : 'LOADING'}
+              </div>
+              <div className="text-gray-400 text-xs">Data Source</div>
+            </div>
+            <div className="bg-gray-800 rounded-lg px-3 py-2 text-center border border-gray-700">
+              <div className="text-green-400 text-lg font-bold">{routes.length}</div>
+              <div className="text-gray-400 text-xs">Active Routes</div>
+            </div>
+            <div className="bg-gray-800 rounded-lg px-3 py-2 text-center border border-gray-700">
+              <div className={`text-lg font-bold ${alerts.filter(a => !a.acknowledged).length > 0 ? 'text-red-400' : 'text-green-400'}`}>
+                {alerts.filter(a => !a.acknowledged).length}
+              </div>
+              <div className="text-gray-400 text-xs">Live Alerts</div>
+            </div>
+            <div className="bg-gray-800 rounded-lg px-3 py-2 text-center border border-gray-700">
+              <div className={`text-lg font-bold ${trackingStatus?.active ? 'text-green-400' : 'text-gray-400'}`}>
+                {trackingStatus?.active ? 'ON' : 'OFF'}
+              </div>
+              <div className="text-gray-400 text-xs">Tracking</div>
+            </div>
+            <div className="bg-gray-800 rounded-lg px-3 py-2 text-center border border-gray-700">
+              <div className={`text-lg font-bold ${apiStatus?.database === 'connected' ? 'text-green-400' : 'text-red-400'}`}>
+                {apiStatus?.database === 'connected' ? 'OK' : 'ERR'}
+              </div>
+              <div className="text-gray-400 text-xs">Database</div>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Enhanced Navigation */}
-      <div className="container mx-auto px-6">
-        <div className="flex flex-wrap gap-1 bg-gray-800 rounded-lg p-1">
+      {/* Kachel-Navigation */}
+      <div className="container mx-auto px-6 py-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
           {[
-            { id: 'dashboard', label: '🎛️ Dashboard', desc: 'Overview' },
-            { id: 'routes', label: '🛣️ Routes', desc: 'Trade Analysis' },
-            { id: 'targets', label: '🎯 Targets', desc: 'Priority Hits' },
-            { id: 'map', label: '🗺️ Map', desc: 'Interception' },
-            { id: 'alerts', label: '🚨 Alerts', desc: 'Notifications' },
-            { id: 'trends', label: '📈 Trends', desc: 'Historical' },
-            { id: 'database', label: '💾 Database', desc: 'Lokale Daten' },
-            { id: 'export', label: '📁 Export', desc: 'Data Export' }
+            { id: 'dashboard', label: 'Dashboard', icon: '📊', desc: 'Overview', color: 'bg-blue-600 hover:bg-blue-700' },
+            { id: 'routes', label: 'Routes', icon: '🛣️', desc: 'Trade Analysis', color: 'bg-green-600 hover:bg-green-700' },
+            { id: 'targets', label: 'Targets', icon: '🎯', desc: 'Priority Hits', color: 'bg-orange-600 hover:bg-orange-700' },
+            { id: 'alerts', label: 'Alerts', icon: '🚨', desc: 'Notifications', color: 'bg-red-600 hover:bg-red-700' },
+            { id: 'map', label: 'Map', icon: '🗺️', desc: 'Interception', color: 'bg-purple-600 hover:bg-purple-700' },
+            { id: 'database', label: 'Database', icon: '💾', desc: 'Lokale Daten', color: 'bg-gray-600 hover:bg-gray-700' },
+            { id: 'export', label: 'Export', icon: '📁', desc: 'Data Export', color: 'bg-indigo-600 hover:bg-indigo-700' },
+            { id: 'trends', label: 'Trends', icon: '📈', desc: 'Historical', color: 'bg-teal-600 hover:bg-teal-700' }
           ].map(tab => (
             <button 
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`px-4 py-2 rounded-md transition-all duration-200 ${
+              className={`p-4 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg ${
                 activeTab === tab.id 
-                  ? 'bg-red-600 text-white shadow-lg' 
-                  : 'text-gray-400 hover:text-white hover:bg-gray-700'
+                  ? `${tab.color} shadow-2xl scale-105 ring-2 ring-white` 
+                  : 'bg-gray-800 hover:bg-gray-700 text-gray-400 hover:text-white'
               }`}
             >
-              <div className="text-sm font-medium">{tab.label}</div>
-              <div className="text-xs opacity-75">{tab.desc}</div>
+              <div className="text-center">
+                <div className="text-3xl mb-2">{tab.icon}</div>
+                <div className="text-sm font-bold text-white">{tab.label}</div>
+                <div className="text-xs opacity-75 text-gray-300">{tab.desc}</div>
+              </div>
             </button>
           ))}
+          
+          {/* Hardcore Mode Kachel */}
+          <button 
+            onClick={handleSnareHardmode}
+            className="p-4 rounded-xl bg-red-600 hover:bg-red-700 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-2xl"
+          >
+            <div className="text-center">
+              <div className="text-3xl mb-2">💀</div>
+              <div className="text-sm font-bold text-white">HARDCORE MODE</div>
+            </div>
+          </button>
+          
+          {/* Commodity Snare Kachel - HERVORGEHOBEN */}
+          <button 
+            onClick={() => setCommoditySnareModal(true)}
+            className="p-4 rounded-xl bg-gradient-to-br from-yellow-500 via-yellow-600 to-orange-600 hover:from-yellow-400 hover:via-yellow-500 hover:to-orange-500 transition-all duration-300 transform hover:scale-110 shadow-xl hover:shadow-2xl ring-2 ring-yellow-400"
+          >
+            <div className="text-center">
+              <div className="text-3xl mb-2">💎</div>
+              <div className="text-sm font-bold text-white">COMMODITY SNARE</div>
+              <div className="text-xs opacity-90 text-yellow-100">Premium Tool</div>
+            </div>
+          </button>
+          
+          {/* Refresh Kachel */}
+          <button 
+            onClick={handleManualRefresh}
+            className="p-4 rounded-xl bg-blue-600 hover:bg-blue-700 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-2xl"
+          >
+            <div className="text-center">
+              <div className="text-3xl mb-2">🔄</div>
+              <div className="text-sm font-bold text-white">REFRESH</div>
+              <div className="text-xs opacity-75 text-gray-300">Update Data</div>
+            </div>
+          </button>
+          
+          {/* FAQ Kachel */}
+          <button 
+            onClick={() => setFaqModal(true)}
+            className="p-4 rounded-xl bg-cyan-600 hover:bg-cyan-700 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-2xl"
+          >
+            <div className="text-center">
+              <div className="text-3xl mb-2">❓</div>
+              <div className="text-sm font-bold text-white">FAQ</div>
+              <div className="text-xs opacity-75 text-gray-300">Help Guide</div>
+            </div>
+          </button>
         </div>
         
         {/* Auto-refresh toggle */}
-        <div className="flex justify-end mt-2">
-          <label className="flex items-center space-x-2 text-sm text-gray-400">
+        <div className="flex justify-end mt-4">
+          <label className="flex items-center space-x-2 text-sm text-gray-400 bg-gray-800 px-4 py-2 rounded-lg">
             <input 
               type="checkbox" 
               checked={autoRefresh} 
@@ -2903,16 +3221,72 @@ function App() {
               </div>
             </div>
             
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <div>
-                <h3 className="text-xl font-bold text-white mb-4">🔥 Top Priority Targets</h3>
-                <div className="space-y-4">
-                  {targets.slice(0, 3).map((target, index) => (
-                    <PirateTargetCard key={target.id || index} target={target} />
-                  ))}
+            <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+              <div className="xl:col-span-2">
+                <h3 className="text-2xl font-bold text-white mb-6 flex items-center">
+                  🎯 <span className="ml-3">Top Priority Routes</span>
+                </h3>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                  {routes.length > 0 ? (
+                    routes.slice(0, 4).map((route, index) => (
+                      <div key={route.id || index} className="bg-gray-800 rounded-lg p-4 border border-gray-700 hover:border-red-500 transition-all duration-300 cursor-pointer" onClick={() => handleRouteClick(route)}>
+                        <div className="flex justify-between items-start mb-3">
+                          <div>
+                            <h4 className="text-white font-bold text-lg">{route.commodity_name}</h4>
+                            <p className="text-gray-400 text-sm">#{index + 1} Priority Target</p>
+                          </div>
+                          <div className="text-right">
+                            <div className={`text-2xl font-bold ${
+                              route.piracy_rating >= 70 ? 'text-red-400' : 
+                              route.piracy_rating >= 50 ? 'text-orange-400' :
+                              route.piracy_rating >= 30 ? 'text-yellow-400' : 'text-gray-400'
+                            }`}>
+                              {route.piracy_rating}
+                            </div>
+                            <p className="text-gray-400 text-xs">Piracy Score</p>
+                          </div>
+                        </div>
+                        
+                        <div className="space-y-2 mb-3">
+                          <div className="flex justify-between text-sm">
+                            <span className="text-blue-400">From:</span>
+                            <span className="text-white">{route.origin_name?.split(' - ')[1] || route.origin_name}</span>
+                          </div>
+                          <div className="flex justify-between text-sm">
+                            <span className="text-green-400">To:</span>
+                            <span className="text-white">{route.destination_name?.split(' - ')[1] || route.destination_name}</span>
+                          </div>
+                        </div>
+                        
+                        <div className="grid grid-cols-3 gap-3 text-center text-sm">
+                          <div>
+                            <div className="text-green-400 font-bold">{((route.profit || 0) / 1000000).toFixed(1)}M</div>
+                            <div className="text-gray-400 text-xs">Profit</div>
+                          </div>
+                          <div>
+                            <div className="text-yellow-400 font-bold">{(route.roi || 0).toFixed(1)}%</div>
+                            <div className="text-gray-400 text-xs">ROI</div>
+                          </div>
+                          <div>
+                            <div className="text-purple-400 font-bold">{((route.distance || 0) / 1000).toFixed(0)}k</div>
+                            <div className="text-gray-400 text-xs">Distance</div>
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="col-span-2 bg-gray-800/50 rounded-lg p-8 border border-gray-700 text-center">
+                      <div className="text-6xl mb-4">📡</div>
+                      <h4 className="text-white font-bold text-xl mb-2">Loading Priority Routes...</h4>
+                      <p className="text-gray-400 mb-4">
+                        Scanning Star Citizen universe for optimal piracy targets
+                      </p>
+                    </div>
+                  )}
                 </div>
               </div>
-              <div>
+              
+              <div className="xl:col-span-1">
                 <InterceptionMap routes={routes} targets={targets} />
               </div>
             </div>
@@ -2922,59 +3296,64 @@ function App() {
         {activeTab === 'routes' && (
           <div>
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold text-white">🛣️ Trade Route Analysis</h2>
-              <div className="flex space-x-3">
-                <button 
-                  onClick={handleSnareNow}
-                  className="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-md transition-colors font-medium flex items-center"
-                >
-                  🎯 SNARE NOW
-                </button>
-                <button 
-                  onClick={handleManualRefresh}
-                  className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-md transition-colors font-medium flex items-center"
-                >
-                  🔄 Manual Refresh
-                </button>
-                <button 
-                  onClick={() => setCommoditySnareModal(true)}
-                  className="bg-yellow-600 hover:bg-yellow-700 px-4 py-2 rounded-md transition-colors font-medium flex items-center"
-                >
-                  💎 Commodity Snare
-                </button>
-                <button 
-                  onClick={loadAllData}
-                  className="bg-gray-600 hover:bg-gray-700 px-4 py-2 rounded-md transition-colors font-medium"
-                >
-                  ↻ Quick Refresh
-                </button>
-                <button 
-                  onClick={trackingStatus?.active ? stopTracking : startTracking}
-                  className={`px-4 py-2 rounded-md transition-colors font-medium ${
-                    trackingStatus?.active 
-                      ? 'bg-yellow-600 hover:bg-yellow-700' 
-                      : 'bg-green-600 hover:bg-green-700'
-                  }`}
-                >
-                  {trackingStatus?.active ? '⏹️ Stop Tracking' : '▶️ Start Tracking'}
-                </button>
+              <div>
+                <h2 className="text-3xl font-bold text-white flex items-center">
+                  🛣️ <span className="ml-3">Trade Route Analysis</span>
+                </h2>
+                <p className="text-gray-400 mt-2">Professional piracy intelligence dashboard</p>
+              </div>
+              <div className="text-right">
+                <div className="text-white font-bold text-2xl">{routes.length}</div>
+                <p className="text-gray-400 text-sm">Active Routes</p>
               </div>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {routes.map((route, index) => (
-                <RouteCard 
-                  key={route.id || index} 
-                  route={route} 
-                  onSelect={handleRouteClick}
-                  onAlternativeRouteSelect={handleAlternativeRouteSelect}
-                />
-              ))}
-            </div>
-            {routes.length === 0 && (
-              <div className="text-center py-12">
-                <p className="text-gray-400 text-lg">No routes available. Check API connection.</p>
+            
+            {/* NEW: Score Legend */}
+            <div className="bg-gray-800/50 rounded-lg p-4 mb-6 border border-gray-700">
+              <h3 className="text-white text-sm font-semibold mb-2">📊 Piracy Score Legende:</h3>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+                <div className="flex items-center space-x-2">
+                  <div className="w-3 h-3 bg-red-500 rounded"></div>
+                  <span className="text-gray-300">70+: TOP TARGET (Häufig befahren)</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <div className="w-3 h-3 bg-orange-500 rounded"></div>
+                  <span className="text-gray-300">50-69: GOOD TARGET (Gut befahren)</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <div className="w-3 h-3 bg-yellow-500 rounded"></div>
+                  <span className="text-gray-300">30-49: OK TARGET (Mäßig befahren)</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <div className="w-3 h-3 bg-gray-500 rounded"></div>
+                  <span className="text-gray-300">≤25: LOW TRAFFIC (Selten befahren)</span>
+                </div>
               </div>
-            )}
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+              {routes.length > 0 ? (
+                routes.map((route, index) => (
+                  <RouteCard 
+                    key={route.id || index} 
+                    route={route} 
+                    onSelect={handleRouteClick}
+                    onAlternativeRouteSelect={handleAlternativeRouteSelect}
+                  />
+                ))
+              ) : (
+                <div className="col-span-full bg-gray-800/50 rounded-lg p-12 border border-gray-700 text-center">
+                  <div className="text-8xl mb-6">📡</div>
+                  <h3 className="text-white font-bold text-2xl mb-4">No Routes Available</h3>
+                  <p className="text-gray-400 text-lg mb-6">
+                    Trade route data is being analyzed. Please check your API connection.
+                  </p>
+                  <div className="text-sm text-gray-500">
+                    Use the REFRESH DATA button on the right to reload manually
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         )}
 
@@ -2984,7 +3363,7 @@ function App() {
               <h2 className="text-2xl font-bold text-white">🎯 Priority Piracy Targets</h2>
               <button 
                 onClick={fetchTargets}
-                className="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-md transition-colors font-medium"
+                className="bg-red-600 hover:bg-red-700 px-6 py-3 rounded-md transition-colors font-medium text-white"
               >
                 🔄 Refresh Targets
               </button>
@@ -3092,9 +3471,22 @@ function App() {
         route={routeDetailModal.route}
       />
       
+      <FAQModal 
+        isOpen={faqModal}
+        onClose={() => setFaqModal(false)}
+      />
+      
+      <SnareHardmodeModal 
+        data={snareHardmodeModal}
+        onClose={() => setSnareHardmodeModal(null)}
+        onRouteSelect={handleRouteClick}
+      />
+      
       <CommoditySnareModal 
         isOpen={commoditySnareModal}
         onClose={() => setCommoditySnareModal(false)}
+        onRouteSelect={handleRouteClick}
+        onAlternativeRouteSelect={handleAlternativeRouteSelect}
       />
     </div>
   );

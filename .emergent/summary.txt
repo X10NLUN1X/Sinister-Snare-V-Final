@@ -1,96 +1,58 @@
 <analysis>
-The trajectory chronicles the iterative development and extensive bug fixing of Sinister Snare, a Star Citizen piracy intelligence platform. Initially, the AI engineer addressed core application stability, fixing frontend auto-closing issues, ensuring backend database connections, and migrating entirely to the Star Profit API. Subsequent efforts focused on advanced features like IndexedDB persistence, SnarePlan integration, dynamic data source selection, commodity expansion, and a Merge feature for routes with averaging logic.
-
-The conversation then shifted to critical bug resolution in two major phases. The first phase rectified frontend connectivity issues (manual refresh, commodity snare 404, unknown origins, missing price/stock data) by adjusting frontend state handling, creating missing backend endpoints, and updating data models, despite a transient  misconfiguration. The second phase, triggered by new user reports, involved refactoring backend logic to provide diverse commodity routes, implement database upserts, and calculate median values for averaged data. Currently, the AI is debugging the latest issue of incorrect terminal/commodity names by aligning backend data parsing with the actual Star Profit API field names. The process demonstrates robust debugging and an iterative approach to complex feature development and bug resolution.
+The AI engineer successfully transformed a basic application from exhibiting mock data to displaying live, refined data with numerous UI/UX enhancements and critical bug fixes. The journey involved extensive debugging across both frontend (React) and backend (FastAPI) components, addressing data inconsistencies, performance bottlenecks, and user-reported design flaws. Key accomplishments include implementing a realistic piracy scoring system, ensuring interactive elements, correcting geographic data, and creating specialized modes like Hardcore Mode and Commodity Snare. The agent demonstrated proficiency in identifying root causes, applying targeted fixes, and adapting to user feedback, even when it meant reverting complete UI redesigns. The immediate next steps focus on refining the Hardcore Mode display, correcting terminology, and updating icons.
 </analysis>
 
 <product_requirements>
-Sinister Snare is a React, FastAPI, MongoDB application for Star Citizen piracy intelligence. It integrates with the Star Profit API for real-time market data, analyzes trading routes, and suggests piracy interception points, supporting CSV/JSON exports. Key features include Manual Refresh, Snare Now, and Commodity Snare buttons, local IndexedDB storage, and accurate in-game mapping. Recent enhancements (v5.0) added a dynamic route limit, clickable route details with SnarePlan integration, a data source dropdown, full commodity/terminal support, a Merge button with averaging logic, and current/averaged data views. User requests evolved to:
-1.  Ensure correct terminal and commodity names, strictly from Star Profit API/verified web sources.
-2.  Implement a terminal-to-system mapping for Stanton/Pyro, prioritizing API names, then reliable web sources.
-3.  Set Web Crawling as the primary data source, keeping API as secondary.
-4.  Add a dropdown for alternative routes in Financial Analysis, displaying exact homepage-like data.
-5.  Display Updated: DD.MM.YY HH:mmh timestamp instead of data source info.
-6.  Make alternative routes clickable to update the main view.
-7.  Redesign Open in Snareplan button (red, pirate flag) and replace Begin Hunt with a generic close button.
-8.  Implement internal mapping for Snareplan compatibility (terminal to parent celestial body, excluding specific Lagrange points).
-9.  Overhaul Piracy Score to a 0-100 scale based on profit margin, route popularity/distance, and stock availability.
-10. Change UI connection text from Star Profit WEB to UEXCorp.
+The Sinister Snare application is a Star Citizen Piracy Intelligence System aimed at helping players identify profitable and dangerous trade routes.
+Initially, the app displayed mock data. The first major requirement was to show live data from the backend. Subsequent requests focused on:
+1.  **Data Accuracy & Functionality**: Fix incorrect numbers in Local Database Management, show real Live Tracking uptime, and display correct Investment/ROI values in Commodity Snare.
+2.  **Realistic Piracy Scoring**: Implement a realistic V2.0 Piracy Score, de-emphasizing inter-system routes and prioritizing system-internal ones.
+3.  **UI/UX Improvements**: Redesign the UI for better aesthetics (e.g., Apple-inspired, then reverted), adjust component sizes, ensure interactive elements (Dashboard Top 3, Commodity Snare), and consolidate action buttons (Refresh, Commodity Snare, Snare Nuke/Hardcore Mode) into the main navigation.
+4.  **Content & Information**: Correct Star Citizen geographic data in Snare Mapping, re-add missing Commodity Snare functionality, provide clear definitions for metrics via an FAQ.
+5.  **Specialized Modes**: Develop a Hardcore Mode to display only ELITE/LEGENDARY piracy targets with highest intercept rates.
+6.  **Performance & Stability**: Resolve infinite loading issues and ensure the application remains responsive and stable through comprehensive debugging.
 </product_requirements>
 
 <key_technical_concepts>
--   **Full-stack Architecture**: React.js, FastAPI, MongoDB.
--   **API Integration**: Star Profit API, external .
--   **Local Storage**: IndexedDB (client-side persistence).
--   **Environment Management**:  files.
--   **Frontend Tooling**: CRACO, Tailwind CSS.
--   **Data Serialization**: UUIDs for MongoDB IDs, ISO format for .
--   **Web Scraping**: Custom Beautiful Soup parsing.
--   **State Management**: React Hooks (, , ).
+-   **React**: Frontend framework for dynamic UI.
+-   **FastAPI**: Backend framework for API endpoints.
+-   **MongoDB**: Database for persistent data storage.
+-   **Tailwind CSS**: Utility-first CSS framework for styling.
+-   **IndexedDB**: Browser-side storage for client-side caching.
+-   **backend                          RUNNING   pid 26, uptime 0:00:05
+code-server                      RUNNING   pid 28, uptime 0:00:05
+frontend                         STOPPING  
+mongodb                          RUNNING   pid 34, uptime 0:00:05
+supervisor> **: Tool for managing and restarting application services.
+-   **API Design**: Use of  prefix for backend routes,  for backend variables,  for frontend variables.
 </key_technical_concepts>
 
 <code_architecture>
-The application employs a standard full-stack architecture, featuring a React frontend, a FastAPI backend, and a MongoDB database for persistent storage. Frontend client-side data persistence is handled by IndexedDB.
-
-**Directory Structure:**
-
-
-**Key Files and Changes:**
+The application has a standard full-stack structure:
 
 -   
-    -   **Importance**: Core FastAPI application, managing API endpoints, data processing, and MongoDB interactions.
-    -   **Summary of Changes**:
-        -   MongoDB connection fixed;  serialization replaced with UUIDs.
-        -   Migrated from UEXCorp to Star Profit API; UEX references were re-introduced as UI text changes later.
-        -   Added  endpoint and fixed it to use fresh data instead of potentially corrupted database entries.
-        -    enhanced to correctly extract and map origin/destination systems/terminals, evolving from lore-based to strictly API-driven with a known Stanton, else Pyro rule.  was removed.
-        -   Route storage logic updated to use  with .
-        -   Web crawling logic in  was completely overhauled to extract real data from the Star Profit website.
-        -   Default data source for all endpoints changed from 'api' to 'web'.
-        -   New endpoint  created for alternative routes dropdown.
-        -    was entirely re-implemented to a 0-100 scale, incorporating profit margin, route popularity/distance, and stock.
-        -   All relevant log and  strings (, ) were changed to .
-
+    -   **Importance**: This file contains the entire FastAPI backend logic, defining all API endpoints, database interactions, and the core business logic for calculating piracy scores and categorizing risk levels.
+    -   **Changes Made**: Significant modifications include refining the  function for the Realistic Piracy Score V2.0 and later adjusting its thresholds; fixing data fetching for ; initializing ; correcting geographic mappings for various Star Citizen locations (e.g., Ashland, Deakins Research, CRU-L5); ensuring  opportunity objects returned correct , , and other data; adding a missing  endpoint; and resolving MongoDB ObjectId serialization errors.
 -   
-    -   **Importance**: Main React component for UI, state management, and API calls.
-    -   **Summary of Changes**:
-        -   Resolved startup issues and integrated IndexedDB.
-        -   Implemented UI for Manual Refresh, Snare Now, Commodity Snare, Merge, dynamic route limit, data source dropdown, and average data toggle.
-        -    was updated for robust error handling (timeout, detailed categorization).
-        -    usage was fixed to consistently use  and point to .
-        -   API option removed from data source dropdown, and default set to web. Auto-refresh changed from 30 seconds to 60 minutes.
-        -   Logic for displaying Updated: DD.MM.YY HH:mmh timestamp was added.
-        -    was created and integrated directly into .
-        -    was re-implemented to make alternative routes clickable, updating the main view.
-        -   Open in Snareplan button was redesigned (red, pirate flag icon). Begin Hunt button was changed to a generic close button.
-        -    and  function implemented for Snareplan compatibility, with exclusions for Lagrange points.
-        -   Fixed  definition/scope issues to resolve compilation errors.
-
--   
-    -   **Importance**: Stores environment variables like .
-    -   **Summary of Changes**: Modified  from an external production URL to  (internal backend port) to resolve frontend connectivity issues.
-
--   
-    -   **Importance**: Documents problem statements, testing protocols, and agent communications.
-    -   **Summary of Changes**: Regularly updated by the AI engineer to log issues, fixes, and test results throughout the development process.
+    -   **Importance**: This is the main React component. It orchestrates the entire user interface, managing application state, active tabs, data fetching from the backend, rendering different sections (Dashboard, Routes, Map, etc.), and handling user interactions. It integrates all modals and interactive elements.
+    -   **Changes Made**: Extensively modified to remove mock data, re-enable  functionality, implement various performance optimizations (sequential API calls, timeouts, cache-busting), update UI elements (button sizes, layout proportions, complete redesigns and reverts), integrate new features (FAQ, Commodity Snare, Hardcore Mode), ensure data consistency and interactivity for displayed routes (Dashboard, Commodity Snare), and fix data display bugs (e.g., 0% ROI values) using fallback defaults.
 </code_architecture>
 
 <pending_tasks>
--   **UI Layering Issue**: A modal-overlay () in the frontend sometimes intercepts pointer events, preventing users from clicking on the alternative routes displayed in the dropdown table. This is identified as a UI layering (z-index) problem.
+-   Update all remaining instances of Piracy Rating to Piracy Score throughout the UI.
+-   Ensure that the Hardcore Mode accurately displays *all* ELITE commodities.
+-   Change the icon for the Hardcore Mode button from a lightning bolt (⚡) to a pirate skull (totenkopf).
 </pending_tasks>
 
 <current_work>
-Immediately before this summary request, the AI engineer was addressing the user's explicit report that the Alternative Routes functionality was still not interactive, meaning clicking an alternative route did not update the main view.
+The immediate work involved debugging and refining the Hardcore Mode functionality. Previously, the user reported that Gold, an ELITE commodity, was not being displayed in Hardcore Mode, and the mode incorrectly showed no ELITE or LEGENDARY routes despite their existence in the backend.
 
-The AI identified that the  callback function within the  component was not correctly connected to the main application state to trigger a route update. To resolve this, the AI completely re-implemented the  function in . This updated function now correctly integrates the selected alternative route into the main  state, ensuring that the UI reacts and displays the new route's details.
-
-During this process, a critical compilation error, , repeatedly occurred in the frontend. The AI debugged this by relocating and then inlining the  logic to ensure it was correctly scoped and accessible where needed, thereby resolving the compilation issue.
-
-Final testing confirmed that the  is now fully functional: it opens, displays a comprehensive list of commodity-specific terminals (e.g., 38 terminals for Aluminum), and the application's Piracy Scores (on a 0-100 scale) are correctly calculated and displayed for these routes. The system successfully processes data from the web crawling source through the backend to the frontend.
-
-A minor, non-critical issue was noted: a UI layering problem (a modal-overlay) might sometimes prevent direct clicks on the alternative routes within the dropdown table, although the underlying logic for selecting and updating routes is sound.
+The AI engineer discovered a data inconsistency where the Hardcore Mode was relying on a global  state that did not contain all ELITE routes, while the  correctly identified Gold as ELITE (with a Piracy Score of 80). The fix involved:
+1.  Reverting the  thresholds in  to their original values (ELITE: 80+, LEGENDARY: 90+).
+2.  Modifying the  component in  to make its *own fresh API call* to  instead of depending on the potentially outdated  state. This ensures it retrieves all available routes for accurate filtering.
+This was intended to ensure Gold, and other ELITE routes, are correctly identified and displayed. However, the user's latest feedback indicates that some aspects (Piracy Rating vs. Score, all ELITE commodities not showing, icon) still need attention.
 </current_work>
 
 <optional_next_step>
-Address the minor UI layering issue (z-index/modal-overlay) that prevents clicking on alternative routes within the dropdown table.
+Address the user's request to change Piracy Rating to Piracy Score in all UI instances.
 </optional_next_step>
