@@ -3278,6 +3278,11 @@ function App() {
   const [dataSource, setDataSource] = useState('web'); // Default: Web Crawling only
   const [showAverageData, setShowAverageData] = useState(false); // Toggle between average and current data
 
+  // Race condition protection
+  const isRequestPending = useRef(false);
+  const requestQueue = useRef(new Set());
+  const abortController = useRef(null);
+
   const fetchApiStatus = useCallback(async () => {
     try {
       const response = await axios.get(`${API}/status`);
