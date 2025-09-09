@@ -3539,7 +3539,7 @@ function App() {
                 {/* Sinister Snare Button */}
                 <button
                   onClick={() => setSnarePlanModal(true)}
-                  className="p-6 rounded-xl bg-gradient-to-br from-red-600 via-red-700 to-red-800 hover:from-red-500 hover:via-red-600 hover:to-red-700 transition-all duration-300 transform hover:scale-105 shadow-xl border-2 border-red-500"
+                  className="p-6 rounded-xl bg-gradient-to-br from-gray-600 via-gray-700 to-gray-800 hover:from-gray-500 hover:via-gray-600 hover:to-gray-700 transition-all duration-300 transform hover:scale-105 shadow-xl border-2 border-gray-500"
                 >
                   <div className="text-center">
                     <div className="text-4xl mb-3">🎯</div>
