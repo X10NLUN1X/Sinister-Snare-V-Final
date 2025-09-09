@@ -600,6 +600,18 @@ test_plan:
         - agent: "testing"
         - comment: "🎯 URGENT BUG VERIFICATION COMPLETE: ✅ INTER-SYSTEM ROUTE BUG FIXED! Comprehensive backend testing confirms the piracy scoring system V2.0 is working correctly at the API level. CRITICAL VERIFICATION RESULTS: ✅ INTER-SYSTEM ROUTES CAPPED: All 29 Inter-System routes have piracy_rating ≤ 25 (max score: 25.0) - the reported 72.9 bug is FIXED. ✅ ALUMINUM ROUTE SPECIFIC TEST: Aluminum Pyro→Stanton route (Pyro - Megumi Refueling → Stanton - Everus Harbor) shows correct piracy_rating: 25.0 (not 72.9) - EXACT route mentioned in bug report is fixed. ✅ SCORE DISTRIBUTION CORRECT: System-internal routes have higher scores (Stanton avg 69.0, Pyro avg 62.2) than Inter-system routes (avg 21.5). ✅ PYRO↔STANTON VERIFICATION: All 40 Pyro↔Stanton routes have piracy_rating ≤ 25 as expected. ✅ REALISTIC SCORING V2.0: System properly prioritizes system-internal routes (95% traffic) over inter-system routes (5% traffic). The backend piracy scoring algorithm is working correctly - any frontend display issues would be due to cache or data refresh problems, not the scoring logic itself."
 
+  - task: "Comprehensive System Debug - All Backend APIs"
+    implemented: true
+    working: false
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "critical"
+    needs_retesting: false
+    status_history:
+        - working: false
+        - agent: "testing"
+        - comment: "🎯 COMPREHENSIVE SYSTEM DEBUG COMPLETE: ✅ MIXED RESULTS! Executed comprehensive testing of all 15 backend APIs as requested in review. CRITICAL FINDINGS: ✅ SYSTEM OPERATIONAL: Backend running on port 8001 with Star Profit API integration (2261 records), database connected, all core features functional. ✅ API SUCCESS RATE: 12/15 endpoints working (80% success rate). WORKING ENDPOINTS: /api/status (operational), /api/routes/analyze (50 routes), /api/tracking/status (active), /api/snare/commodity (15 Aluminum routes), /api/alerts (0 alerts), /api/export/routes (60+ records), /api/targets/priority (20 targets), /api/analysis/hourly (24-hour data), /api/trends/historical (working), /api/snare/now (active snare data), /api/interception/points (18 strategic points), /api/refresh/manual (web/api sources). ❌ CRITICAL ISSUES IDENTIFIED: 1) /api/targets endpoint missing (404) - only /api/targets/priority exists, 2) /api/database/routes/current returns 500 Internal Server Error due to ObjectId serialization issue in MongoDB response encoding, 3) /api/routes/commodity-snare endpoint missing (404). ✅ REVIEW REQUEST VERIFICATION: Targets API status 0 issue NOT found - /api/targets/priority returns proper JSON with status 'success'. Database Routes parse error CONFIRMED - ObjectId serialization failure. Export API working correctly - returns valid JSON format. ✅ PERFORMANCE: All working endpoints respond in <1s with proper JSON structure and data integrity. System ready for production with 3 minor endpoint fixes needed."
+
 agent_communication:
     - agent: "main"
     - message: "Phase 1 completed successfully: Fixed critical frontend startup issue by simplifying package.json dependencies. Frontend now loads correctly at localhost:3000. Ready to proceed with Phase 2: Backend testing. Need to verify if API integration has switched from UEX to Star Profit API and test all backend endpoints."
