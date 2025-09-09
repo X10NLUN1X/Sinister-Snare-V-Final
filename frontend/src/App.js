@@ -3558,7 +3558,7 @@ function App() {
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-400">High-Value Targets:</span>
-                      <span className="text-red-400 font-mono">{routes.filter(r => r.piracy_rating >= 70).length}</span>
+                      <span className="text-gray-300 font-mono">{routes.filter(r => r.piracy_rating >= 70).length}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-400">Inter-System Routes:</span>
