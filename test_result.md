@@ -576,6 +576,7 @@ metadata:
 
 test_plan:
   current_focus:
+    - "Comprehensive System Debug - All Backend APIs"
     - "NEW Bidirectional Alternative Routes Endpoint"
     - "Web Crawling Primary Data Source Implementation"
     - "Alternative Routes Endpoint Implementation"
@@ -583,7 +584,7 @@ test_plan:
     - "API vs Web Source Comparison Implementation"
   stuck_tasks: []
   test_all: false
-  test_priority: "bidirectional_alternative_routes"
+  test_priority: "comprehensive_system_debug"
 
   - task: "Realistic Piracy Scoring System V2.0 Implementation"
     implemented: true
