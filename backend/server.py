@@ -776,7 +776,7 @@ class RouteAnalyzer:
             # Premium cargo that warrants ELITE piracy attention
             if profit > 2000000:  # Routes with >2M profit get extra attention
                 if any(commodity in commodity_name for commodity in elite_commodities):
-                    high_value_bonus = 10  # Extra boost for premium commodities with high profit
+                    high_value_bonus = 15  # INCREASED: Even bigger boost for premium commodities with high profit
                 else:
                     high_value_bonus = 5   # Standard high-profit bonus
             
