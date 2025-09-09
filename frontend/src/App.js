@@ -664,139 +664,190 @@ const AdvancedSnareplanModal = ({ isOpen, onClose, routes }) => {
         <div className="bg-gray-900 rounded-lg p-6 border border-purple-500">
           <h4 className="text-purple-400 text-lg font-bold mb-4">🌌 3D Quantum Route Visualization</h4>
           
-          {/* 3D Scene Display */}
-          <div className="bg-black rounded-lg p-4 mb-6 min-h-[500px] relative border border-purple-400">
+          {/* 3D Scene Display - ENLARGED */}
+          <div className="bg-black rounded-lg p-6 mb-6 min-h-[700px] relative border border-purple-400">
             {/* Coordinate System Display */}
-            <div className="absolute top-4 left-4 text-xs font-mono text-purple-300">
-              <div>X: East/West Axis</div>
-              <div>Y: North/South Axis</div>
-              <div>Z: Up/Down Axis</div>
+            <div className="absolute top-6 left-6 text-sm font-mono text-purple-300 bg-black/80 p-3 rounded">
+              <div className="font-bold text-purple-400 mb-2">Coordinate System:</div>
+              <div>🔴 X: East/West Axis</div>
+              <div>🟢 Y: North/South Axis</div>
+              <div>🔵 Z: Up/Down Axis</div>
             </div>
             
-            {/* 3D Route Rendering */}
+            {/* 3D Route Rendering - MUCH LARGER */}
             <div className="w-full h-full flex items-center justify-center relative">
-              <svg width="100%" height="450" viewBox="0 0 800 450" className="border border-gray-800">
-                {/* Grid Lines */}
+              <svg width="100%" height="650" viewBox="0 0 1200 650" className="border border-gray-800">
+                {/* Enhanced Grid Lines */}
                 <defs>
-                  <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
-                    <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#374151" strokeWidth="1"/>
+                  <pattern id="grid" width="60" height="60" patternUnits="userSpaceOnUse">
+                    <path d="M 60 0 L 0 0 0 60" fill="none" stroke="#374151" strokeWidth="1" opacity="0.3"/>
+                  </pattern>
+                  <pattern id="majorGrid" width="300" height="300" patternUnits="userSpaceOnUse">
+                    <path d="M 300 0 L 0 0 0 300" fill="none" stroke="#6b7280" strokeWidth="2" opacity="0.5"/>
                   </pattern>
                 </defs>
                 <rect width="100%" height="100%" fill="url(#grid)" />
+                <rect width="100%" height="100%" fill="url(#majorGrid)" />
                 
-                {/* Center Origin */}
-                <circle cx="400" cy="225" r="3" fill="#8b5cf6" />
-                <text x="410" y="230" className="text-xs fill-purple-400">Origin (0,0,0)</text>
+                {/* Center Origin - LARGER */}
+                <circle cx="600" cy="325" r="8" fill="#8b5cf6" stroke="#c084fc" strokeWidth="3" />
+                <text x="615" y="335" className="text-sm fill-purple-400 font-bold">Origin (0,0,0)</text>
                 
-                {/* Render Routes */}
+                {/* Render Routes - IMPROVED VISIBILITY */}
                 {interdictionData.single_route_intercepts?.map((routeData, index) => {
-                  const startX = 400; // Center
-                  const startY = 225; // Center
+                  const startX = 600; // Center
+                  const startY = 325; // Center
                   
-                  // Calculate end point (simplified 2D projection)
+                  // Calculate end point (improved scaling)
                   const route = selectedRoutes[index];
                   if (!route?.coordinates_destination) return null;
                   
-                  const endX = 400 + (route.coordinates_destination.x / 1000); // Scale down
-                  const endY = 225 - (route.coordinates_destination.y / 1000); // Invert Y
+                  const endX = 600 + (route.coordinates_destination.x / 800); // Better scaling
+                  const endY = 325 - (route.coordinates_destination.y / 800); // Invert Y with better scaling
                   
                   // Intercept point
-                  const interceptX = 400 + (routeData.intercept_data?.intercept_point?.[0] / 1000 || 0);
-                  const interceptY = 225 - (routeData.intercept_data?.intercept_point?.[1] / 1000 || 0);
+                  const interceptX = 600 + (routeData.intercept_data?.intercept_point?.[0] / 800 || 0);
+                  const interceptY = 325 - (routeData.intercept_data?.intercept_point?.[1] / 800 || 0);
+                  
+                  // Color coding based on route index
+                  const routeColors = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4'];
+                  const routeColor = routeColors[index % routeColors.length];
                   
                   return (
                     <g key={index}>
-                      {/* Route Line */}
+                      {/* Route Line - THICKER */}
                       <line 
                         x1={startX} y1={startY} 
-                        x2={Math.min(Math.max(endX, 50), 750)} 
-                        y2={Math.min(Math.max(endY, 50), 400)}
-                        stroke="#3b82f6" 
-                        strokeWidth="2" 
-                        strokeDasharray="5,5"
+                        x2={Math.min(Math.max(endX, 100), 1100)} 
+                        y2={Math.min(Math.max(endY, 100), 550)}
+                        stroke={routeColor} 
+                        strokeWidth="4" 
+                        strokeDasharray="8,4"
+                        opacity="0.8"
                       />
                       
-                      {/* Intercept Point */}
+                      {/* Intercept Point - MUCH LARGER */}
                       <circle 
-                        cx={Math.min(Math.max(interceptX, 50), 750)} 
-                        cy={Math.min(Math.max(interceptY, 50), 400)} 
-                        r="8" 
+                        cx={Math.min(Math.max(interceptX, 100), 1100)} 
+                        cy={Math.min(Math.max(interceptY, 100), 550)} 
+                        r="16" 
                         fill="#ef4444" 
                         stroke="#fbbf24" 
-                        strokeWidth="2"
+                        strokeWidth="4"
+                        opacity="0.9"
                       />
                       
-                      {/* QED Coverage Circle */}
+                      {/* Intercept Point Inner Circle */}
                       <circle 
-                        cx={Math.min(Math.max(interceptX, 50), 750)} 
-                        cy={Math.min(Math.max(interceptY, 50), 400)} 
-                        r={interdictionData.quantum_parameters?.qed_radius_km || 20} 
+                        cx={Math.min(Math.max(interceptX, 100), 1100)} 
+                        cy={Math.min(Math.max(interceptY, 100), 550)} 
+                        r="8" 
+                        fill="#fbbf24" 
+                        opacity="1"
+                      />
+                      
+                      {/* QED Coverage Circle - MORE VISIBLE */}
+                      <circle 
+                        cx={Math.min(Math.max(interceptX, 100), 1100)} 
+                        cy={Math.min(Math.max(interceptY, 100), 550)} 
+                        r={Math.min((interdictionData.quantum_parameters?.qed_radius_km || 20) * 2, 80)} 
                         fill="none" 
                         stroke="#ef4444" 
-                        strokeWidth="1" 
-                        strokeOpacity="0.3"
+                        strokeWidth="3" 
+                        strokeOpacity="0.4"
+                        strokeDasharray="6,3"
                       />
                       
-                      {/* Route Label */}
+                      {/* Route Label - IMPROVED POSITIONING */}
                       <text 
-                        x={Math.min(Math.max(endX, 60), 740)} 
-                        y={Math.min(Math.max(endY - 10, 60), 390)} 
-                        className="text-xs fill-blue-400"
+                        x={Math.min(Math.max(endX, 120), 1080)} 
+                        y={Math.min(Math.max(endY - 20, 120), 530)} 
+                        className="text-sm fill-white font-bold"
+                        textAnchor="middle"
                       >
                         {routeData.route_name}
+                      </text>
+                      
+                      {/* Success Probability Label */}
+                      <text 
+                        x={Math.min(Math.max(interceptX, 120), 1080)} 
+                        y={Math.min(Math.max(interceptY + 35, 135), 580)} 
+                        className="text-xs fill-yellow-400 font-bold"
+                        textAnchor="middle"
+                      >
+                        {((routeData.intercept_data?.success_probability || 0) * 100).toFixed(0)}%
                       </text>
                     </g>
                   );
                 })}
                 
-                {/* Mantis Position */}
+                {/* Mantis Position - MUCH LARGER */}
                 <g>
-                  <circle cx="400" cy="225" r="6" fill="#10b981" stroke="#34d399" strokeWidth="2"/>
-                  <text x="410" y="220" className="text-xs fill-green-400">Mantis</text>
+                  <circle cx="600" cy="325" r="12" fill="#10b981" stroke="#34d399" strokeWidth="4"/>
+                  <circle cx="600" cy="325" r="6" fill="#34d399" opacity="1"/>
+                  <text x="620" y="320" className="text-sm fill-green-400 font-bold">Mantis Ship</text>
                 </g>
                 
-                {/* Optimal Position (if multi-route) */}
+                {/* Optimal Position (if multi-route) - ENHANCED */}
                 {interdictionData.multi_route_optimization?.optimal_position && (
                   <g>
                     <circle 
-                      cx={400 + (interdictionData.multi_route_optimization.optimal_position[0] / 1000)} 
-                      cy={225 - (interdictionData.multi_route_optimization.optimal_position[1] / 1000)} 
-                      r="10" 
+                      cx={600 + (interdictionData.multi_route_optimization.optimal_position[0] / 800)} 
+                      cy={325 - (interdictionData.multi_route_optimization.optimal_position[1] / 800)} 
+                      r="20" 
                       fill="#8b5cf6" 
                       stroke="#c084fc" 
-                      strokeWidth="2"
+                      strokeWidth="4"
+                      opacity="0.9"
+                    />
+                    <circle 
+                      cx={600 + (interdictionData.multi_route_optimization.optimal_position[0] / 800)} 
+                      cy={325 - (interdictionData.multi_route_optimization.optimal_position[1] / 800)} 
+                      r="10" 
+                      fill="#c084fc" 
+                      opacity="1"
                     />
                     <text 
-                      x={410 + (interdictionData.multi_route_optimization.optimal_position[0] / 1000)} 
-                      y={220 - (interdictionData.multi_route_optimization.optimal_position[1] / 1000)} 
-                      className="text-xs fill-purple-400"
+                      x={620 + (interdictionData.multi_route_optimization.optimal_position[0] / 800)} 
+                      y={320 - (interdictionData.multi_route_optimization.optimal_position[1] / 800)} 
+                      className="text-sm fill-purple-400 font-bold"
                     >
-                      Optimal
+                      Optimal Position
                     </text>
                   </g>
                 )}
+                
+                {/* Scale Reference */}
+                <g transform="translate(50, 580)">
+                  <line x1="0" y1="0" x2="100" y2="0" stroke="#6b7280" strokeWidth="2"/>
+                  <text x="50" y="20" className="text-xs fill-gray-400" textAnchor="middle">100,000 km</text>
+                </g>
               </svg>
             </div>
             
-            {/* Legend */}
-            <div className="absolute bottom-4 right-4 bg-gray-800/90 rounded p-3 text-xs">
-              <div className="text-purple-400 font-bold mb-2">Legend</div>
-              <div className="space-y-1">
-                <div className="flex items-center space-x-2">
-                  <div className="w-3 h-3 bg-green-400 rounded-full"></div>
-                  <span className="text-gray-300">Mantis Position</span>
+            {/* Enhanced Legend - LARGER AND MORE DETAILED */}
+            <div className="absolute bottom-6 right-6 bg-gray-800/95 rounded-lg p-4 text-sm border border-gray-600">
+              <div className="text-purple-400 font-bold mb-3 text-base">🎯 Visualization Legend</div>
+              <div className="space-y-2">
+                <div className="flex items-center space-x-3">
+                  <div className="w-6 h-6 bg-green-400 rounded-full border-2 border-green-500"></div>
+                  <span className="text-gray-300">Mantis Ship (Current Position)</span>
                 </div>
-                <div className="flex items-center space-x-2">
-                  <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-                  <span className="text-gray-300">Intercept Points</span>
+                <div className="flex items-center space-x-3">
+                  <div className="w-6 h-6 bg-red-500 rounded-full border-2 border-yellow-400"></div>
+                  <span className="text-gray-300">Intercept Points (QED Zones)</span>
                 </div>
-                <div className="flex items-center space-x-2">
-                  <div className="w-3 h-3 bg-purple-500 rounded-full"></div>
-                  <span className="text-gray-300">Optimal Position</span>
+                <div className="flex items-center space-x-3">
+                  <div className="w-6 h-6 bg-purple-500 rounded-full border-2 border-purple-400"></div>
+                  <span className="text-gray-300">Optimal Multi-Route Position</span>
                 </div>
-                <div className="flex items-center space-x-2">
-                  <div className="w-3 h-0.5 bg-blue-500"></div>
-                  <span className="text-gray-300">Quantum Routes</span>
+                <div className="flex items-center space-x-3">
+                  <div className="w-6 h-1 bg-blue-500"></div>
+                  <span className="text-gray-300">Quantum Trade Routes</span>
+                </div>
+                <div className="flex items-center space-x-3">
+                  <div className="w-6 h-1 border border-red-500 border-dashed"></div>
+                  <span className="text-gray-300">QED Coverage Radius (20km)</span>
                 </div>
               </div>
             </div>
