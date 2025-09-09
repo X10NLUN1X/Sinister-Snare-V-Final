@@ -53,13 +53,27 @@ class SinisterDatabase {
 
   async addRoutes(routes) {
     try {
-      if (!this.db) await this.init();
+      if (!this.db) {
+        await this.init().catch(err => {
+          console.error("DB init failed, using fallback storage:", err);
+          return this.useFallbackStorage(routes);
+        });
+      }
+      
+      if (!this.db) {
+        return this.useFallbackStorage(routes);
+      }
       
       const transaction = this.db.transaction(['routes'], 'readwrite');
       const store = transaction.objectStore('routes');
       const timestamp = new Date().toISOString();
       
       const addedRoutes = [];
+      
+      // Add transaction error handling
+      transaction.onerror = (event) => {
+        console.error('IndexedDB transaction failed:', event);
+      };
       
       for (const route of routes) {
         try {
