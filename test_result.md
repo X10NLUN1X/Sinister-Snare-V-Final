@@ -616,6 +616,18 @@ test_plan:
         - agent: "testing"
         - comment: "🎯 URGENT BUG VERIFICATION COMPLETE: ✅ INTER-SYSTEM ROUTE BUG FIXED! Comprehensive backend testing confirms the piracy scoring system V2.0 is working correctly at the API level. CRITICAL VERIFICATION RESULTS: ✅ INTER-SYSTEM ROUTES CAPPED: All 29 Inter-System routes have piracy_rating ≤ 25 (max score: 25.0) - the reported 72.9 bug is FIXED. ✅ ALUMINUM ROUTE SPECIFIC TEST: Aluminum Pyro→Stanton route (Pyro - Megumi Refueling → Stanton - Everus Harbor) shows correct piracy_rating: 25.0 (not 72.9) - EXACT route mentioned in bug report is fixed. ✅ SCORE DISTRIBUTION CORRECT: System-internal routes have higher scores (Stanton avg 69.0, Pyro avg 62.2) than Inter-system routes (avg 21.5). ✅ PYRO↔STANTON VERIFICATION: All 40 Pyro↔Stanton routes have piracy_rating ≤ 25 as expected. ✅ REALISTIC SCORING V2.0: System properly prioritizes system-internal routes (95% traffic) over inter-system routes (5% traffic). The backend piracy scoring algorithm is working correctly - any frontend display issues would be due to cache or data refresh problems, not the scoring logic itself."
 
+  - task: "Gold Commodity Classification for Hardcore Mode"
+    implemented: true
+    working: false
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "critical"
+    needs_retesting: false
+    status_history:
+        - working: false
+        - agent: "testing"
+        - comment: "🚨 CRITICAL ISSUE IDENTIFIED: Gold commodity routes exist but DO NOT meet ELITE criteria for Hardcore Mode. Found 2 Gold routes: 1) 'Gold' commodity with piracy_rating 70.0 (HIGH risk level) from Pyro Rod's Fuel 'N Supplies → Pyro Rat's Nest, 2) 'Golden Medmon' commodity with piracy_rating 58.0 (MODERATE risk level) from Pyro Shepherd's Rest → Pyro Ashland. PROBLEM: No Gold routes have piracy_rating >= 80 (required for ELITE classification). Highest Gold piracy score is only 70.0. This explains why Gold doesn't appear in Hardcore Mode filtering. Additionally, NO ELITE or LEGENDARY routes exist in the entire system (Hardcore Mode would be completely empty). The piracy scoring algorithm needs adjustment to ensure high-value commodities like Gold achieve ELITE status."
+
   - task: "Comprehensive System Debug - All Backend APIs"
     implemented: true
     working: false
