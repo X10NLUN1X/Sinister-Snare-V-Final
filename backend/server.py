@@ -762,7 +762,7 @@ class RouteAnalyzer:
             ]
             
             if any(commodity in commodity_name for commodity in elite_commodities):
-                commodity_score = 15  # INCREASED: Premium bonus for elite commodities
+                commodity_score = 20  # INCREASED FURTHER: Higher premium bonus for elite commodities like Gold
             elif any(commodity in commodity_name for commodity in high_traffic_commodities):
                 commodity_score = 8
             elif any(commodity in commodity_name for commodity in medium_traffic_commodities):
