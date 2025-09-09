@@ -2831,6 +2831,59 @@ function App() {
   const [selectedRoute, setSelectedRoute] = useState(null);
   const [calculatedSnare, setCalculatedSnare] = useState(null);
 
+  // NEW: Calculate Snare Position Function
+  const calculateSnarePosition = useCallback((route) => {
+    if (!route) return;
+
+    // Star Citizen System Coordinates (approximate galactic positions)
+    const SYSTEM_COORDINATES = {
+      'Stanton': { x: 0, y: 0, z: 0 },
+      'Pyro': { x: -15000000, y: 8000000, z: 2000000 },
+      'Terra': { x: 12000000, y: -5000000, z: 3000000 },
+      'Nyx': { x: -8000000, y: -12000000, z: -1000000 }
+    };
+
+    const originSystem = route.origin_name?.split(' - ')[0] || 'Unknown';
+    const destSystem = route.destination_name?.split(' - ')[0] || 'Unknown';
+    const originLocation = route.origin_name?.split(' - ')[1] || 'Unknown';
+    const destLocation = route.destination_name?.split(' - ')[1] || 'Unknown';
+
+    // Get system coordinates
+    const originCoords = SYSTEM_COORDINATES[originSystem] || { x: 0, y: 0, z: 0 };
+    const destCoords = SYSTEM_COORDINATES[destSystem] || { x: 0, y: 0, z: 0 };
+
+    // Calculate distance
+    const distance = Math.sqrt(
+      Math.pow(destCoords.x - originCoords.x, 2) +
+      Math.pow(destCoords.y - originCoords.y, 2) +
+      Math.pow(destCoords.z - originCoords.z, 2)
+    );
+
+    // Determine optimal interdiction point (75% of the way to destination)
+    const interdictionRatio = 0.75;
+    const interdictionPoint = {
+      x: originCoords.x + (destCoords.x - originCoords.x) * interdictionRatio,
+      y: originCoords.y + (destCoords.y - originCoords.y) * interdictionRatio,
+      z: originCoords.z + (destCoords.z - originCoords.z) * interdictionRatio
+    };
+
+    const snareData = {
+      route: route,
+      origin: { system: originSystem, location: originLocation, coords: originCoords },
+      destination: { system: destSystem, location: destLocation, coords: destCoords },
+      interdictionPoint: interdictionPoint,
+      distance: distance,
+      estimatedTravelTime: distance / 900000, // Assuming ~900k m/s quantum speed
+      interceptionProbability: Math.min(95, (route.piracy_rating || 0) + 10),
+      recommendedSnareType: (route.piracy_rating || 0) >= 70 ? 'QED-3' : 
+                           (route.piracy_rating || 0) >= 50 ? 'QED-2' : 'QED-1',
+      riskAssessment: (route.piracy_rating || 0) >= 70 ? 'HIGH REWARD - HIGH RISK' : 
+                      (route.piracy_rating || 0) >= 50 ? 'MODERATE REWARD - MODERATE RISK' : 'LOW REWARD - LOW RISK'
+    };
+
+    setCalculatedSnare(snareData);
+  }, []);
+
   const fetchApiStatus = useCallback(async () => {
     try {
       const response = await axios.get(`${API}/status`);
