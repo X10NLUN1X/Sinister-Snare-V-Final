@@ -423,48 +423,48 @@ const AdvancedSnareplanModal = ({ isOpen, onClose, routes }) => {
 
   const renderPositionVerification = () => (
     <div className="space-y-6">
-      <div className="bg-blue-900/20 border border-blue-600 rounded-lg p-6">
-        <h4 className="text-blue-400 font-bold text-xl mb-4">📍 POSITION VERIFICATION</h4>
+      <div className="bg-red-900/20 border border-red-600 rounded-lg p-6">
+        <h4 className="text-red-400 font-bold text-xl mb-4">📍 POSITION VERIFICATION</h4>
         <p className="text-gray-300 mb-6">
           Geben Sie Ihre aktuellen Star Citizen Koordinaten ein (verwenden Sie <code className="bg-gray-800 px-2 py-1 rounded">/showlocation</code> im Spiel).
         </p>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           <div>
-            <label className="text-blue-400 font-bold block mb-2">X-Koordinate</label>
+            <label className="text-red-400 font-bold block mb-2">X-Koordinate</label>
             <input
               type="number"
               value={playerCoordinates.x}
               onChange={(e) => setPlayerCoordinates({...playerCoordinates, x: e.target.value})}
               placeholder="z.B. 12891.816"
-              className="w-full bg-gray-800 text-white p-3 rounded border border-gray-600 focus:border-blue-500"
+              className="w-full bg-gray-800 text-white p-3 rounded border border-gray-600 focus:border-red-500"
             />
           </div>
           <div>
-            <label className="text-blue-400 font-bold block mb-2">Y-Koordinate</label>
+            <label className="text-red-400 font-bold block mb-2">Y-Koordinate</label>
             <input
               type="number"
               value={playerCoordinates.y}
               onChange={(e) => setPlayerCoordinates({...playerCoordinates, y: e.target.value})}
               placeholder="z.B. 50513.343"
-              className="w-full bg-gray-800 text-white p-3 rounded border border-gray-600 focus:border-blue-500"
+              className="w-full bg-gray-800 text-white p-3 rounded border border-gray-600 focus:border-red-500"
             />
           </div>
           <div>
-            <label className="text-blue-400 font-bold block mb-2">Z-Koordinate</label>
+            <label className="text-red-400 font-bold block mb-2">Z-Koordinate</label>
             <input
               type="number"
               value={playerCoordinates.z}
               onChange={(e) => setPlayerCoordinates({...playerCoordinates, z: e.target.value})}
               placeholder="z.B. -1234.567"
-              className="w-full bg-gray-800 text-white p-3 rounded border border-gray-600 focus:border-blue-500"
+              className="w-full bg-gray-800 text-white p-3 rounded border border-gray-600 focus:border-red-500"
             />
           </div>
         </div>
 
         <button
           onClick={analyzePlayerPosition}
-          className="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg text-white font-bold transition-all duration-300"
+          className="bg-red-600 hover:bg-red-700 px-6 py-3 rounded-lg text-white font-bold transition-all duration-300"
         >
           🎯 Position analysieren
         </button>
@@ -474,11 +474,11 @@ const AdvancedSnareplanModal = ({ isOpen, onClose, routes }) => {
         <div className="space-y-6">
           <div className={`p-6 rounded-lg border-2 ${
             positionAnalysis.optimal 
-              ? 'bg-green-900/30 border-green-500' 
-              : 'bg-red-900/30 border-red-500'
+              ? 'bg-red-900/30 border-red-500' 
+              : 'bg-gray-900/30 border-gray-500'
           }`}>
             <div className="text-center mb-4">
-              <div className={`text-4xl font-bold ${positionAnalysis.optimal ? 'text-green-400' : 'text-red-400'}`}>
+              <div className={`text-4xl font-bold ${positionAnalysis.optimal ? 'text-red-400' : 'text-gray-400'}`}>
                 {positionAnalysis.coverage.toFixed(1)}% Coverage
               </div>
               <div className="text-gray-300 mt-2">
@@ -492,25 +492,25 @@ const AdvancedSnareplanModal = ({ isOpen, onClose, routes }) => {
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="text-center">
-                <h6 className="text-blue-400 font-bold mb-4">From the top</h6>
+                <h6 className="text-red-400 font-bold mb-4">From the top</h6>
                 <div className={`inline-block px-4 py-2 rounded text-white font-bold ${
-                  positionAnalysis.coverage > 50 ? 'bg-green-600' : 'bg-red-600'
+                  positionAnalysis.coverage > 50 ? 'bg-red-600' : 'bg-gray-600'
                 }`}>
                   {positionAnalysis.coverage.toFixed(0)}% coverage
                 </div>
                 
                 <div className="mt-4 relative">
-                  <div className="w-32 h-32 bg-gray-700 rounded-full mx-auto flex items-center justify-center">
-                    <div className="text-white">🚀</div>
+                  <div className="w-32 h-32 bg-gray-700 rounded-full mx-auto flex items-center justify-center border-2 border-red-500">
+                    <div className="text-white text-2xl">🚀</div>
                   </div>
                   
                   {positionAnalysis.directions.x !== 'OK' && (
-                    <div className={`absolute top-1/2 ${positionAnalysis.directions.x === 'RECHTS' ? 'right-0' : 'left-0'} transform -translate-y-1/2 text-yellow-400 text-2xl`}>
+                    <div className={`absolute top-1/2 ${positionAnalysis.directions.x === 'RECHTS' ? 'right-0' : 'left-0'} transform -translate-y-1/2 text-yellow-400 text-3xl`}>
                       {positionAnalysis.directions.x === 'RECHTS' ? '➡️' : '⬅️'}
                     </div>
                   )}
                   {positionAnalysis.directions.y !== 'OK' && (
-                    <div className={`absolute left-1/2 ${positionAnalysis.directions.y === 'NORDEN' ? 'top-0' : 'bottom-0'} transform -translate-x-1/2 text-yellow-400 text-2xl`}>
+                    <div className={`absolute left-1/2 ${positionAnalysis.directions.y === 'NORDEN' ? 'top-0' : 'bottom-0'} transform -translate-x-1/2 text-yellow-400 text-3xl`}>
                       {positionAnalysis.directions.y === 'NORDEN' ? '⬆️' : '⬇️'}
                     </div>
                   )}
@@ -518,16 +518,18 @@ const AdvancedSnareplanModal = ({ isOpen, onClose, routes }) => {
               </div>
 
               <div className="text-center">
-                <h6 className="text-blue-400 font-bold mb-4">From the back</h6>
+                <h6 className="text-red-400 font-bold mb-4">From the back</h6>
                 <div className={`inline-block px-4 py-2 rounded text-white font-bold ${
-                  positionAnalysis.coverage > 50 ? 'bg-green-600' : 'bg-red-600'
+                  positionAnalysis.coverage > 50 ? 'bg-red-600' : 'bg-gray-600'
                 }`}>
                   {positionAnalysis.coverage.toFixed(0)}% coverage
                 </div>
                 
                 <div className="mt-4 relative">
-                  <div className="w-32 h-32 bg-gray-700 rounded-full mx-auto flex items-center justify-center">
-                    <div className="text-white">{selectedRoute?.origin_name?.split(' - ')[1]?.charAt(0) || 'H'}</div>
+                  <div className="w-32 h-32 bg-gray-700 rounded-full mx-auto flex items-center justify-center border-2 border-red-500">
+                    <div className="text-white text-xl font-bold">
+                      {selectedRoute ? getLocationInfo(selectedRoute.origin_name || '').planet.charAt(0) : 'H'}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -546,7 +548,7 @@ const AdvancedSnareplanModal = ({ isOpen, onClose, routes }) => {
                   <div>• Bewegen Sie sich nach {positionAnalysis.directions.z}</div>
                 )}
                 {positionAnalysis.optimal && (
-                  <div className="text-green-400">✅ Ihre Position ist optimal!</div>
+                  <div className="text-red-400 font-bold">✅ Ihre Position ist optimal!</div>
                 )}
               </div>
             </div>
