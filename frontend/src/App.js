@@ -3568,6 +3568,19 @@ function App() {
         onRouteSelect={handleRouteClick}
         onAlternativeRouteSelect={handleAlternativeRouteSelect}
       />
+      
+      {/* NEW: SnarePlan Modal */}
+      <SnarePlanModal 
+        isOpen={snarePlanModal}
+        onClose={() => setSnarePlanModal(false)}
+        routes={routes}
+        onRouteSelect={(route) => {
+          setSelectedRoute(route);
+          calculateSnarePosition(route);
+        }}
+        selectedRoute={selectedRoute}
+        calculatedSnare={calculatedSnare}
+      />
     </div>
   );
 }
