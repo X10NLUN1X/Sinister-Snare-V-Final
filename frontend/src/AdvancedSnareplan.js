@@ -558,10 +558,10 @@ const AdvancedSnareplanModal = ({ isOpen, onClose, routes }) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
-      <div className="bg-gray-900 rounded-lg w-[95vw] h-[95vh] overflow-y-auto border-2 border-green-600">
-        <div className="flex justify-between items-center p-6 border-b border-green-600 bg-green-900/20">
+      <div className="bg-gray-900 rounded-lg w-[95vw] h-[95vh] overflow-y-auto border-2 border-red-600">
+        <div className="flex justify-between items-center p-6 border-b border-red-600 bg-red-900/20">
           <div>
-            <h3 className="text-green-400 text-2xl font-bold">🎯 Advanced Snareplan</h3>
+            <h3 className="text-red-400 text-2xl font-bold">🎯 Advanced Snareplan</h3>
             <p className="text-gray-300 text-sm mt-1">Star Citizen Quantum Interdiction System</p>
           </div>
           <button onClick={onClose} className="text-gray-400 hover:text-white text-2xl">✕</button>
@@ -572,7 +572,7 @@ const AdvancedSnareplanModal = ({ isOpen, onClose, routes }) => {
             onClick={() => setActiveTab('route_selection')}
             className={`px-6 py-3 rounded-lg font-bold transition-all duration-300 ${
               activeTab === 'route_selection' 
-                ? 'bg-green-600 text-white' 
+                ? 'bg-red-600 text-white' 
                 : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
             }`}
           >
@@ -582,7 +582,7 @@ const AdvancedSnareplanModal = ({ isOpen, onClose, routes }) => {
             onClick={() => setActiveTab('overview_map')}
             className={`px-6 py-3 rounded-lg font-bold transition-all duration-300 ${
               activeTab === 'overview_map' 
-                ? 'bg-green-600 text-white' 
+                ? 'bg-red-600 text-white' 
                 : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
             }`}
             disabled={!selectedRoute}
@@ -593,7 +593,7 @@ const AdvancedSnareplanModal = ({ isOpen, onClose, routes }) => {
             onClick={() => setActiveTab('position_verification')}
             className={`px-6 py-3 rounded-lg font-bold transition-all duration-300 ${
               activeTab === 'position_verification' 
-                ? 'bg-green-600 text-white' 
+                ? 'bg-red-600 text-white' 
                 : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
             }`}
             disabled={!selectedRoute}
@@ -606,7 +606,7 @@ const AdvancedSnareplanModal = ({ isOpen, onClose, routes }) => {
           {loading && (
             <div className="text-center py-8">
               <div className="text-4xl mb-4">⏳</div>
-              <div className="text-green-400 font-bold">Berechne Interdiction-Daten...</div>
+              <div className="text-red-400 font-bold">Berechne Interdiction-Daten...</div>
             </div>
           )}
 
