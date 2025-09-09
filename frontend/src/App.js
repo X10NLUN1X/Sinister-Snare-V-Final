@@ -3055,21 +3055,7 @@ function App() {
 
   return (
     <div className="min-h-screen bg-black text-white">
-      {/* Professional Fixed Action Panel */}
-      <div className="fixed right-6 top-1/2 transform -translate-y-1/2 z-40 flex flex-col space-y-3">
-        <button 
-          onClick={() => setCommoditySnareModal(true)}
-          className="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-3 rounded-full shadow-xl transition-all duration-300 hover:scale-105 font-bold text-sm flex items-center justify-center min-w-[180px] border border-yellow-500"
-        >
-          💎 COMMODITY SNARE
-        </button>
-        <button 
-          onClick={handleManualRefresh}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-full shadow-xl transition-all duration-300 hover:scale-105 font-bold text-sm flex items-center justify-center min-w-[180px] border border-blue-500"
-        >
-          🔄 REFRESH DATA
-        </button>
-      </div>
+      {/* Professional Fixed Action Panel - REMOVED */}
       
       <Header 
         dataSource={dataSource}
