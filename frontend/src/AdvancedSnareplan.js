@@ -265,18 +265,21 @@ const AdvancedSnareplanModal = ({ isOpen, onClose, routes }) => {
     const interceptData = interdictionData.single_route_intercepts?.[0]?.intercept_data;
     const coverage = interceptData?.coverage?.coverage_percentage || 0;
     const isInterdictionPossible = coverage > 10;
+    
+    const originInfo = getLocationInfo(selectedRoute.origin_name || '');
+    const destInfo = getLocationInfo(selectedRoute.destination_name || '');
 
     return (
       <div className="space-y-6">
         {/* Interdiction Status */}
         <div className={`p-6 rounded-lg border-2 ${
           isInterdictionPossible 
-            ? 'bg-green-900/30 border-green-500' 
-            : 'bg-red-900/30 border-red-500'
+            ? 'bg-red-900/30 border-red-500' 
+            : 'bg-gray-900/30 border-gray-500'
         }`}>
           <div className="flex items-center justify-between">
             <div>
-              <h3 className={`text-2xl font-bold ${isInterdictionPossible ? 'text-green-400' : 'text-red-400'}`}>
+              <h3 className={`text-2xl font-bold ${isInterdictionPossible ? 'text-red-400' : 'text-gray-400'}`}>
                 {isInterdictionPossible ? 'INTERDICTION MÖGLICH' : 'INTERDICTION NICHT MÖGLICH'}
               </h3>
               <p className="text-gray-300 mt-2">
@@ -287,7 +290,7 @@ const AdvancedSnareplanModal = ({ isOpen, onClose, routes }) => {
               </p>
             </div>
             <div className="text-right">
-              <div className={`text-3xl font-bold ${isInterdictionPossible ? 'text-green-400' : 'text-red-400'}`}>
+              <div className={`text-3xl font-bold ${isInterdictionPossible ? 'text-red-400' : 'text-gray-400'}`}>
                 {coverage.toFixed(1)}%
               </div>
               <div className="text-gray-400 text-sm">Coverage</div>
@@ -296,11 +299,11 @@ const AdvancedSnareplanModal = ({ isOpen, onClose, routes }) => {
         </div>
 
         {/* Overview Map */}
-        <div className="bg-gray-900 rounded-lg p-6 border border-green-600">
+        <div className="bg-gray-900 rounded-lg p-6 border border-red-600">
           <div className="flex items-center justify-between mb-6">
-            <h4 className="text-green-400 font-bold text-xl">OVERVIEW MAP</h4>
+            <h4 className="text-red-400 font-bold text-xl">OVERVIEW MAP</h4>
             <div className="flex space-x-4">
-              <button className="bg-green-600 hover:bg-green-700 px-4 py-2 rounded text-white text-sm">
+              <button className="bg-red-600 hover:bg-red-700 px-4 py-2 rounded text-white text-sm">
                 📤 share
               </button>
               <button className="bg-gray-600 hover:bg-gray-700 px-4 py-2 rounded text-white text-sm">
@@ -314,67 +317,86 @@ const AdvancedSnareplanModal = ({ isOpen, onClose, routes }) => {
             <div className="flex items-center justify-between relative">
               {/* Origin */}
               <div className="text-center">
-                <div className="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold mb-2">
+                <div className="w-20 h-20 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold mb-3 border-2 border-blue-400">
                   🌍
                 </div>
-                <div className="text-white font-bold">{selectedRoute.origin_name?.split(' - ')[1] || 'Origin'}</div>
+                <div className="text-white font-bold text-lg">{originInfo.planet}</div>
+                <div className="text-gray-400 text-sm">{selectedRoute.origin_name}</div>
+                <div className="text-gray-500 text-xs mt-1">{originInfo.system} System</div>
               </div>
 
               {/* Route Line with QED Position */}
-              <div className="flex-1 mx-8 relative">
-                <div className="h-2 bg-blue-600 rounded-full relative">
+              <div className="flex-1 mx-12 relative">
+                <div className="h-3 bg-gradient-to-r from-blue-600 to-orange-600 rounded-full relative">
                   <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-                    <div className="w-4 h-4 bg-red-500 rounded-full border-2 border-yellow-400"></div>
-                    <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 text-yellow-400 text-xs font-bold whitespace-nowrap">
-                      QED
+                    <div className="w-6 h-6 bg-red-500 rounded-full border-4 border-yellow-400 pulse-animation"></div>
+                    <div className="absolute -top-12 left-1/2 transform -translate-x-1/2 text-yellow-400 text-sm font-bold whitespace-nowrap bg-black/80 px-2 py-1 rounded">
+                      QED ZONE
                     </div>
                   </div>
                 </div>
                 
-                <div className="flex justify-between mt-4 text-sm text-gray-400">
-                  <span>{formatDistance(interceptData?.mantis_travel_distance / 2 || 0)}</span>
-                  <span>{formatDistance(interceptData?.mantis_travel_distance || 0)}</span>
+                <div className="flex justify-between mt-6 text-sm text-gray-400">
+                  <span>Start: {formatDistance(0)}</span>
+                  <span>QED: {formatDistance(interceptData?.mantis_travel_distance / 2 || 0)}</span>
+                  <span>Ende: {formatDistance(interceptData?.mantis_travel_distance || 0)}</span>
+                </div>
+                
+                {/* Distance Markers */}
+                <div className="mt-4 text-center">
+                  <div className="text-white font-bold">Gesamtdistanz: {formatDistance(interceptData?.mantis_travel_distance || 0)}</div>
                 </div>
               </div>
 
               {/* Destination */}
               <div className="text-center">
-                <div className="w-16 h-16 bg-orange-500 rounded-full flex items-center justify-center text-white font-bold mb-2">
+                <div className="w-20 h-20 bg-orange-500 rounded-full flex items-center justify-center text-white font-bold mb-3 border-2 border-orange-400">
                   🏭
                 </div>
-                <div className="text-white font-bold">{selectedRoute.destination_name?.split(' - ')[1] || 'Destination'}</div>
+                <div className="text-white font-bold text-lg">{destInfo.planet}</div>
+                <div className="text-gray-400 text-sm">{selectedRoute.destination_name}</div>
+                <div className="text-gray-500 text-xs mt-1">{destInfo.system} System</div>
               </div>
             </div>
 
             {/* ComArray Status */}
-            <div className="absolute bottom-4 right-4 bg-green-900/50 rounded-lg p-3">
-              <div className="text-green-400 text-sm font-bold mb-1">ComArray Status</div>
-              <div className="text-white text-xs">
+            <div className="absolute bottom-4 right-4 bg-red-900/50 rounded-lg p-4 border border-red-600">
+              <div className="text-red-400 text-sm font-bold mb-1">ComArray Status</div>
+              <div className="text-white text-sm">
                 {coverage > 50 ? '✅ In Reichweite' : '❌ Außerhalb der Reichweite'}
+              </div>
+              <div className="text-gray-400 text-xs mt-1">
+                QED Radius: 20km
               </div>
             </div>
           </div>
 
           {/* Route Instructions */}
-          <div className="bg-green-900/20 rounded-lg p-6 border border-green-600">
-            <h4 className="text-green-400 font-bold text-lg mb-4">🧭 ROUTE INSTRUCTIONS</h4>
+          <div className="bg-red-900/20 rounded-lg p-6 border border-red-600">
+            <h4 className="text-red-400 font-bold text-lg mb-4">🧭 ROUTE INSTRUCTIONS</h4>
             
             <div className="space-y-4">
               <div className="flex items-start space-x-4">
-                <div className="bg-green-600 rounded-full p-2 text-white font-bold text-sm min-w-[80px] text-center">
+                <div className="bg-red-600 rounded-full p-3 text-white font-bold text-sm min-w-[100px] text-center">
                   Waypoint 1
                 </div>
                 <div className="flex-1">
                   <div className="flex items-center space-x-2 mb-2">
                     <span className="text-blue-400">🔵</span>
-                    <span className="text-white font-medium">
-                      Springe von {selectedRoute.origin_name?.split(' - ')[1] || 'Origin'} nach {selectedRoute.destination_name?.split(' - ')[1] || 'Destination'}.
+                    <span className="text-white font-medium text-lg">
+                      Jump from {originInfo.planet} to {destInfo.planet}
+                    </span>
+                  </div>
+                  <div className="flex items-center space-x-2 mb-2">
+                    <span className="text-orange-400">🗺️</span>
+                    <span className="text-gray-300">
+                      Route: {selectedRoute.origin_name} → {selectedRoute.destination_name}
                     </span>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <span className="text-orange-400">✈️</span>
+                    <span className="text-yellow-400">⚠️</span>
                     <span className="text-gray-300">
-                      Stoppe bei {formatDistance(interceptData?.mantis_travel_distance || 0)} verbleibend.
+                      Stoppe bei {formatDistance(interceptData?.mantis_travel_distance || 0)} für QED Aktivierung.
                     </span>
                   </div>
                 </div>
@@ -383,11 +405,14 @@ const AdvancedSnareplanModal = ({ isOpen, onClose, routes }) => {
 
             {/* Progress Bar */}
             <div className="mt-6">
-              <div className="w-full bg-gray-700 rounded-full h-3">
+              <div className="w-full bg-gray-700 rounded-full h-4">
                 <div 
-                  className="bg-green-500 h-3 rounded-full transition-all duration-300" 
+                  className="bg-gradient-to-r from-red-500 to-red-400 h-4 rounded-full transition-all duration-300" 
                   style={{ width: `${Math.min(coverage, 100)}%` }}
                 ></div>
+              </div>
+              <div className="text-right mt-2 text-sm text-gray-400">
+                Interdiction Coverage: {coverage.toFixed(1)}%
               </div>
             </div>
           </div>
